@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { legalMovesFrom, placePiece, placementCells, resolveMove } from '../../../src/game/engine'
-import type { Color, GameState } from '../../../src/game/types'
-import { json, method, requireAuth, withApiError } from '../../_lib/http'
+import { legalMovesFrom, placePiece, placementCells, resolveMove } from '../../../src/game/engine.js'
+import type { Color, GameState } from '../../../src/game/types.js'
+import { json, method, requireAuth, withApiError } from '../../_lib/http.js'
 
 type ActionBody =
   | { type: 'place'; cell: number }

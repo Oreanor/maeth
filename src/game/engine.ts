@@ -11,8 +11,8 @@ import {
   type GameState,
   type GameStatus,
   type Move,
-} from './types'
-import { ALL_KINDS, PIECES, dirsFor, type PieceKind } from './pieces'
+} from './types.js'
+import { ALL_KINDS, PIECES, dirsFor, type PieceKind } from './pieces.js'
 
 export const GAME_NAME = 'Битва за Средиземье · 4×4'
 export const GAME_DESCRIPTION =

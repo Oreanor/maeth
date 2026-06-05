@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createInitialState } from '../../src/game/engine'
-import { json, method, requireAuth, withApiError } from '../_lib/http'
+import { createInitialState } from '../../src/game/engine.js'
+import { json, method, requireAuth, withApiError } from '../_lib/http.js'
 
 interface CreateGameBody {
   invitedUserId?: string

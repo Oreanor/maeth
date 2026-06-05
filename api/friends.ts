@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth, withApiError } from './_lib/http'
+import { json, method, requireAuth, withApiError } from './_lib/http.js'
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['GET'])) return

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth } from './_lib/http'
+import { json, method, requireAuth, withApiError } from './_lib/http'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['GET'])) return
 
   const auth = await requireAuth(req, res)
@@ -20,3 +20,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   json(res, 200, { user: data })
 }
+
+export default withApiError(handler)

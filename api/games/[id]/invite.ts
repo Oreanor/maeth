@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth } from '../../_lib/http'
+import { json, method, requireAuth, withApiError } from '../../_lib/http'
 
 interface CreateInviteBody {
   invitedUserId?: string
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['POST'])) return
 
   const auth = await requireAuth(req, res)
@@ -103,3 +103,5 @@ function safeJson(value: string): unknown {
     return null
   }
 }
+
+export default withApiError(handler)

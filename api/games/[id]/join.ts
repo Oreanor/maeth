@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth } from '../../_lib/http'
+import { json, method, requireAuth, withApiError } from '../../_lib/http'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['POST'])) return
 
   const auth = await requireAuth(req, res)
@@ -116,3 +116,5 @@ function routeParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) return value[0] ?? null
   return value ?? null
 }
+
+export default withApiError(handler)

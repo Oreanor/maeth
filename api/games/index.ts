@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createInitialState } from '../../src/game/engine'
-import { json, method, requireAuth } from '../_lib/http'
+import { json, method, requireAuth, withApiError } from '../_lib/http'
 
 interface CreateGameBody {
   invitedUserId?: string
@@ -34,7 +34,7 @@ interface ProfileRow {
   avatar_url: string | null
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['GET', 'POST'])) return
 
   const auth = await requireAuth(req, res)
@@ -247,3 +247,5 @@ function withoutCreatedBy(game: GameRow) {
 function unique(values: string[]): string[] {
   return [...new Set(values)]
 }
+
+export default withApiError(handler)

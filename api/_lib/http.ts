@@ -10,6 +10,20 @@ export function json(res: VercelResponse, status: number, body: unknown) {
   res.status(status).json(body)
 }
 
+export function withApiError(
+  handler: (req: VercelRequest, res: VercelResponse) => Promise<void>,
+) {
+  return async (req: VercelRequest, res: VercelResponse) => {
+    try {
+      await handler(req, res)
+    } catch (e) {
+      json(res, 500, {
+        error: e instanceof Error ? e.message : 'Unexpected API error',
+      })
+    }
+  }
+}
+
 export function method(req: VercelRequest, res: VercelResponse, allowed: string[]): boolean {
   if (req.method && allowed.includes(req.method)) return true
   res.setHeader('Allow', allowed.join(', '))

@@ -67,7 +67,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   )
 
   const game = unwrap(
-    await auth.db.from('games').select('id, status, state, created_at, updated_at').eq('id', id).single(),
+    await auth.db
+      .from('games')
+      .select('id, status, state, created_at, updated_at, rematch_id')
+      .eq('id', id)
+      .single(),
   )
 
   const players = (unwrap(

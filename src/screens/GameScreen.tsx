@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { HelpCircle } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Board } from '@/components/Board'
-import { UserMenu } from '@/components/UserMenu'
+import { AppHeader } from '@/components/AppHeader'
 import { RulesModal } from '@/components/RulesModal'
 import { useGame, type DuelEvent, type DraftPick } from '@/game/useGame'
 import { type Color, type GameState } from '@/game/types'
@@ -10,11 +9,10 @@ import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { useRemoteGame } from '@/game/useRemoteGame'
-import type { Presence } from '@/lib/api'
-import logoMaeth from '@/assets/logo-maeth.png'
+import { rematchGame, type Presence } from '@/lib/api'
 import './screens.css'
 
-/** In-game header: logo, help and the avatar menu — same controls as the lobby. */
+/** In-game header: the shared app header, width-matched to the board column. */
 function GameTopbar({
   name,
   onHelp,
@@ -24,23 +22,7 @@ function GameTopbar({
   onHelp: () => void
   onLogout: () => void
 }) {
-  const { t } = useI18n()
-  return (
-    <header className="topbar game-topbar">
-      <img className="topbar__logo" src={logoMaeth} alt="Maeth" />
-      <div className="topbar__right">
-        <button
-          className="icon-btn"
-          onClick={onHelp}
-          aria-label={t('lobby.help')}
-          title={t('lobby.help')}
-        >
-          <HelpCircle size={18} />
-        </button>
-        <UserMenu name={name} onLogout={onLogout} />
-      </div>
-    </header>
-  )
+  return <AppHeader name={name} onLogout={onLogout} onHelp={onHelp} className="game-topbar" />
 }
 
 interface PlayConfig {
@@ -59,7 +41,8 @@ export function GameScreen() {
     humanColor: 'white',
   }
   if (gameId) {
-    return <RemoteGameScreen gameId={gameId} config={config} />
+    // Key by id so following a rematch remounts with fresh state.
+    return <RemoteGameScreen key={gameId} gameId={gameId} config={config} />
   }
 
   return <LocalGameScreen config={config} />
@@ -180,6 +163,29 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const remote = useRemoteGame(gameId)
   const [resultClosed, setResultClosed] = useState(false)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [rematching, setRematching] = useState(false)
+
+  // Follow a rematch: once this game points to a fresh one, both players jump
+  // there. The pointer chains, so an old shared link always reaches the latest.
+  const rematchId = remote.game?.rematch_id ?? null
+  const myColor = remote.player?.color
+  useEffect(() => {
+    if (rematchId && rematchId !== gameId) {
+      navigate(`/play/${rematchId}`, {
+        state: { vsBot: false, opponentName: config.opponentName, humanColor: myColor ?? 'white' },
+      })
+    }
+  }, [rematchId, gameId, navigate, config.opponentName, myColor])
+
+  const playAgain = async () => {
+    setRematching(true)
+    try {
+      await rematchGame(gameId)
+      await remote.refresh() // surfaces rematch_id → the effect navigates us
+    } catch {
+      setRematching(false)
+    }
+  }
 
   if (remote.loading) {
     return (
@@ -206,7 +212,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const opponent = remote.players.find((p) => p.color === opponentColor)
   const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
   const waiting = remote.game?.status === 'waiting'
-  const showResult = state.phase === 'over' && !resultClosed
+  // Only declare the result once the duel ceremony is fully played out and
+  // dismissed — otherwise the win/loss modal pops over a still-rolling duel.
+  const showResult = state.phase === 'over' && !remote.duel && !remote.duelPending && !resultClosed
 
   return (
     <div className="screen screen--game">
@@ -276,9 +284,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         <ResultModal
           status={state.status}
           human={human}
-          onAgain={() => navigate('/')}
+          onAgain={playAgain}
+          againBusy={rematching}
           onClose={() => setResultClosed(true)}
-          againLabel={t('game.toLobby')}
         />
       )}
 
@@ -293,12 +301,14 @@ function ResultModal({
   onAgain,
   onClose,
   againLabel,
+  againBusy,
 }: {
   status: GameState['status']
   human: Color
   onAgain: () => void
   onClose: () => void
   againLabel?: string
+  againBusy?: boolean
 }) {
   const { t } = useI18n()
   const draw = status.kind === 'draw'
@@ -311,7 +321,7 @@ function ResultModal({
       <div className={`modal result-modal result-modal--${tone}`} onClick={(e) => e.stopPropagation()}>
         <div className="result-modal__title">{title}</div>
         <div className="muted">{sub}</div>
-        <button className="btn btn--primary" onClick={onAgain}>
+        <button className="btn btn--primary" onClick={onAgain} disabled={againBusy}>
           {againLabel ?? t('result.again')}
         </button>
         <button className="btn btn--ghost btn--sm" onClick={onClose}>
@@ -322,7 +332,8 @@ function ResultModal({
   )
 }
 
-const ROLL_MS = 1000 // how long each die "shuffles" before settling
+const ROLL_MS = 500 // how long each die "shuffles" before settling
+const LEAD_MS = 250 // empty dice shown before the first one starts rolling
 
 // Pip positions on a 3×3 grid (cells 1‑9) for each face value.
 const PIP_MAP: Record<number, number[]> = {

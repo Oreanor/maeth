@@ -127,6 +127,16 @@
     "again": "Nochmal",
     "viewBoard": "Brett ansehen"
   },
+  "stats": {
+    "title": "Statistik",
+    "player": "Spieler",
+    "wins": "Siege",
+    "losses": "Niederlagen",
+    "draws": "Remis",
+    "loading": "Statistik wird geladen…",
+    "empty": "Noch keine Spiele gespielt.",
+    "errLoad": "Statistik konnte nicht geladen werden"
+  },
   "friends": {
     "title": "Freunde",
     "loading": "Kontakte werden geladen…",

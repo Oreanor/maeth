@@ -112,6 +112,18 @@
   width: auto;
   display: block;
 }
+.topbar__logo-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.screen__title {
+  margin: 0;
+  font-size: 22px;
+}
 .topbar__right {
   display: flex;
   align-items: center;
@@ -441,6 +453,34 @@
   display: flex;
   gap: 6px;
 }
+/* leaderboard table */
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.stats-table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 6px;
+}
+.stats-table th:first-child {
+  text-align: left;
+}
+.stats-table td {
+  padding: 9px 6px;
+  text-align: center;
+  border-top: 1px solid rgba(127, 127, 127, 0.14);
+}
+.stats-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.stats-table__name {
+  overflow-wrap: anywhere;
+}
+
 /* the whole game row except the trash is one big "enter" button */
 .list__item-enter {
   flex: 1;

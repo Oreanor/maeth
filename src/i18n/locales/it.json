@@ -127,6 +127,16 @@
     "again": "Gioca ancora",
     "viewBoard": "Vedi la scacchiera"
   },
+  "stats": {
+    "title": "Statistiche",
+    "player": "Giocatore",
+    "wins": "Vittorie",
+    "losses": "Sconfitte",
+    "draws": "Pareggi",
+    "loading": "Caricamento statistiche…",
+    "empty": "Ancora nessuna partita giocata.",
+    "errLoad": "Impossibile caricare le statistiche"
+  },
   "friends": {
     "title": "Amici",
     "loading": "Caricamento contatti…",

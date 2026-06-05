@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { legalMovesFrom, placePiece, placementCells, resolveMove } from '../../../src/game/engine.js'
 import type { Color, GameState } from '../../../src/game/types.js'
 import { json, method, requireAuth, unwrap, unwrapOne, withApiError } from '../../_lib/http.js'
@@ -70,6 +71,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('id', id),
   )
 
+  // On game over, write a durable result row so the leaderboard survives the
+  // game later being deleted. Idempotent via the unique game_id.
+  if (nextStatus === 'over') {
+    await recordResult(auth.db, id, result.state.status)
+  }
+
   const savedAction = unwrap(
     await auth.db
       .from('game_actions')
@@ -101,6 +108,24 @@ function applyAction(state: GameState, action: ActionBody): { state: GameState; 
   if (!move) return null
   const { next, duel } = resolveMove(state, move)
   return { state: next, duel }
+}
+
+// Persist the finished game's outcome (winner colour or draw) with the two
+// players, decoupled from the game row so deleting the game keeps the stat.
+async function recordResult(db: SupabaseClient, gameId: string, status: GameState['status']) {
+  if (status.kind === 'playing') return
+  const players = (unwrap(
+    await db.from('game_players').select('user_id, color').eq('game_id', gameId),
+  ) ?? []) as { user_id: string; color: Color }[]
+  const white = players.find((p) => p.color === 'white')?.user_id
+  const black = players.find((p) => p.color === 'black')?.user_id
+  if (!white || !black) return
+  const outcome = status.kind === 'win' ? status.winner : 'draw'
+  unwrap(
+    await db
+      .from('game_results')
+      .upsert({ game_id: gameId, white_id: white, black_id: black, outcome }, { onConflict: 'game_id', ignoreDuplicates: true }),
+  )
 }
 
 function parseAction(body: unknown): ActionBody | null {

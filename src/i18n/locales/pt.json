@@ -127,6 +127,16 @@
     "again": "Jogar de novo",
     "viewBoard": "Ver o tabuleiro"
   },
+  "stats": {
+    "title": "Estatísticas",
+    "player": "Jogador",
+    "wins": "Vitórias",
+    "losses": "Derrotas",
+    "draws": "Empates",
+    "loading": "Carregando estatísticas…",
+    "empty": "Nenhum jogo jogado ainda.",
+    "errLoad": "Não foi possível carregar as estatísticas"
+  },
   "friends": {
     "title": "Amigos",
     "loading": "Carregando contatos…",

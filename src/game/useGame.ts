@@ -42,9 +42,9 @@ const ANIM_DUEL_MS = 650 // just the arrow; the dice then roll in the modal
 const PICK_REVEAL_MS = 1000
 const PICK_CLOSE_MS = 300
 const PICK_OPEN_DELAY_MS = 1000
-// The bot fakes deliberation: a random 2–4s before it "clicks" Choose, a slow
+// The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
 // (~2× the old delay) placement, and a 2–3s idle "think" before each move.
-const botPickDelay = () => 2000 + Math.random() * 2000
+const botPickDelay = () => 1000 + Math.random() * 1000
 const botPlaceDelay = () => 900 + Math.random() * 700
 const botMoveDelay = () => 1800 + Math.random() * 1300
 

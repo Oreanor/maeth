@@ -143,7 +143,9 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   }, [gameId])
 
   useEffect(() => {
-    if (!game || game.status === 'over' || game.status === 'cancelled') return
+    // Keep polling finished games too, so the loser/opponent picks up a rematch
+    // pointer and follows it. Only a cancelled game truly stops.
+    if (!game || game.status === 'cancelled') return
     const timer = window.setInterval(() => {
       if (submittingRef.current) return // don't overwrite an optimistic update mid-flight
       refresh().catch((e) => setError(e instanceof Error ? e.message : tRef.current('game.errRefresh')))

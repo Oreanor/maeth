@@ -127,6 +127,16 @@
     "again": "Play again",
     "viewBoard": "View the board"
   },
+  "stats": {
+    "title": "Statistics",
+    "player": "Player",
+    "wins": "Wins",
+    "losses": "Losses",
+    "draws": "Draws",
+    "loading": "Loading statistics…",
+    "empty": "No games played yet.",
+    "errLoad": "Could not load statistics"
+  },
   "friends": {
     "title": "Friends",
     "loading": "Loading contacts…",

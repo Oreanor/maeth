@@ -20,8 +20,13 @@ create table if not exists public.games (
   state jsonb not null,
   created_by uuid not null references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  -- Points to the follow-up game once a rematch is started.
+  rematch_id uuid references public.games(id) on delete set null
 );
+
+-- Migration for existing databases:
+--   alter table public.games add column if not exists rematch_id uuid references public.games(id) on delete set null;
 
 create table if not exists public.game_players (
   game_id uuid not null references public.games(id) on delete cascade,
@@ -64,7 +69,39 @@ create table if not exists public.game_actions (
   created_at timestamptz not null default now()
 );
 
+-- Immutable record of every finished match, kept separate from `games` so the
+-- leaderboard survives players deleting their old games. `game_id` keeps no
+-- cascade — deleting the game nulls it but the result stays.
+create table if not exists public.game_results (
+  id bigserial primary key,
+  game_id uuid references public.games(id) on delete set null,
+  white_id uuid not null references public.profiles(id) on delete cascade,
+  black_id uuid not null references public.profiles(id) on delete cascade,
+  outcome text not null check (outcome in ('white', 'black', 'draw')),
+  created_at timestamptz not null default now(),
+  unique (game_id)
+);
+
+-- Migration for existing databases:
+--   create table if not exists public.game_results (...as above...);
+--   alter table public.game_results enable row level security;
+--   create policy "game results are readable by authenticated users"
+--     on public.game_results for select to authenticated using (true);
+-- Backfill from games already finished before this table existed:
+--   insert into public.game_results (game_id, white_id, black_id, outcome, created_at)
+--   select g.id, wp.user_id, bp.user_id,
+--          case when g.state->'status'->>'kind' = 'draw' then 'draw'
+--               else g.state->'status'->>'winner' end,
+--          g.updated_at
+--   from public.games g
+--   join public.game_players wp on wp.game_id = g.id and wp.color = 'white'
+--   join public.game_players bp on bp.game_id = g.id and bp.color = 'black'
+--   where g.status = 'over'
+--   on conflict (game_id) do nothing;
+
 create index if not exists game_players_user_id_idx on public.game_players(user_id);
+create index if not exists game_results_white_idx on public.game_results(white_id);
+create index if not exists game_results_black_idx on public.game_results(black_id);
 create index if not exists game_invites_game_id_idx on public.game_invites(game_id);
 create index if not exists game_actions_game_id_idx on public.game_actions(game_id);
 
@@ -73,9 +110,15 @@ alter table public.games enable row level security;
 alter table public.game_players enable row level security;
 alter table public.game_invites enable row level security;
 alter table public.game_actions enable row level security;
+alter table public.game_results enable row level security;
 
 create policy "profiles are readable by authenticated users"
   on public.profiles for select
+  to authenticated
+  using (true);
+
+create policy "game results are readable by authenticated users"
+  on public.game_results for select
   to authenticated
   using (true);
 

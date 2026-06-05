@@ -44,7 +44,10 @@
       "Bash(C:/Users/User01/AppData/Local/Python/pythoncore-3.14-64/python.exe --version)",
       "Bash(C:/Users/User01/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pip install Pillow --quiet)",
       "Bash($PY *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

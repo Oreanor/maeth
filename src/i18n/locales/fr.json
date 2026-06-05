@@ -127,6 +127,16 @@
     "again": "Rejouer",
     "viewBoard": "Voir le plateau"
   },
+  "stats": {
+    "title": "Statistiques",
+    "player": "Joueur",
+    "wins": "Victoires",
+    "losses": "Défaites",
+    "draws": "Nuls",
+    "loading": "Chargement des statistiques…",
+    "empty": "Aucune partie jouée.",
+    "errLoad": "Impossible de charger les statistiques"
+  },
   "friends": {
     "title": "Amis",
     "loading": "Chargement des contacts…",

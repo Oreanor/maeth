@@ -9,6 +9,8 @@ export interface ApiGame {
   state: GameState
   created_at?: string
   updated_at?: string
+  /** Set once a rematch has been started — points to the follow-up game. */
+  rematch_id?: string | null
 }
 
 export interface ApiPlayer {
@@ -73,6 +75,19 @@ export async function listFriends(): Promise<{ friends: Friend[] }> {
   return apiFetch('/api/friends')
 }
 
+export interface PlayerStats {
+  id: string
+  name: string
+  avatarUrl: string | null
+  wins: number
+  losses: number
+  draws: number
+}
+
+export async function getStats(): Promise<{ players: PlayerStats[] }> {
+  return apiFetch('/api/stats')
+}
+
 export async function createGame(
   options: { invitedUserId?: string; invitedEmail?: string } = {},
 ): Promise<{
@@ -97,6 +112,12 @@ export async function getGame(id: string): Promise<{
 
 export async function joinGame(id: string): Promise<{ player: ApiPlayer }> {
   return apiFetch(`/api/games/${id}/join`, { method: 'POST' })
+}
+
+/** Start (or fetch the existing) rematch of a finished game — a brand-new game
+ *  with the same two players, so each match counts on its own in the stats. */
+export async function rematchGame(id: string): Promise<{ gameId: string }> {
+  return apiFetch(`/api/games/${id}/rematch`, { method: 'POST' })
 }
 
 export async function deleteGame(id: string): Promise<{ ok: true }> {

@@ -1,9 +1,8 @@
-import { HelpCircle, Play, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Play, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
-import { UserMenu } from '@/components/UserMenu'
-import logoMaeth from '@/assets/logo-maeth.png'
+import { AppHeader } from '@/components/AppHeader'
 import { RulesModal } from '@/components/RulesModal'
 import { CreateGameModal, type CreateChoice } from '@/components/CreateGameModal'
 import { ShareLinkModal } from '@/components/ShareLinkModal'
@@ -187,20 +186,7 @@ export function LobbyScreen() {
 
   return (
     <div className="screen">
-      <header className="topbar">
-        <img className="topbar__logo" src={logoMaeth} alt="Maeth" />
-        <div className="topbar__right">
-          <button
-            className="icon-btn"
-            onClick={() => setRulesOpen(true)}
-            aria-label={t('lobby.help')}
-            title={t('lobby.help')}
-          >
-            <HelpCircle size={18} />
-          </button>
-          <UserMenu name={user?.name} onLogout={logout} />
-        </div>
-      </header>
+      <AppHeader name={user?.name} onLogout={logout} onHelp={() => setRulesOpen(true)} />
 
       <button
         className="btn btn--primary btn--block btn--icon-text"

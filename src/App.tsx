@@ -4,6 +4,7 @@ import { useI18n } from '@/i18n'
 import { LoginScreen } from '@/screens/LoginScreen'
 import { LobbyScreen } from '@/screens/LobbyScreen'
 import { FriendsScreen } from '@/screens/FriendsScreen'
+import { StatsScreen } from '@/screens/StatsScreen'
 import { GameScreen } from '@/screens/GameScreen'
 import type { JSX } from 'react'
 
@@ -40,6 +41,14 @@ export function App() {
         element={
           <RequireAuth>
             <FriendsScreen />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/stats"
+        element={
+          <RequireAuth>
+            <StatsScreen />
           </RequireAuth>
         }
       />

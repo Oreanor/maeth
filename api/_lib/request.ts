@@ -20,6 +20,14 @@ export function parseInvitedUserId(body: unknown): string | undefined {
   return typeof record.invitedUserId === 'string' ? record.invitedUserId : undefined
 }
 
+/** Extract an optional, normalised `invitedEmail` shared by create-game/invite bodies. */
+export function parseInvitedEmail(body: unknown): string | undefined {
+  const record = readJsonBody(body)
+  if (!record || typeof record.invitedEmail !== 'string') return undefined
+  const email = record.invitedEmail.trim().toLowerCase()
+  return email.length > 0 ? email : undefined
+}
+
 function safeJson(value: string): unknown {
   try {
     return JSON.parse(value)

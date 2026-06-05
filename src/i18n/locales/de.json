@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Lädt…",
+    "you": "Du",
+    "bot": "Bot",
+    "friend": "Freund",
+    "back": "← Zurück",
+    "refresh": "Aktualisieren",
+    "close": "Schließen"
+  },
+  "login": {
+    "subtitle": "Maeth — ein altes elbisches Brettspiel",
+    "google": "Mit Google anmelden",
+    "guest": "Als Gast spielen",
+    "googleError": "Anmeldung mit Google fehlgeschlagen",
+    "needConfig": "Für die Google-Anmeldung VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY ausfüllen."
+  },
+  "lobby": {
+    "logout": "Abmelden",
+    "create": "Spiel erstellen",
+    "playFriend": "👥 Mit einem Freund spielen",
+    "playBot": "🤖 Gegen den Bot spielen",
+    "yourGames": "Deine Spiele",
+    "invites": "Einladungen",
+    "noInvites": "Keine neuen Einladungen.",
+    "noGames": "Noch keine aktiven Spiele.",
+    "loadingGames": "Spiele werden geladen…",
+    "invitesYou": "lädt dich zum Spielen ein",
+    "accept": "Annehmen",
+    "accepting": "Beitreten…",
+    "continueGame": "Fortsetzen",
+    "delete": "Löschen",
+    "deleting": "Löschen…",
+    "vs": "gegen {name}",
+    "confirmDelete": "Dieses Spiel löschen? Es verschwindet für beide Spieler.",
+    "errLoad": "Spiele konnten nicht geladen werden",
+    "errCreate": "Spiel konnte nicht erstellt werden",
+    "errAccept": "Einladung konnte nicht angenommen werden",
+    "errDelete": "Spiel konnte nicht gelöscht werden",
+    "help": "Spielanleitung",
+    "theme": "Design",
+    "language": "Sprache"
+  },
+  "create": {
+    "optOpen": "Offenes Spiel",
+    "optOpenHint": "Jeder mit dem Link kann beitreten",
+    "optFriend": "Freund einladen",
+    "optBot": "Gegen den Bot spielen",
+    "selectFriend": "Freund auswählen",
+    "orEmail": "oder E-Mail eines neuen Freundes",
+    "emailPlaceholder": "email@example.com",
+    "noFriends": "Deine Freundesliste ist leer",
+    "submit": "Erstellen",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt…"
+  },
+  "invitePopup": {
+    "title": "Du hast eine neue Einladung",
+    "body": "{name} lädt dich zum Spielen ein",
+    "enter": "Spiel beitreten",
+    "later": "Später"
+  },
+  "status": {
+    "waiting": "wartet auf einen Freund",
+    "active": "läuft",
+    "over": "beendet"
+  },
+  "rules": {
+    "title": "Spielanleitung",
+    "body": "Phase 1 — Draft: Zieht abwechselnd blind eine Figur und setzt sie auf ein beliebiges freies Feld, 4 pro Seite. Phase 2 — Züge: Jede Figur zieht höchstens einmal (gleitet in ihren Richtungen bis zu ihrer Reichweite). Schlägst du eine Figur, die auch dich bedroht, gibt es ein Würfelduell (du musst mindestens gleich hoch würfeln). Ziel ist es, möglichst viele gegnerische Figuren zu schlagen. Wer mehr schlägt, gewinnt."
+  },
+  "game": {
+    "exit": "Spiel verlassen",
+    "waitingPlayer": "Warten auf den zweiten Spieler…",
+    "placePiece": "Platziere deine Figur: {piece}",
+    "yourDraft": "Du bist dran — ziehe eine Figur",
+    "restart": "Neu starten",
+    "waitingOpponent": "wartet auf einen Freund",
+    "inviteTitle": "Einladung",
+    "inviteHint": "Sende den Link an einen Freund. Das Spiel beginnt, sobald er sich mit Google anmeldet.",
+    "copyLink": "Link kopieren",
+    "copied": "Kopiert",
+    "captured": "geschlagen",
+    "thinking": "denkt nach…",
+    "loadingGame": "Spiel wird geladen…",
+    "notFound": "Spiel nicht gefunden",
+    "toLobby": "Zur Lobby",
+    "placed": "Gesetzt: du {me}/{total} · Gegner {opp}/{total}",
+    "youDrew": "Du hast gezogen:",
+    "draftHint": "Feld antippen/darüberfahren — Pfeile zeigen die Züge; erneut tippen zum Setzen",
+    "opponentPlacing": "Gegner setzt…",
+    "yourTurn": "Du bist dran — wähle eine Figur",
+    "opponentTurn": "Gegner ist am Zug",
+    "errLoadGame": "Spiel konnte nicht geladen werden",
+    "errRefresh": "Spiel konnte nicht aktualisiert werden",
+    "errPlace": "Figur konnte nicht gesetzt werden",
+    "errMove": "Zug konnte nicht ausgeführt werden"
+  },
+  "draft": {
+    "picking": "Figur wird gezogen",
+    "choose": "Wählen",
+    "tapToChoose": "Tippen zum Wählen",
+    "opponentPicking": "{name} wählt…",
+    "yourPiece": "Deine Figur",
+    "oppPiece": "Figur von {name}"
+  },
+  "presence": {
+    "inGame": "Im Spiel",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "duel": {
+    "title": "⚔️ Duell",
+    "attack": "{name} · Angriff",
+    "defense": "{name} · Verteidigung",
+    "success": "Treffer!",
+    "miss": "Daneben!",
+    "rolling": "würfeln…"
+  },
+  "result": {
+    "draw": "🤝 Unentschieden",
+    "win": "🎉 Du hast gewonnen!",
+    "loss": "😞 Niederlage",
+    "drawSub": "Gleich viele geschlagene Figuren",
+    "winSub": "Du hast mehr Figuren geschlagen",
+    "lossSub": "Der Gegner hat mehr geschlagen",
+    "again": "Nochmal",
+    "viewBoard": "Brett ansehen"
+  },
+  "friends": {
+    "title": "Freunde",
+    "loading": "Kontakte werden geladen…",
+    "emptyGoogle": "Noch keine anderen Google-Spieler. Sobald ein Freund Maeth beitritt, erscheint er hier.",
+    "empty": "Keine Freunde gefunden.",
+    "googlePlayer": "Google-Spieler",
+    "invite": "Einladen",
+    "inviting": "Wird erstellt…",
+    "errLoad": "Freunde konnten nicht geladen werden",
+    "errCreate": "Einladung konnte nicht erstellt werden"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "es": "Español",
+    "it": "Italiano"
+  }
+}

@@ -42,18 +42,24 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const invite = unwrap(
     await auth.db
       .from('game_invites')
-      .select('id, invited_user_id')
+      .select('id, invited_user_id, invited_email')
       .eq('game_id', id)
       .eq('status', 'open')
       .maybeSingle(),
-  )
+  ) as { id: string; invited_user_id: string | null; invited_email: string | null } | null
 
   if (!invite) {
     json(res, 409, { error: 'Invite is not available' })
     return
   }
 
-  if (invite.invited_user_id && invite.invited_user_id !== auth.user.id) {
+  // Open (link) invites have no target and accept anyone. Targeted invites must
+  // match either the invited user id or the invited email of this account.
+  const selfEmail = auth.user.email?.toLowerCase()
+  const userMatch = invite.invited_user_id === auth.user.id
+  const emailMatch = Boolean(invite.invited_email && selfEmail && invite.invited_email.toLowerCase() === selfEmail)
+  const isTargeted = Boolean(invite.invited_user_id || invite.invited_email)
+  if (isTargeted && !userMatch && !emailMatch) {
     json(res, 403, { error: 'This invite is for another player' })
     return
   }

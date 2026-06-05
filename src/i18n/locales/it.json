@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Caricamento…",
+    "you": "Tu",
+    "bot": "Bot",
+    "friend": "Amico",
+    "back": "← Indietro",
+    "refresh": "Aggiorna",
+    "close": "Chiudi"
+  },
+  "login": {
+    "subtitle": "Maeth — un antico gioco da tavolo elfico",
+    "google": "Accedi con Google",
+    "guest": "Gioca come ospite",
+    "googleError": "Accesso con Google non riuscito",
+    "needConfig": "Per l'accesso con Google, imposta VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY."
+  },
+  "lobby": {
+    "logout": "Esci",
+    "create": "Crea partita",
+    "playFriend": "👥 Gioca con un amico",
+    "playBot": "🤖 Gioca contro il bot",
+    "yourGames": "Le tue partite",
+    "invites": "Inviti",
+    "noInvites": "Nessun nuovo invito.",
+    "noGames": "Ancora nessuna partita attiva.",
+    "loadingGames": "Caricamento partite…",
+    "invitesYou": "ti invita a giocare",
+    "accept": "Accetta",
+    "accepting": "Accesso…",
+    "continueGame": "Continua",
+    "delete": "Elimina",
+    "deleting": "Eliminazione…",
+    "vs": "contro {name}",
+    "confirmDelete": "Eliminare questa partita? Sparirà per entrambi i giocatori.",
+    "errLoad": "Impossibile caricare le partite",
+    "errCreate": "Impossibile creare la partita",
+    "errAccept": "Impossibile accettare l'invito",
+    "errDelete": "Impossibile eliminare la partita",
+    "help": "Come si gioca",
+    "theme": "Tema",
+    "language": "Lingua"
+  },
+  "create": {
+    "optOpen": "Partita aperta",
+    "optOpenHint": "Chiunque abbia il link può unirsi",
+    "optFriend": "Invita un amico",
+    "optBot": "Gioca contro il bot",
+    "selectFriend": "Scegli un amico",
+    "orEmail": "o l'e-mail di un nuovo amico",
+    "emailPlaceholder": "email@example.com",
+    "noFriends": "La tua lista amici è vuota",
+    "submit": "Crea",
+    "cancel": "Annulla",
+    "creating": "Creazione…"
+  },
+  "invitePopup": {
+    "title": "Hai un nuovo invito",
+    "body": "{name} ti invita a giocare",
+    "enter": "Entra nella partita",
+    "later": "Più tardi"
+  },
+  "status": {
+    "waiting": "in attesa di un amico",
+    "active": "in corso",
+    "over": "terminata"
+  },
+  "rules": {
+    "title": "Come si gioca",
+    "body": "Fase 1 — draft: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato. Fase 2 — mosse: ogni pedina si muove al massimo una volta (scivola nelle sue direzioni fino alla sua portata). Se catturi una pedina che mira anche a te, è un duello ai dadi (devi fare almeno lo stesso punteggio). L'obiettivo è catturare più pedine avversarie possibile. Chi cattura di più vince."
+  },
+  "game": {
+    "exit": "Esci dalla partita",
+    "waitingPlayer": "In attesa del secondo giocatore…",
+    "placePiece": "Posiziona la tua pedina: {piece}",
+    "yourDraft": "Tocca a te — pesca una pedina",
+    "restart": "Ricomincia",
+    "waitingOpponent": "in attesa di un amico",
+    "inviteTitle": "Invito",
+    "inviteHint": "Invia il link a un amico. La partita inizia quando accede con Google.",
+    "copyLink": "Copia link",
+    "copied": "Copiato",
+    "captured": "catturate",
+    "thinking": "sta pensando…",
+    "loadingGame": "Caricamento partita…",
+    "notFound": "Partita non trovata",
+    "toLobby": "Alla lobby",
+    "placed": "Posizionate: tu {me}/{total} · avversario {opp}/{total}",
+    "youDrew": "Hai pescato:",
+    "draftHint": "passa/tocca una casella — le frecce mostrano le mosse; tocca di nuovo per posizionare",
+    "opponentPlacing": "L'avversario sta posizionando…",
+    "yourTurn": "Tocca a te — scegli una pedina",
+    "opponentTurn": "Turno dell'avversario",
+    "errLoadGame": "Impossibile caricare la partita",
+    "errRefresh": "Impossibile aggiornare la partita",
+    "errPlace": "Impossibile posizionare la pedina",
+    "errMove": "Impossibile eseguire la mossa"
+  },
+  "draft": {
+    "picking": "Estrazione di una pedina",
+    "choose": "Scegli",
+    "tapToChoose": "Tocca per scegliere",
+    "opponentPicking": "{name} sta scegliendo…",
+    "yourPiece": "La tua pedina",
+    "oppPiece": "Pedina di {name}"
+  },
+  "presence": {
+    "inGame": "In partita",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "duel": {
+    "title": "⚔️ Duello",
+    "attack": "{name} · attacco",
+    "defense": "{name} · difesa",
+    "success": "Colpo a segno!",
+    "miss": "Mancato!",
+    "rolling": "lancio dei dadi…"
+  },
+  "result": {
+    "draw": "🤝 Pareggio",
+    "win": "🎉 Hai vinto!",
+    "loss": "😞 Sconfitta",
+    "drawSub": "Catture pari",
+    "winSub": "Hai catturato più pedine",
+    "lossSub": "L'avversario ne ha catturate di più",
+    "again": "Gioca ancora",
+    "viewBoard": "Vedi la scacchiera"
+  },
+  "friends": {
+    "title": "Amici",
+    "loading": "Caricamento contatti…",
+    "emptyGoogle": "Ancora nessun altro giocatore Google. Quando un amico entra in Maeth, apparirà qui.",
+    "empty": "Nessun amico trovato.",
+    "googlePlayer": "Giocatore Google",
+    "invite": "Invita",
+    "inviting": "Creazione…",
+    "errLoad": "Impossibile caricare gli amici",
+    "errCreate": "Impossibile creare l'invito"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "es": "Español",
+    "it": "Italiano"
+  }
+}

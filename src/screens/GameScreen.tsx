@@ -1,12 +1,47 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { HelpCircle } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Board } from '@/components/Board'
-import { useGame, type DuelEvent } from '@/game/useGame'
-import { PIECES_PER_SIDE, type Color, type GameState } from '@/game/types'
-import { pieceBadge } from '@/game/pieces'
+import { UserMenu } from '@/components/UserMenu'
+import { RulesModal } from '@/components/RulesModal'
+import { useGame, type DuelEvent, type DraftPick } from '@/game/useGame'
+import { type Color, type GameState } from '@/game/types'
+import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
 import { useAuth } from '@/auth/AuthContext'
+import { useI18n } from '@/i18n'
 import { useRemoteGame } from '@/game/useRemoteGame'
+import type { Presence } from '@/lib/api'
+import logoMaeth from '@/assets/logo-maeth.png'
 import './screens.css'
+
+/** In-game header: logo, help and the avatar menu — same controls as the lobby. */
+function GameTopbar({
+  name,
+  onHelp,
+  onLogout,
+}: {
+  name?: string
+  onHelp: () => void
+  onLogout: () => void
+}) {
+  const { t } = useI18n()
+  return (
+    <header className="topbar game-topbar">
+      <img className="topbar__logo" src={logoMaeth} alt="Maeth" />
+      <div className="topbar__right">
+        <button
+          className="icon-btn"
+          onClick={onHelp}
+          aria-label={t('lobby.help')}
+          title={t('lobby.help')}
+        >
+          <HelpCircle size={18} />
+        </button>
+        <UserMenu name={name} onLogout={onLogout} />
+      </div>
+    </header>
+  )
+}
 
 interface PlayConfig {
   vsBot: boolean
@@ -17,9 +52,10 @@ interface PlayConfig {
 export function GameScreen() {
   const location = useLocation()
   const { gameId } = useParams()
+  const { t } = useI18n()
   const config = (location.state as PlayConfig | null) ?? {
     vsBot: true,
-    opponentName: 'Бот',
+    opponentName: t('common.bot'),
     humanColor: 'white',
   }
   if (gameId) {
@@ -31,7 +67,8 @@ export function GameScreen() {
 
 function LocalGameScreen({ config }: { config: PlayConfig }) {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const { t } = useI18n()
   const human = config.humanColor
   const bot: Color = human === 'white' ? 'black' : 'white'
 
@@ -41,18 +78,22 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     selected,
     legalTargets,
     selectedMoves,
+    movableCells,
     placementTargets,
     previewCell,
     pendingDef,
+    draftPick,
+    confirmDraftPick,
+    lastPlaced,
     duel,
     anim,
     isHumanTurn,
-    thinking,
   } = game
 
   // The result modal can be dismissed to inspect the final board; it returns
   // when a new game ends.
   const [resultClosed, setResultClosed] = useState(false)
+  const [rulesOpen, setRulesOpen] = useState(false)
   useEffect(() => {
     if (state.phase !== 'over') setResultClosed(false)
   }, [state.phase])
@@ -60,29 +101,23 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
 
   return (
     <div className="screen screen--game">
-      <header className="topbar">
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/')}>
-          ← Выход
-        </button>
-        <h2 className="topbar__title">vs {config.opponentName}</h2>
-        <button className="btn btn--ghost btn--sm" onClick={game.reset}>
-          Заново
-        </button>
-      </header>
+      <GameTopbar name={user?.name} onHelp={() => setRulesOpen(true)} onLogout={logout} />
 
       <Scoreboard
         state={state}
         human={human}
         bot={bot}
         opponentName={config.opponentName}
-        youName={user?.name ?? 'Вы'}
+        youName={user?.name ?? t('common.you')}
       />
 
-      <PlayerTag
-        name={config.opponentName}
-        color={bot}
-        active={state.phase !== 'over' && state.turn === bot}
-        thinking={thinking}
+      <StatusBar
+        phase={state.phase}
+        isHumanTurn={isHumanTurn}
+        waiting={false}
+        pendingLabel={
+          pendingDef ? `${pendingDef.emoji} ${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null
+        }
       />
 
       <Board
@@ -90,7 +125,9 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         selected={selected}
         legalTargets={legalTargets}
         selectedMoves={selectedMoves}
-        placementTargets={isHumanTurn ? placementTargets : []}
+        placementTargets={pendingDef ? placementTargets : []}
+        lastPlaced={state.phase === 'draft' ? lastPlaced : null}
+        movable={isHumanTurn && !anim && !duel ? movableCells : []}
         previewCell={previewCell}
         previewKind={previewCell != null && pendingDef ? pendingDef.kind : null}
         previewOwner={human}
@@ -102,28 +139,22 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         interactive={isHumanTurn && !anim && !duel}
       />
 
-      <PlayerTag
-        name={user?.name ?? 'Вы'}
-        color={human}
-        active={state.phase !== 'over' && state.turn === human}
-        thinking={false}
-      />
+      <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
+        {t('game.exit')}
+      </button>
 
-      <Panel
-        state={state}
+      <DraftPickModal
+        pick={draftPick}
         human={human}
-        isHumanTurn={isHumanTurn}
-        pending={
-          pendingDef
-            ? { label: `${pendingDef.emoji} ${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` }
-            : null
-        }
+        opponentName={config.opponentName}
+        onConfirm={confirmDraftPick}
       />
 
       <DuelModal
         duel={duel}
+        pending={false}
         human={human}
-        youName={user?.name ?? 'Вы'}
+        youName={user?.name ?? t('common.you')}
         opponentName={config.opponentName}
         onClose={game.dismissDuel}
       />
@@ -136,21 +167,24 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
           onClose={() => setResultClosed(true)}
         />
       )}
+
+      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
     </div>
   )
 }
 
 function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConfig }) {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const { t } = useI18n()
   const remote = useRemoteGame(gameId)
-  const [copied, setCopied] = useState(false)
   const [resultClosed, setResultClosed] = useState(false)
+  const [rulesOpen, setRulesOpen] = useState(false)
 
   if (remote.loading) {
     return (
       <div className="screen screen--center">
-        <p className="muted">Загрузка игры…</p>
+        <p className="muted">{t('game.loadingGame')}</p>
       </div>
     )
   }
@@ -158,9 +192,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   if (!remote.state || !remote.player) {
     return (
       <div className="screen screen--center">
-        <p className="muted">{remote.error ?? 'Игра не найдена'}</p>
+        <p className="muted">{remote.error ?? t('game.notFound')}</p>
         <button className="btn" onClick={() => navigate('/')}>
-          В лобби
+          {t('game.toLobby')}
         </button>
       </div>
     )
@@ -170,53 +204,34 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const human = remote.player.color
   const opponentColor: Color = human === 'white' ? 'black' : 'white'
   const opponent = remote.players.find((p) => p.color === opponentColor)
-  const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? 'Друг'
+  const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
   const waiting = remote.game?.status === 'waiting'
-  const inviteUrl = `${window.location.origin}/play/${gameId}`
   const showResult = state.phase === 'over' && !resultClosed
-
-  const copyInvite = async () => {
-    await navigator.clipboard.writeText(inviteUrl)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1600)
-  }
 
   return (
     <div className="screen screen--game">
-      <header className="topbar">
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/')}>
-          ← Выход
-        </button>
-        <h2 className="topbar__title">vs {waiting ? 'ожидаем друга' : opponentName}</h2>
-        <button className="btn btn--ghost btn--sm" onClick={() => void remote.refresh()}>
-          Обновить
-        </button>
-      </header>
+      <GameTopbar name={user?.name} onHelp={() => setRulesOpen(true)} onLogout={logout} />
 
-      {waiting && (
-        <section className="card invite-card">
-          <h3>Приглашение</h3>
-          <p className="muted tiny">Отправьте ссылку другу. Когда он войдет через Google, игра начнется.</p>
-          <code className="invite-link">{inviteUrl}</code>
-          <button className="btn btn--sm" onClick={copyInvite}>
-            {copied ? 'Скопировано' : 'Скопировать ссылку'}
-          </button>
-        </section>
-      )}
+      {remote.error && <p className="muted tiny">{remote.error}</p>}
 
       <Scoreboard
         state={state}
         human={human}
         bot={opponentColor}
         opponentName={opponentName}
-        youName={user?.name ?? 'Вы'}
+        youName={user?.name ?? t('common.you')}
+        opponentPresence={opponent?.presence ?? null}
       />
 
-      <PlayerTag
-        name={opponentName}
-        color={opponentColor}
-        active={state.phase !== 'over' && state.turn === opponentColor}
-        thinking={waiting}
+      <StatusBar
+        phase={state.phase}
+        isHumanTurn={remote.isHumanTurn && !waiting}
+        waiting={waiting}
+        pendingLabel={
+          remote.pendingDef
+            ? `${remote.pendingDef.emoji} ${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
+            : null
+        }
       />
 
       <Board
@@ -224,7 +239,8 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         selected={remote.selected}
         legalTargets={remote.legalTargets}
         selectedMoves={remote.selectedMoves}
-        placementTargets={remote.isHumanTurn ? remote.placementTargets : []}
+        placementTargets={remote.pendingDef ? remote.placementTargets : []}
+        movable={remote.isHumanTurn && !waiting && !remote.duel && !remote.thinking ? remote.movableCells : []}
         previewCell={remote.previewCell}
         previewKind={remote.previewCell != null && remote.pendingDef ? remote.pendingDef.kind : null}
         previewOwner={human}
@@ -233,33 +249,25 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         onCellClick={remote.onCell}
         onCellEnter={remote.onCellEnter}
         onBoardLeave={remote.clearPreview}
-        interactive={remote.isHumanTurn && !waiting && !remote.duel}
+        interactive={remote.isHumanTurn && !waiting && !remote.duel && !remote.thinking}
       />
 
-      <PlayerTag
-        name={user?.name ?? 'Вы'}
-        color={human}
-        active={state.phase !== 'over' && state.turn === human}
-        thinking={false}
-      />
+      <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
+        {t('game.exit')}
+      </button>
 
-      <Panel
-        state={state}
+      <DraftPickModal
+        pick={remote.draftPick}
         human={human}
-        isHumanTurn={remote.isHumanTurn && !waiting}
-        pending={
-          remote.pendingDef
-            ? { label: `${remote.pendingDef.emoji} ${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}` }
-            : null
-        }
+        opponentName={opponentName}
+        onConfirm={remote.confirmDraftPick}
       />
-
-      {remote.error && <p className="muted tiny">{remote.error}</p>}
 
       <DuelModal
         duel={remote.duel}
+        pending={remote.duelPending}
         human={human}
-        youName={user?.name ?? 'Вы'}
+        youName={user?.name ?? t('common.you')}
         opponentName={opponentName}
         onClose={remote.dismissDuel}
       />
@@ -270,9 +278,11 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
           human={human}
           onAgain={() => navigate('/')}
           onClose={() => setResultClosed(true)}
-          againLabel="В лобби"
+          againLabel={t('game.toLobby')}
         />
       )}
+
+      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
     </div>
   )
 }
@@ -282,7 +292,7 @@ function ResultModal({
   human,
   onAgain,
   onClose,
-  againLabel = 'Ещё раз',
+  againLabel,
 }: {
   status: GameState['status']
   human: Color
@@ -290,20 +300,22 @@ function ResultModal({
   onClose: () => void
   againLabel?: string
 }) {
+  const { t } = useI18n()
   const draw = status.kind === 'draw'
   const won = status.kind === 'win' && status.winner === human
-  const title = draw ? '🤝 Ничья' : won ? '🎉 Вы победили!' : '😞 Поражение'
+  const title = draw ? t('result.draw') : won ? t('result.win') : t('result.loss')
+  const sub = draw ? t('result.drawSub') : won ? t('result.winSub') : t('result.lossSub')
   const tone = draw ? 'neutral' : won ? 'good' : 'bad'
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className={`modal result-modal result-modal--${tone}`} onClick={(e) => e.stopPropagation()}>
         <div className="result-modal__title">{title}</div>
-        <div className="muted">{draw ? 'Поровну побитых фигур' : won ? 'Вы побили больше фигур' : 'Соперник побил больше'}</div>
+        <div className="muted">{sub}</div>
         <button className="btn btn--primary" onClick={onAgain}>
-          {againLabel}
+          {againLabel ?? t('result.again')}
         </button>
         <button className="btn btn--ghost btn--sm" onClick={onClose}>
-          Посмотреть доску
+          {t('result.viewBoard')}
         </button>
       </div>
     </div>
@@ -350,29 +362,122 @@ function Die3D({
   )
 }
 
+// The blind-draw reveal: remaining portraits riffle past; on your turn you tap
+// anywhere to stop them, then the drawn piece lingers before the modal closes.
+function DraftPickModal({
+  pick,
+  human,
+  opponentName,
+  onConfirm,
+}: {
+  pick: DraftPick | null
+  human: Color
+  opponentName: string
+  onConfirm: () => void
+}) {
+  const { t } = useI18n()
+  const [spin, setSpin] = useState<PieceKind | null>(null)
+
+  const open = !!pick
+  const settled = pick?.settled ?? null
+  const pool = pick?.pool ?? []
+
+  // Riffle through the remaining pieces until the draw settles.
+  useEffect(() => {
+    if (!open || settled) return
+    const id = setInterval(() => {
+      setSpin(pool[Math.floor(Math.random() * pool.length)] ?? null)
+    }, 90)
+    return () => clearInterval(id)
+  }, [open, settled, pool])
+
+  if (!pick) return null
+  const isYou = pick.by === human
+  const closing = !!pick.closing
+  const def = settled ? PIECES[settled] : spin ? PIECES[spin] : null
+  // While it's your turn and the carousel is still spinning, the whole modal is
+  // a tap target that settles the draw.
+  const tappable = isYou && !settled && !closing
+
+  return (
+    <div className={`modal-backdrop ${closing ? 'modal-backdrop--closing' : ''}`}>
+      <div
+        className={`modal pick-modal ${closing ? 'pick-modal--closing' : ''} ${
+          tappable ? 'pick-modal--tappable' : ''
+        }`}
+        onClick={tappable ? onConfirm : (e) => e.stopPropagation()}
+        role={tappable ? 'button' : undefined}
+      >
+        <div className="pick-modal__title">
+          {settled
+            ? isYou
+              ? t('draft.yourPiece')
+              : t('draft.oppPiece', { name: opponentName })
+            : t('draft.picking')}
+        </div>
+        <div className={`pick-portrait ${settled ? 'pick-portrait--settled' : 'pick-portrait--spin'}`}>
+          <span className="pick-portrait__emoji">{def?.emoji ?? '🎲'}</span>
+        </div>
+        <div className="pick-modal__name">
+          {settled && def ? `${def.name} · ${pieceBadge(def.kind)}` : ' '}
+        </div>
+        <div className="pick-modal__footer">
+          {settled ? null : isYou ? (
+            <div className="muted tiny">{t('draft.tapToChoose')}</div>
+          ) : (
+            <div className="muted tiny">{t('draft.opponentPicking', { name: opponentName })}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DuelModal({
   duel,
+  pending,
   human,
   youName,
   opponentName,
   onClose,
 }: {
   duel: DuelEvent | null
+  pending: boolean
   human: Color
   youName: string
   opponentName: string
   onClose: () => void
 }) {
-  // Sequence: die 1 shuffles then settles, die 2 shuffles then settles, result.
-  const [stage, setStage] = useState<'roll1' | 'roll2' | 'done'>('roll1')
+  const { t } = useI18n()
+  // 'pre' = both dice spin while we wait for the result (hides network latency);
+  // then die 1 settles, die 2 settles, done.
+  const [stage, setStage] = useState<'pre' | 'roll1' | 'roll2' | 'done'>('pre')
   const [face1, setFace1] = useState(0)
   const [face2, setFace2] = useState(0)
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
+  const open = pending || !!duel
+
+  // Reset for the next duel once this one is dismissed.
+  useEffect(() => {
+    if (!open) setStage('pre')
+  }, [open])
+
+  // Pre-roll: keep both dice tumbling until the result is known.
+  useEffect(() => {
+    if (!open || stage !== 'pre') return
+    const i1 = setInterval(() => setFace1(Math.floor(Math.random() * 6)), 80)
+    const i2 = setInterval(() => setFace2(Math.floor(Math.random() * 6)), 80)
+    return () => {
+      clearInterval(i1)
+      clearInterval(i2)
+    }
+  }, [open, stage])
+
+  // Settle once the result arrives: die 1 then die 2.
   useEffect(() => {
     if (!duel) return
     setStage('roll1')
-    const ts = timers.current
+    const ts: ReturnType<typeof setTimeout>[] = []
     const spin1 = setInterval(() => setFace1(Math.floor(Math.random() * 6)), 80)
     ts.push(spin1)
     ts.push(
@@ -392,50 +497,51 @@ function DuelModal({
       }, ROLL_MS),
     )
     return () => {
-      ts.forEach((t) => {
-        clearTimeout(t)
-        clearInterval(t)
+      ts.forEach((tm) => {
+        clearTimeout(tm)
+        clearInterval(tm)
       })
-      timers.current = []
     }
   }, [duel])
 
-  if (!duel) return null
-  const attackerIsYou = duel.by === human
+  if (!open) return null
+  const attackerIsYou = duel ? duel.by === human : true // a pending duel is always your own strike
   const attackerName = attackerIsYou ? youName : opponentName
   const defenderName = attackerIsYou ? opponentName : youName
-  const good = duel.success === attackerIsYou // good for the human?
+  const good = duel ? duel.success === attackerIsYou : false
   const tone = stage !== 'done' ? '' : good ? 'duel-modal--good' : 'duel-modal--bad'
 
   return (
     <div className="modal-backdrop">
       <div className={`modal duel-modal ${tone}`} onClick={(e) => e.stopPropagation()}>
-        <div className="duel-modal__title">⚔️ Дуэль</div>
+        <div className="duel-modal__title">{t('duel.title')}</div>
+        <div className="duel-modal__players">
+          <span className="duel-modal__player">{attackerName}</span>
+          <span className="duel-modal__player">{defenderName}</span>
+        </div>
         <div className="duel-modal__dice">
           <div className="die-box">
-            <Die3D value={face1 + 1} spinning={stage === 'roll1'} />
-            <span className="muted tiny">{attackerName} · атака</span>
+            <Die3D value={face1 + 1} spinning={stage === 'pre' || stage === 'roll1'} />
           </div>
           <span className="duel-modal__vs">vs</span>
           <div className="die-box">
             <Die3D
               value={stage === 'roll1' ? null : face2 + 1}
-              spinning={stage === 'roll2'}
+              spinning={stage === 'pre' || stage === 'roll2'}
               idle={stage === 'roll1'}
             />
-            <span className="muted tiny">{defenderName} · защита</span>
           </div>
         </div>
         <div className="duel-modal__footer">
           {stage === 'done' ? (
             <>
-              <div className="duel-modal__result">{duel.success ? 'Удар прошёл!' : 'Мимо!'}</div>
+              <div className="duel-modal__result">{duel?.success ? t('duel.success') : t('duel.miss')}</div>
               <button className="btn btn--primary" onClick={onClose}>
-                Закрыть
+                {t('common.close')}
               </button>
             </>
           ) : (
-            <div className="muted tiny">бросаем кубики…</div>
+            <div className="muted tiny">{t('duel.rolling')}</div>
           )}
         </div>
       </div>
@@ -449,83 +555,67 @@ function Scoreboard({
   bot,
   opponentName,
   youName,
+  opponentPresence,
 }: {
   state: GameState
   human: Color
   bot: Color
   opponentName: string
   youName: string
+  opponentPresence?: Presence | null
 }) {
+  const { t } = useI18n()
+  const presenceTitle = opponentPresence
+    ? { 'in-game': t('presence.inGame'), online: t('presence.online'), offline: t('presence.offline') }[
+        opponentPresence
+      ]
+    : undefined
   return (
     <div className="score">
-      <div className="score__side">
-        <span className="muted tiny">{youName}</span>
-        <strong>{state.captures[human]}</strong>
+      <div className="score__names">
+        <span className="score__name">{youName}</span>
+        <span className="score__name">
+          {opponentPresence && (
+            <span className={`presence-dot presence-dot--${opponentPresence}`} title={presenceTitle} />
+          )}
+          {opponentName}
+        </span>
       </div>
-      <span className="score__vs">побито</span>
-      <div className="score__side">
-        <span className="muted tiny">{opponentName}</span>
+      <div className="score__nums">
+        <strong>{state.captures[human]}</strong>
+        <span className="score__colon">:</span>
         <strong>{state.captures[bot]}</strong>
       </div>
     </div>
   )
 }
 
-function PlayerTag({
-  name,
-  color,
-  active,
-  thinking,
-}: {
-  name: string
-  color: Color
-  active: boolean
-  thinking: boolean
-}) {
-  return (
-    <div className={`player-tag ${active ? 'player-tag--active' : ''}`}>
-      <span className={`chip chip--${color}`} />
-      <span className="player-tag__name">{name}</span>
-      {thinking && <span className="muted tiny">думает…</span>}
-    </div>
-  )
-}
-
-function Panel({
-  state,
-  human,
+// Single, unified status line covering every phase of the game: waiting for an
+// opponent, the draft, and the move phase — so it is always clear whose turn it
+// is and what is expected next.
+function StatusBar({
+  phase,
   isHumanTurn,
-  pending,
+  waiting,
+  pendingLabel,
 }: {
-  state: GameState
-  human: Color
+  phase: GameState['phase']
   isHumanTurn: boolean
-  pending: { label: string } | null
+  waiting: boolean
+  pendingLabel: string | null
 }) {
-  if (state.phase === 'over') return null // shown as a modal
+  const { t } = useI18n()
+  if (phase === 'over') return null // shown as a modal
 
-  if (state.phase === 'draft') {
-    return (
-      <div className="statusbar statusbar--col">
-        <div className="muted tiny">
-          Расставлено: вы {state.placed[human]}/{PIECES_PER_SIDE} · соперник{' '}
-          {state.placed[human === 'white' ? 'black' : 'white']}/{PIECES_PER_SIDE}
-        </div>
-        {isHumanTurn && pending ? (
-          <div className="draft-pending">
-            <span>Вы вытянули: <strong>{pending.label}</strong></span>
-            <span className="muted tiny">
-              наведите/коснитесь клетки — стрелки покажут ходы; ещё раз, чтобы поставить
-            </span>
-          </div>
-        ) : (
-          <div>Соперник расставляет…</div>
-        )}
-      </div>
-    )
+  let text: string
+  if (waiting) {
+    text = t('game.waitingPlayer')
+  } else if (phase === 'draft') {
+    if (!isHumanTurn) text = t('game.opponentPlacing')
+    else text = pendingLabel ? t('game.placePiece', { piece: pendingLabel }) : t('game.yourDraft')
+  } else {
+    text = isHumanTurn ? t('game.yourTurn') : t('game.opponentTurn')
   }
 
-  return (
-    <div className="statusbar">{isHumanTurn ? 'Ваш ход — выберите фигуру' : 'Ход соперника'}</div>
-  )
+  return <div className="statusbar">{text}</div>
 }

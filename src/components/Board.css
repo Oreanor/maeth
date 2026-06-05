@@ -54,6 +54,19 @@
   box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.55);
 }
 
+/* a piece just landed here — a one-shot ring pulse to draw the eye */
+.cell--placed {
+  animation: cell-placed 1s ease-out;
+}
+@keyframes cell-placed {
+  0% {
+    box-shadow: inset 0 0 0 4px rgba(246, 201, 69, 0.95);
+  }
+  100% {
+    box-shadow: inset 0 0 0 4px rgba(246, 201, 69, 0);
+  }
+}
+
 /* empty cell available for placement during the draft */
 .cell--place::after {
   content: '';
@@ -117,6 +130,29 @@
 
 .piece__emoji {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+/* pieces you can pick up: hover lifts + brightens them, and the emoji shivers.
+   The shiver is on the emoji (not .piece) so leaving hover doesn't restart the
+   piece's drop-in animation. */
+.cell--movable {
+  cursor: pointer;
+}
+.cell--movable:hover .piece {
+  filter: brightness(1.14);
+}
+.cell--movable:hover .piece__emoji {
+  display: inline-block;
+  animation: piece-pulse 0.7s ease-in-out infinite;
+}
+@keyframes piece-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
 }
 
 .piece__badge {

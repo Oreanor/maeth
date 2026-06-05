@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "you": "Vous",
+    "bot": "Bot",
+    "friend": "Ami",
+    "back": "← Retour",
+    "refresh": "Actualiser",
+    "close": "Fermer"
+  },
+  "login": {
+    "subtitle": "Maeth — un ancien jeu de plateau elfique",
+    "google": "Se connecter avec Google",
+    "guest": "Jouer en invité",
+    "googleError": "Échec de la connexion avec Google",
+    "needConfig": "Pour la connexion Google, renseignez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY."
+  },
+  "lobby": {
+    "logout": "Déconnexion",
+    "create": "Créer une partie",
+    "playFriend": "👥 Jouer avec un ami",
+    "playBot": "🤖 Jouer contre le bot",
+    "yourGames": "Vos parties",
+    "invites": "Invitations",
+    "noInvites": "Aucune nouvelle invitation.",
+    "noGames": "Aucune partie active pour l'instant.",
+    "loadingGames": "Chargement des parties…",
+    "invitesYou": "vous invite à jouer",
+    "accept": "Accepter",
+    "accepting": "Connexion…",
+    "continueGame": "Continuer",
+    "delete": "Supprimer",
+    "deleting": "Suppression…",
+    "vs": "contre {name}",
+    "confirmDelete": "Supprimer cette partie ? Elle disparaîtra pour les deux joueurs.",
+    "errLoad": "Impossible de charger les parties",
+    "errCreate": "Impossible de créer la partie",
+    "errAccept": "Impossible d'accepter l'invitation",
+    "errDelete": "Impossible de supprimer la partie",
+    "help": "Comment jouer",
+    "theme": "Thème",
+    "language": "Langue"
+  },
+  "create": {
+    "optOpen": "Partie ouverte",
+    "optOpenHint": "N'importe qui avec le lien peut rejoindre",
+    "optFriend": "Inviter un ami",
+    "optBot": "Jouer contre le bot",
+    "selectFriend": "Choisir un ami",
+    "orEmail": "ou l'e-mail d'un nouvel ami",
+    "emailPlaceholder": "email@example.com",
+    "noFriends": "Votre liste d'amis est vide",
+    "submit": "Créer",
+    "cancel": "Annuler",
+    "creating": "Création…"
+  },
+  "invitePopup": {
+    "title": "Vous avez une nouvelle invitation",
+    "body": "{name} vous invite à jouer",
+    "enter": "Rejoindre la partie",
+    "later": "Plus tard"
+  },
+  "status": {
+    "waiting": "en attente d'un ami",
+    "active": "en cours",
+    "over": "terminée"
+  },
+  "rules": {
+    "title": "Comment jouer",
+    "body": "Phase 1 — draft : tour à tour, piochez une pièce à l'aveugle et placez-la sur n'importe quelle case libre, 4 par camp. Phase 2 — déplacements : chaque pièce bouge au plus une fois (glisse dans ses directions jusqu'à sa portée). Si vous capturez une pièce qui vous vise aussi, c'est un duel aux dés (il faut faire au moins autant). Le but est de capturer le plus de pièces adverses possible. Plus de captures — victoire."
+  },
+  "game": {
+    "exit": "Quitter la partie",
+    "waitingPlayer": "En attente du second joueur…",
+    "placePiece": "Placez votre pièce : {piece}",
+    "yourDraft": "À vous — piochez une pièce",
+    "restart": "Recommencer",
+    "waitingOpponent": "en attente d'un ami",
+    "inviteTitle": "Invitation",
+    "inviteHint": "Envoyez le lien à un ami. La partie démarre dès qu'il se connecte avec Google.",
+    "copyLink": "Copier le lien",
+    "copied": "Copié",
+    "captured": "capturées",
+    "thinking": "réfléchit…",
+    "loadingGame": "Chargement de la partie…",
+    "notFound": "Partie introuvable",
+    "toLobby": "Au salon",
+    "placed": "Placées : vous {me}/{total} · adversaire {opp}/{total}",
+    "youDrew": "Vous avez pioché :",
+    "draftHint": "survolez/touchez une case — les flèches montrent les coups ; touchez à nouveau pour placer",
+    "opponentPlacing": "L'adversaire place ses pièces…",
+    "yourTurn": "À vous — choisissez une pièce",
+    "opponentTurn": "Tour de l'adversaire",
+    "errLoadGame": "Impossible de charger la partie",
+    "errRefresh": "Impossible d'actualiser la partie",
+    "errPlace": "Impossible de placer la pièce",
+    "errMove": "Impossible d'effectuer le coup"
+  },
+  "draft": {
+    "picking": "Tirage d'une pièce",
+    "choose": "Choisir",
+    "tapToChoose": "Touchez pour choisir",
+    "opponentPicking": "{name} choisit…",
+    "yourPiece": "Votre pièce",
+    "oppPiece": "Pièce de {name}"
+  },
+  "presence": {
+    "inGame": "Dans la partie",
+    "online": "En ligne",
+    "offline": "Hors ligne"
+  },
+  "duel": {
+    "title": "⚔️ Duel",
+    "attack": "{name} · attaque",
+    "defense": "{name} · défense",
+    "success": "Coup réussi !",
+    "miss": "Raté !",
+    "rolling": "lancer des dés…"
+  },
+  "result": {
+    "draw": "🤝 Égalité",
+    "win": "🎉 Victoire !",
+    "loss": "😞 Défaite",
+    "drawSub": "Captures à égalité",
+    "winSub": "Vous avez capturé plus de pièces",
+    "lossSub": "L'adversaire a capturé plus",
+    "again": "Rejouer",
+    "viewBoard": "Voir le plateau"
+  },
+  "friends": {
+    "title": "Amis",
+    "loading": "Chargement des contacts…",
+    "emptyGoogle": "Pas encore d'autres joueurs Google. Dès qu'un ami rejoint Maeth, il apparaîtra ici.",
+    "empty": "Aucun ami trouvé.",
+    "googlePlayer": "Joueur Google",
+    "invite": "Inviter",
+    "inviting": "Création…",
+    "errLoad": "Impossible de charger les amis",
+    "errCreate": "Impossible de créer l'invitation"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "es": "Español",
+    "it": "Italiano"
+  }
+}

@@ -22,7 +22,29 @@
       "Bash(node __timesim.mjs)",
       "Bash(curl -s -o /dev/null -w \"dev: %{http_code}\\\\n\" http://localhost:5173/)",
       "Bash(curl -s -o /dev/null -w \"anim-module: %{http_code}\\\\n\" http://localhost:5173/src/components/MoveAnimation.tsx)",
-      "Bash(npm audit *)"
+      "Bash(npm audit *)",
+      "Bash(rm src/platform/telegram.ts)",
+      "Bash(rmdir src/platform)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -v \"/\\\\*\")",
+      "Bash(node -e \"const m=require\\('lucide-react'\\); console.log\\('LogOut' in m, typeof m.LogOut\\)\")",
+      "Bash(node -e \"console.log\\(require\\('lucide-react/package.json'\\).version\\)\")",
+      "Bash(cat vite.config.ts)",
+      "Bash(cat vite.config.js)",
+      "Bash(node -e \"try{require.resolve\\('tsx'\\);console.log\\('tsx present'\\)}catch{console.log\\('no tsx'\\)}\")",
+      "Bash(node -e \"console.log\\(require\\('concurrently/package.json'\\).version\\)\")",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(curl -s http://localhost:3000/api/ping)",
+      "Read(//tmp/**)",
+      "Bash(pkill -f dev-api.mts)",
+      "Bash(pkill -f vite)",
+      "Bash(python -c \"import PIL; print\\('PIL', PIL.__version__\\)\")",
+      "Bash(magick -version)",
+      "Bash(pip install *)",
+      "Bash(C:/Users/User01/AppData/Local/Python/pythoncore-3.14-64/python.exe --version)",
+      "Bash(C:/Users/User01/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pip install Pillow --quiet)",
+      "Bash($PY *)",
+      "Bash(git add *)"
     ]
   }
 }

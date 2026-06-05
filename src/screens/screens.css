@@ -25,6 +25,18 @@
   font-size: 64px;
   line-height: 1;
 }
+/* Tengwar "Maeth" wordmark. The art is dark ink on transparent, so it reads on
+   the light theme as-is; on dark themes we invert it to a light glyph. */
+.hero__wordmark {
+  display: block;
+  width: min(64vw, 240px);
+  height: auto;
+  margin: 0 auto 6px;
+}
+:root:not([data-theme='light']) .hero__wordmark,
+:root:not([data-theme='light']) .topbar__logo {
+  filter: invert(1) brightness(1.08);
+}
 .hero h1 {
   margin: 8px 0 4px;
   font-size: 34px;
@@ -45,6 +57,7 @@
   gap: 10px;
   width: 100%;
   max-width: 320px;
+  align-self: center;
 }
 
 .btn {
@@ -92,6 +105,250 @@
   font-size: 17px;
   font-weight: 700;
 }
+/* Tengwar wordmark in the header — sized to sit about as tall as the old user
+   label it replaced. */
+.topbar__logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* avatar dropdown menu (theme / language / sign out), shared lobby + game */
+.usermenu {
+  position: relative;
+}
+.usermenu__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.usermenu__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.usermenu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 41;
+  min-width: 220px;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.usermenu__name {
+  padding: 8px 12px 10px;
+  font-weight: 700;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+.usermenu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.usermenu__item:hover {
+  background: rgba(127, 127, 127, 0.14);
+}
+.usermenu__item--lang {
+  cursor: default;
+}
+.usermenu__lang {
+  margin-left: auto;
+  border: none;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+.usermenu__item--danger {
+  color: #e2655d;
+}
+
+/* same header as the lobby, width-matched to the board column below it */
+.game-topbar {
+  width: min(86vw, 420px);
+}
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn:hover {
+  filter: brightness(1.15);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* the primary row action (Continue) — accent-filled icon button */
+.icon-btn--primary {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.spin {
+  animation: icon-spin 0.8s linear infinite;
+}
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lang-select {
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.rules-modal {
+  align-items: stretch;
+  text-align: left;
+}
+.rules-modal__body {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* full-width primary action (e.g. "Create game") */
+.btn--block {
+  width: 100%;
+}
+.btn--icon-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* create-game modal */
+.create-modal {
+  align-items: stretch;
+  text-align: left;
+}
+.create-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.radio-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.radio-row input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+.radio-row__text {
+  display: flex;
+  flex-direction: column;
+}
+.radio-row__title {
+  font-weight: 600;
+}
+.create-friend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 28px;
+}
+.create-friend__select {
+  max-width: none;
+  width: 100%;
+  height: 38px;
+}
+.text-input {
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  padding: 0 10px;
+}
+.create-actions {
+  display: flex;
+  gap: 10px;
+}
+.create-actions .btn {
+  flex: 1;
+}
+
+/* new-invitation popup */
+.invite-popup {
+  text-align: center;
+}
+.invite-popup__title {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+/* confirm dialog */
+.confirm-modal {
+  align-items: stretch;
+  text-align: center;
+}
+.confirm-modal__message {
+  margin: 4px 0;
+  font-size: 15px;
+}
+.btn--danger {
+  background: #e23b34;
+  color: #fff;
+  border-color: transparent;
+}
 
 /* user / friend rows */
 .who {
@@ -137,8 +394,18 @@
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.invite-card {
-  width: min(86vw, 420px);
+.share-modal {
+  align-items: stretch;
+  text-align: center;
+}
+.share-modal h3 {
+  margin: 0;
+}
+.share-modal .invite-link {
+  text-align: left;
+}
+.share-modal .btn {
+  width: 100%;
 }
 .invite-link {
   display: block;
@@ -174,37 +441,43 @@
   display: flex;
   gap: 6px;
 }
-
-/* game */
-.player-tag {
+/* the whole game row except the trash is one big "enter" button */
+.list__item-enter {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: min(86vw, 420px);
-  padding: 6px 10px;
-  border-radius: 10px;
-  opacity: 0.6;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.player-tag--active {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.06);
+.list__item-play {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.player-tag__name {
-  font-weight: 600;
+.list__item-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.chip {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-}
-.chip--white {
-  background: #fefefe;
-}
-.chip--black {
-  background: #1c2530;
+.list__item-enter:hover .who__name {
+  text-decoration: underline;
 }
 
+/* game */
 .statusbar {
   display: flex;
   align-items: center;
@@ -215,21 +488,7 @@
   border-radius: 12px;
   background: var(--card);
   font-weight: 600;
-}
-.statusbar--over {
-  justify-content: space-between;
-}
-.statusbar--col {
-  flex-direction: column;
-  gap: 6px;
   text-align: center;
-}
-
-.draft-pending {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: center;
 }
 
 /* duel modal */
@@ -268,13 +527,29 @@
   font-size: 20px;
   font-weight: 800;
 }
+/* player names under the title, aligned over their die below */
+.duel-modal__players {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  align-self: stretch;
+}
+.duel-modal__player {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
 .duel-modal__dice {
   display: flex;
   align-items: center;
   gap: 14px;
+  align-self: stretch;
 }
 .die-box {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   gap: 4px;
@@ -332,6 +607,85 @@
   align-self: stretch;
 }
 
+/* draft pick modal */
+.pick-modal {
+  gap: 12px;
+  padding: 18px 20px 16px;
+}
+.pick-modal__title {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 9px;
+}
+.pick-portrait {
+  width: 104px;
+  height: 104px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: #f5f5fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.pick-portrait__emoji {
+  font-size: 56px;
+  line-height: 1;
+}
+.pick-portrait--spin {
+  animation: pick-pulse 0.5s ease-in-out infinite;
+}
+@keyframes pick-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+.pick-portrait--settled {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+}
+.pick-modal__name {
+  font-weight: 700;
+  min-height: 20px;
+}
+/* Reserve just enough footer height for the one-line caption so the modal
+   doesn't jump when it clears on settle. */
+.pick-modal__footer {
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+}
+.pick-modal--tappable {
+  cursor: pointer;
+}
+/* On close the window collapses almost to a point, then unmounts. */
+.pick-modal--closing {
+  animation: pick-collapse 0.3s ease-in-out forwards;
+  pointer-events: none;
+}
+@keyframes pick-collapse {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.04);
+    opacity: 0;
+  }
+}
+.modal-backdrop--closing {
+  animation: backdrop-fade 0.3s ease-in-out forwards;
+}
+@keyframes backdrop-fade {
+  to {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+  }
+}
+
 /* result modal */
 .result-modal {
   border-top: 5px solid transparent;
@@ -367,23 +721,56 @@
 /* captures scoreboard */
 .score {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  width: min(86vw, 420px);
-}
-.score__side {
-  display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 64px;
+  gap: 2px;
+  width: min(86vw, 420px);
 }
-.score__side strong {
+.score__names {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 24px;
+}
+.score__name {
+  font-size: 15px;
+  font-weight: 700;
+  max-width: 70%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+/* opponent presence: red offline · amber online · green in this game */
+.presence-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: #8d9aa8;
+}
+.presence-dot--offline {
+  background: #e2655d;
+}
+.presence-dot--online {
+  background: #f1b50a;
+}
+.presence-dot--in-game {
+  background: #3fae5a;
+}
+.score__nums {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.score__nums strong {
   font-size: 26px;
 }
-.score__vs {
-  font-size: 12px;
+.score__colon {
+  font-size: 22px;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+}
+
+.screen__exit {
+  margin-top: 4px;
 }

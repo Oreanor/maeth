@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "you": "You",
+    "bot": "Bot",
+    "friend": "Friend",
+    "back": "← Back",
+    "refresh": "Refresh",
+    "close": "Close"
+  },
+  "login": {
+    "subtitle": "Maeth — an ancient Elvish board game",
+    "google": "Sign in with Google",
+    "guest": "Play as guest",
+    "googleError": "Could not sign in with Google",
+    "needConfig": "To sign in with Google, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."
+  },
+  "lobby": {
+    "logout": "Sign out",
+    "create": "Create game",
+    "playFriend": "👥 Play with a friend",
+    "playBot": "🤖 Play with the bot",
+    "yourGames": "Your games",
+    "invites": "Invitations",
+    "noInvites": "No new invitations.",
+    "noGames": "No active games yet.",
+    "loadingGames": "Loading games…",
+    "invitesYou": "invites you to play",
+    "accept": "Accept",
+    "accepting": "Joining…",
+    "continueGame": "Continue",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "vs": "vs {name}",
+    "confirmDelete": "Delete this game? It will disappear for both players.",
+    "errLoad": "Could not load games",
+    "errCreate": "Could not create the game",
+    "errAccept": "Could not accept the invitation",
+    "errDelete": "Could not delete the game",
+    "help": "How to play",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "create": {
+    "optOpen": "Open game",
+    "optOpenHint": "Anyone with the link can join",
+    "optFriend": "Invite a friend",
+    "optBot": "Play with the bot",
+    "selectFriend": "Choose a friend",
+    "orEmail": "or a new friend's e-mail",
+    "emailPlaceholder": "email@example.com",
+    "noFriends": "Your friends list is empty",
+    "submit": "Create",
+    "cancel": "Cancel",
+    "creating": "Creating…"
+  },
+  "invitePopup": {
+    "title": "You have a new invitation",
+    "body": "{name} invites you to play",
+    "enter": "Enter game",
+    "later": "Later"
+  },
+  "status": {
+    "waiting": "waiting for a friend",
+    "active": "in progress",
+    "over": "finished"
+  },
+  "rules": {
+    "title": "How to play",
+    "body": "Phase 1 — draft: take turns blindly drawing a piece and placing it on any free square, 4 per side. Phase 2 — moves: each piece moves at most once (sliding in its directions up to its range). If you capture a piece that also targets you, it's a dice duel (you must roll at least as high). The goal is to capture as many of the opponent's pieces as possible. Capture more — win."
+  },
+  "game": {
+    "exit": "Exit game",
+    "restart": "Restart",
+    "waitingOpponent": "waiting for a friend",
+    "waitingPlayer": "Waiting for the second player…",
+    "inviteTitle": "Invitation",
+    "inviteHint": "Send the link to a friend. The game starts once they sign in with Google.",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "captured": "captured",
+    "thinking": "thinking…",
+    "loadingGame": "Loading game…",
+    "notFound": "Game not found",
+    "toLobby": "To lobby",
+    "placed": "Placed: you {me}/{total} · opponent {opp}/{total}",
+    "youDrew": "You drew:",
+    "draftHint": "hover/tap a square — arrows show the moves; tap again to place",
+    "placePiece": "Place your piece: {piece}",
+    "yourDraft": "Your turn — draw a piece",
+    "opponentPlacing": "Opponent is placing…",
+    "yourTurn": "Your turn — pick a piece",
+    "opponentTurn": "Opponent's turn",
+    "errLoadGame": "Could not load the game",
+    "errRefresh": "Could not refresh the game",
+    "errPlace": "Could not place the piece",
+    "errMove": "Could not make the move"
+  },
+  "draft": {
+    "picking": "Drawing a piece",
+    "choose": "Choose",
+    "tapToChoose": "Tap to choose",
+    "opponentPicking": "{name} is choosing…",
+    "yourPiece": "Your piece",
+    "oppPiece": "{name}'s piece"
+  },
+  "presence": {
+    "inGame": "In the game",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "duel": {
+    "title": "⚔️ Duel",
+    "attack": "{name} · attack",
+    "defense": "{name} · defense",
+    "success": "Hit landed!",
+    "miss": "Missed!",
+    "rolling": "rolling the dice…"
+  },
+  "result": {
+    "draw": "🤝 Draw",
+    "win": "🎉 You won!",
+    "loss": "😞 Defeat",
+    "drawSub": "Equal captures",
+    "winSub": "You captured more pieces",
+    "lossSub": "The opponent captured more",
+    "again": "Play again",
+    "viewBoard": "View the board"
+  },
+  "friends": {
+    "title": "Friends",
+    "loading": "Loading contacts…",
+    "emptyGoogle": "No other Google players yet. When a friend joins Maeth, they'll show up here.",
+    "empty": "No friends found.",
+    "googlePlayer": "Google player",
+    "invite": "Invite",
+    "inviting": "Creating…",
+    "errLoad": "Could not load friends",
+    "errCreate": "Could not create the invitation"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "es": "Español",
+    "it": "Italiano"
+  }
+}

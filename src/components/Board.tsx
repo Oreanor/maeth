@@ -12,6 +12,10 @@ interface BoardProps {
   selectedMoves: Move[]
   /** Empty cells available for dropping a piece during the draft. */
   placementTargets: number[]
+  /** Cell a piece was just dropped on — briefly highlighted to draw the eye. */
+  lastPlaced?: number | null
+  /** Own pieces that can be picked up — they get a hover "shiver". */
+  movable?: number[]
   /** Cell to show the draft ghost + arrows on (draft phase). */
   previewCell: number | null
   /** Piece kind to preview, and which side owns it. */
@@ -33,6 +37,8 @@ export function Board({
   legalTargets,
   selectedMoves,
   placementTargets,
+  lastPlaced,
+  movable,
   previewCell,
   previewKind,
   previewOwner,
@@ -66,6 +72,8 @@ export function Board({
         const isSel = selected === i
         const isTarget = legalTargets.includes(i)
         const isPlace = placementTargets.includes(i)
+        const isPlaced = lastPlaced === i
+        const isMovable = movable?.includes(i) ?? false
         return (
           <button
             key={i}
@@ -76,6 +84,8 @@ export function Board({
               isSel ? 'cell--selected' : '',
               isTarget ? 'cell--target' : '',
               isPlace ? 'cell--place' : '',
+              isPlaced ? 'cell--placed' : '',
+              isMovable ? 'cell--movable' : '',
             ]
               .filter(Boolean)
               .join(' ')}

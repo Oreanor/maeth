@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
+import { useI18n } from '@/i18n'
 import { fetchFriends } from '@/auth/mockFriends'
 import type { Friend } from '@/auth/types'
 import { createGame, listFriends } from '@/lib/api'
@@ -8,9 +9,9 @@ import './screens.css'
 
 export function FriendsScreen() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
-  // Telegram users see Telegram contacts; everyone else sees Google contacts.
-  const source: 'telegram' | 'google' = user?.provider === 'telegram' ? 'telegram' : 'google'
+  const isGoogle = user?.provider === 'google'
 
   const [friends, setFriends] = useState<Friend[] | null>(null)
   const [creatingFor, setCreatingFor] = useState<string | null>(null)
@@ -20,26 +21,23 @@ export function FriendsScreen() {
     let alive = true
     setFriends(null)
     setError(null)
-    const request =
-      user?.provider === 'google'
-        ? listFriends().then(({ friends }) => friends)
-        : fetchFriends(source)
+    const request = isGoogle ? listFriends().then(({ friends }) => friends) : fetchFriends()
     request
       .then((f) => {
         if (alive) setFriends(f)
       })
       .catch((e) => {
         if (!alive) return
-        setError(e instanceof Error ? e.message : 'Не удалось загрузить друзей')
+        setError(e instanceof Error ? e.message : t('friends.errLoad'))
         setFriends([])
       })
     return () => {
       alive = false
     }
-  }, [source, user?.provider])
+  }, [isGoogle, t])
 
   const invite = async (f: Friend) => {
-    if (user?.provider !== 'google') return
+    if (!isGoogle) return
     setCreatingFor(f.id)
     setError(null)
     try {
@@ -48,7 +46,7 @@ export function FriendsScreen() {
         state: { vsBot: false, opponentName: f.name, humanColor: 'white' },
       })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось создать приглашение')
+      setError(e instanceof Error ? e.message : t('friends.errCreate'))
     } finally {
       setCreatingFor(null)
     }
@@ -58,22 +56,18 @@ export function FriendsScreen() {
     <div className="screen">
       <header className="topbar">
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/')}>
-          ← Назад
+          {t('common.back')}
         </button>
-        <h2 className="topbar__title">Друзья · {source === 'telegram' ? 'Telegram' : 'Google'}</h2>
+        <h2 className="topbar__title">{t('friends.title')}</h2>
         <span />
       </header>
 
       {friends === null ? (
-        <p className="muted">Загрузка контактов…</p>
+        <p className="muted">{t('friends.loading')}</p>
       ) : error ? (
         <p className="muted">{error}</p>
       ) : friends.length === 0 ? (
-        <p className="muted">
-          {user?.provider === 'google'
-            ? 'Пока нет других Google-игроков. Когда друг войдет в Maeth, он появится здесь.'
-            : 'Друзей не найдено.'}
-        </p>
+        <p className="muted">{isGoogle ? t('friends.emptyGoogle') : t('friends.empty')}</p>
       ) : (
         <ul className="list">
           {friends.map((f) => (
@@ -83,19 +77,19 @@ export function FriendsScreen() {
                 <div>
                   <div className="who__name">{f.name}</div>
                   <div className="muted tiny">
-                    {user?.provider === 'google'
-                      ? 'Google игрок'
-                      : `${f.username ? `@${f.username} · ` : ''}${f.online ? 'в сети' : 'не в сети'}`}
+                    {isGoogle
+                      ? t('friends.googlePlayer')
+                      : `${f.username ? `@${f.username} · ` : ''}${f.online ? '●' : '○'}`}
                   </div>
                 </div>
               </div>
               <div className="row-actions">
                 <button
                   className="btn btn--sm"
-                  disabled={user?.provider !== 'google' || creatingFor === f.id}
+                  disabled={!isGoogle || creatingFor === f.id}
                   onClick={() => invite(f)}
                 >
-                  {creatingFor === f.id ? 'Создаю…' : 'Пригласить'}
+                  {creatingFor === f.id ? t('friends.inviting') : t('friends.invite')}
                 </button>
               </div>
             </li>

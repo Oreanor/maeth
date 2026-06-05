@@ -1,4 +1,4 @@
-export type AuthProvider = 'telegram' | 'google' | 'guest'
+export type AuthProvider = 'google' | 'guest'
 
 export interface AppUser {
   id: string

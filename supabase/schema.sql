@@ -6,8 +6,13 @@ create table if not exists public.profiles (
   avatar_url text,
   provider text not null default 'google',
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  -- Bumped on every authenticated API request → "online on the site" presence.
+  last_seen timestamptz not null default now()
 );
+
+-- Migration for existing databases:
+--   alter table public.profiles add column if not exists last_seen timestamptz not null default now();
 
 create table if not exists public.games (
   id uuid primary key default gen_random_uuid(),
@@ -23,19 +28,31 @@ create table if not exists public.game_players (
   user_id uuid not null references public.profiles(id) on delete cascade,
   color text not null check (color in ('white', 'black')),
   joined_at timestamptz not null default now(),
+  -- Bumped when the player fetches this game → "in this game" presence.
+  last_seen timestamptz,
   primary key (game_id, user_id),
   unique (game_id, color)
 );
+
+-- Migration for existing databases:
+--   alter table public.game_players add column if not exists last_seen timestamptz;
 
 create table if not exists public.game_invites (
   id uuid primary key default gen_random_uuid(),
   game_id uuid not null references public.games(id) on delete cascade,
   created_by uuid not null references public.profiles(id) on delete cascade,
   invited_user_id uuid references public.profiles(id) on delete set null,
+  -- Email invite for a friend who may not have a Maeth account yet. When that
+  -- email logs in, the invite is matched to them (see listGames / join).
+  invited_email text,
   status text not null default 'open' check (status in ('open', 'accepted', 'revoked')),
   created_at timestamptz not null default now(),
   accepted_at timestamptz
 );
+
+-- Migration for existing databases:
+--   alter table public.game_invites add column if not exists invited_email text;
+create index if not exists game_invites_invited_email_idx on public.game_invites(lower(invited_email));
 
 create table if not exists public.game_actions (
   id bigserial primary key,

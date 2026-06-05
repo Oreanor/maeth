@@ -3,18 +3,20 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { App } from './App'
 import { AuthProviderComponent } from './auth/AuthContext'
-import { initTelegram } from './platform/telegram'
+import { I18nProvider } from './i18n'
+import { ThemeProvider } from './theme'
 import './index.css'
-
-// Tell Telegram we're ready and expand to full height (no-op in a browser).
-initTelegram()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProviderComponent>
-        <App />
-      </AuthProviderComponent>
+      <ThemeProvider>
+        <I18nProvider>
+          <AuthProviderComponent>
+            <App />
+          </AuthProviderComponent>
+        </I18nProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

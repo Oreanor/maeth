@@ -8,12 +8,24 @@ import {
   type DuelRoll,
 } from './engine'
 import { chooseBotMove, chooseBotPlacement } from './bot'
-import { PIECES, type PieceDef } from './pieces'
+import { PIECES, type PieceDef, type PieceKind } from './pieces'
 import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
 import type { Color, GameState, Move } from './types'
 
 /** A resolved duel plus who attacked, for the UI banner. */
 export type DuelEvent = DuelRoll & { by: Color }
+
+/** The blind draw shown as a spinning-portrait modal before a piece is placed. */
+export interface DraftPick {
+  /** Whose pick this is. */
+  by: Color
+  /** Pieces still in the bag (incl. the drawn one) — cycled while spinning. */
+  pool: PieceKind[]
+  /** The drawn piece once the pick settles; null while still spinning. */
+  settled: PieceKind | null
+  /** True while the modal plays its shrink-to-a-point close animation. */
+  closing?: boolean
+}
 
 /** The visual animation plus the not-yet-committed result it will apply. */
 type ActiveAnim = AnimInfo & { next: GameState; duelEvent: DuelEvent | null }
@@ -23,6 +35,18 @@ type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner
 
 const ANIM_MOVE_MS = 1100
 const ANIM_DUEL_MS = 650 // just the arrow; the dice then roll in the modal
+
+// How long the drawn portrait lingers after it's chosen, then how long the
+// shrink-to-a-point close animation runs, then how long to wait after a piece
+// lands before opening the human's next pick (so the placement is noticed).
+const PICK_REVEAL_MS = 1000
+const PICK_CLOSE_MS = 300
+const PICK_OPEN_DELAY_MS = 1000
+// The bot fakes deliberation: a random 2–4s before it "clicks" Choose, a slow
+// (~2× the old delay) placement, and a 2–3s idle "think" before each move.
+const botPickDelay = () => 2000 + Math.random() * 2000
+const botPlaceDelay = () => 900 + Math.random() * 700
+const botMoveDelay = () => 1800 + Math.random() * 1300
 
 export interface UseGameOptions {
   /** Color the human plays (the other side is the bot when vsBot). */
@@ -40,8 +64,16 @@ export interface UseGame {
   legalTargets: number[]
   /** Full legal moves of the selected piece (for capture/move arrows). */
   selectedMoves: Move[]
+  /** Own pieces that can be picked up this turn (hover affordance). */
+  movableCells: number[]
   /** Meta of the piece the human just drew, if it's their turn to place. */
   pendingDef: PieceDef | null
+  /** The blind-draw reveal in progress (spinning portraits), or null. */
+  draftPick: DraftPick | null
+  /** Settle the human's pick on the drawn piece (tap on the reveal). */
+  confirmDraftPick: () => void
+  /** The cell a piece was last dropped on, briefly highlighted (draft phase). */
+  lastPlaced: number | null
   /** Cell currently previewed during the draft (ghost piece + move arrows). */
   previewCell: number | null
   /** A resolved duel awaiting acknowledgement — shown as a modal; the game is
@@ -71,8 +103,17 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
   const [pendingNext, setPendingNext] = useState<GameState | null>(null)
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null)
   const [thinking, setThinking] = useState(false)
+  // The blind-draw ceremony: `pick` drives the modal; `pickReady` flips true
+  // once the reveal closes, which is when placement is actually allowed.
+  const [pick, setPick] = useState<DraftPick | null>(null)
+  const [pickReady, setPickReady] = useState(false)
+  const [lastPlaced, setLastPlaced] = useState<number | null>(null)
+  const pickSlotRef = useRef(-1)
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const animTimer = useRef<ReturnType<typeof setTimeout>>()
+  const pickTimer = useRef<ReturnType<typeof setTimeout>>()
+  const revealTimer = useRef<ReturnType<typeof setTimeout>>()
+  const openTimer = useRef<ReturnType<typeof setTimeout>>()
 
   // Begin a move: precompute its outcome (rolling the duel if any) and start the
   // animation. The resulting state is committed only when the animation ends.
@@ -110,21 +151,37 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
   )
   const legalTargets = useMemo(() => selectedMoves.map((m) => m.to), [selectedMoves])
 
+  // Own un-moved pieces that have at least one legal move right now — the ones
+  // the player can pick up. Used to give them a hover "shiver".
+  const movableCells = useMemo(() => {
+    if (state.phase !== 'play' || !isHumanTurn) return []
+    const out: number[] = []
+    for (let i = 0; i < state.board.length; i++) {
+      const p = state.board[i]
+      if (p && p.color === state.turn && !p.moved && legalMovesFrom(state, i).length > 0) out.push(i)
+    }
+    return out
+  }, [state, isHumanTurn])
+
+  // Only reveal the piece (and enable placement) after the pick ceremony closes.
   const pendingDef =
-    state.phase === 'draft' && isHumanTurn && state.pending ? PIECES[state.pending] : null
+    state.phase === 'draft' && isHumanTurn && pickReady && state.pending
+      ? PIECES[state.pending]
+      : null
 
   const onCell = useCallback(
     (cell: number) => {
       if (!isHumanTurn || anim || duel) return
 
       if (state.phase === 'draft') {
-        if (state.pending == null || state.board[cell]) return
+        if (!pickReady || state.pending == null || state.board[cell]) return
         // First tap/click previews (ghost + arrows); acting on the already
         // previewed cell confirms placement. On desktop the hover sets the
         // preview first, so a single click still places immediately.
         if (preview === cell) {
           setState((prev) => placePiece(prev, cell))
           setPreview(null)
+          setLastPlaced(cell)
         } else {
           setPreview(cell)
         }
@@ -149,18 +206,26 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
         else setSelected(null)
       }
     },
-    [isHumanTurn, anim, duel, state, selected, preview, startMove],
+    [isHumanTurn, anim, duel, state, selected, preview, startMove, pickReady],
   )
 
   const onCellEnter = useCallback(
     (cell: number) => {
-      if (!isHumanTurn || state.phase !== 'draft') return
+      if (!isHumanTurn || state.phase !== 'draft' || !pickReady) return
       if (state.pending != null && !state.board[cell]) setPreview(cell)
     },
-    [isHumanTurn, state],
+    [isHumanTurn, state, pickReady],
   )
 
   const clearPreview = useCallback(() => setPreview(null), [])
+
+  // Settle the spinning portrait on the actually-drawn piece (human's button, or
+  // the bot's auto-pick). The reveal effect then closes the modal after a beat.
+  const confirmDraftPick = useCallback(() => {
+    setPick((p) =>
+      p && p.settled == null && state.pending != null ? { ...p, settled: state.pending } : p,
+    )
+  }, [state.pending])
 
   // Closing the duel modal: on a win, replay the attacker sliding onto the
   // captured cell (then commit); on a miss, just commit (the attacker stays).
@@ -182,6 +247,10 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
   const reset = useCallback(() => {
     clearTimeout(timer.current)
     clearTimeout(animTimer.current)
+    clearTimeout(pickTimer.current)
+    clearTimeout(revealTimer.current)
+    clearTimeout(openTimer.current)
+    pickSlotRef.current = -1
     setState(createInitialState())
     setSelected(null)
     setPreview(null)
@@ -190,7 +259,64 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     setPendingNext(null)
     setPendingMove(null)
     setThinking(false)
+    setPick(null)
+    setPickReady(false)
+    setLastPlaced(null)
   }, [])
+
+  // Start a fresh pick ceremony whenever a new piece is drawn (a new draft
+  // "slot" — the count of pieces placed so far uniquely identifies each draw).
+  const draftSlot =
+    state.phase === 'draft' && state.pending != null
+      ? state.placed.white + state.placed.black
+      : -1
+  useEffect(() => {
+    if (draftSlot < 0) {
+      pickSlotRef.current = -1
+      setPick(null)
+      setPickReady(false)
+      return
+    }
+    if (pickSlotRef.current === draftSlot) return
+    pickSlotRef.current = draftSlot
+    setPickReady(false)
+    setPick(null)
+    const turn = state.turn
+    const pool = [...state.deck, state.pending as PieceKind]
+    const open = () => setPick({ by: turn, pool, settled: null })
+    // After a piece lands, give the human a beat to see where it went before
+    // their own pick modal pops up (the bot's pick opens right away).
+    const pickIsHuman = !vsBot || turn === humanColor
+    if (draftSlot >= 1 && pickIsHuman) {
+      openTimer.current = setTimeout(open, PICK_OPEN_DELAY_MS)
+      return () => clearTimeout(openTimer.current)
+    }
+    open()
+  }, [draftSlot, state.turn, state.deck, state.pending, vsBot, humanColor])
+
+  // The bot fakes choosing: after a random 2–4s, it "clicks" Choose.
+  useEffect(() => {
+    if (!vsBot || !pick || pick.settled != null || pick.by === humanColor) return
+    pickTimer.current = setTimeout(confirmDraftPick, botPickDelay())
+    return () => clearTimeout(pickTimer.current)
+  }, [vsBot, pick, humanColor, confirmDraftPick])
+
+  // Once settled, linger on the portrait, then play the shrink-to-a-point close
+  // animation, and only then unmount the modal and allow placement.
+  useEffect(() => {
+    if (!pick || pick.settled == null) return
+    if (pick.closing) {
+      revealTimer.current = setTimeout(() => {
+        setPick(null)
+        setPickReady(true)
+      }, PICK_CLOSE_MS)
+    } else {
+      revealTimer.current = setTimeout(() => {
+        setPick((p) => (p ? { ...p, closing: true } : p))
+      }, PICK_REVEAL_MS)
+    }
+    return () => clearTimeout(revealTimer.current)
+  }, [pick])
 
   // When a move animation finishes: commit the result, or (for a duel) reveal
   // the modal and defer committing until it's dismissed.
@@ -225,21 +351,29 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     if (anim || duel) return
     if (state.phase === 'over') return
     if (state.turn === humanColor) return
+    // In the draft, the bot only places after its reveal ceremony has finished.
+    if (state.phase === 'draft' && !pickReady) return
 
     setThinking(true)
-    timer.current = setTimeout(() => {
-      if (state.phase === 'draft') {
-        const cell = chooseBotPlacement(state)
-        if (cell != null) setState(placePiece(state, cell))
-      } else if (state.phase === 'play') {
-        const move = chooseBotMove(state)
-        if (move) startMove(move)
-      }
-      setThinking(false)
-    }, 550)
+    timer.current = setTimeout(
+      () => {
+        if (state.phase === 'draft') {
+          const cell = chooseBotPlacement(state)
+          if (cell != null) {
+            setState(placePiece(state, cell))
+            setLastPlaced(cell)
+          }
+        } else if (state.phase === 'play') {
+          const move = chooseBotMove(state)
+          if (move) startMove(move)
+        }
+        setThinking(false)
+      },
+      state.phase === 'draft' ? botPlaceDelay() : botMoveDelay(),
+    )
 
     return () => clearTimeout(timer.current)
-  }, [state, vsBot, humanColor, anim, duel, startMove])
+  }, [state, vsBot, humanColor, anim, duel, startMove, pickReady])
 
   // Only show the ghost while the human is actually drafting.
   const previewCell =
@@ -253,7 +387,11 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     selected,
     legalTargets,
     selectedMoves,
+    movableCells,
     pendingDef,
+    draftPick: pick,
+    confirmDraftPick,
+    lastPlaced,
     previewCell,
     duel,
     dismissDuel,

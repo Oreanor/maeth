@@ -15,9 +15,13 @@ export interface ApiPlayer {
   color: Color
 }
 
+export type Presence = 'in-game' | 'online' | 'offline'
+
 export interface ApiGamePlayer {
   user_id: string
   color: Color
+  /** Server-computed: in this game / online elsewhere / offline. */
+  presence?: Presence
   profiles?: {
     display_name?: string
     avatar_url?: string | null
@@ -27,7 +31,8 @@ export interface ApiGamePlayer {
 export interface ApiGameListItem {
   game: ApiGame
   player: ApiPlayer
-  opponentName: string
+  /** Joined opponent's name, or the invited friend/email; null for an open game with no one yet. */
+  opponentName: string | null
 }
 
 export interface ApiIncomingInvite {
@@ -68,7 +73,9 @@ export async function listFriends(): Promise<{ friends: Friend[] }> {
   return apiFetch('/api/friends')
 }
 
-export async function createGame(options: { invitedUserId?: string } = {}): Promise<{
+export async function createGame(
+  options: { invitedUserId?: string; invitedEmail?: string } = {},
+): Promise<{
   game: ApiGame
   player: ApiPlayer
   invite: { id: string }
@@ -98,7 +105,7 @@ export async function deleteGame(id: string): Promise<{ ok: true }> {
 
 export async function createInvite(
   id: string,
-  options: { invitedUserId?: string } = {},
+  options: { invitedUserId?: string; invitedEmail?: string } = {},
 ): Promise<{ invite: { id: string; status: string } }> {
   return apiFetch(`/api/games/${id}/invite`, {
     method: 'POST',

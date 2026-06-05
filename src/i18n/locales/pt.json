@@ -1,0 +1,150 @@
+{
+  "common": {
+    "loading": "Carregando…",
+    "you": "Você",
+    "bot": "Bot",
+    "friend": "Amigo",
+    "back": "← Voltar",
+    "refresh": "Atualizar",
+    "close": "Fechar"
+  },
+  "login": {
+    "subtitle": "Maeth — um antigo jogo de tabuleiro élfico",
+    "google": "Entrar com o Google",
+    "guest": "Jogar como convidado",
+    "googleError": "Não foi possível entrar com o Google",
+    "needConfig": "Para entrar com o Google, preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY."
+  },
+  "lobby": {
+    "logout": "Sair",
+    "create": "Criar jogo",
+    "playFriend": "👥 Jogar com um amigo",
+    "playBot": "🤖 Jogar contra o bot",
+    "yourGames": "Seus jogos",
+    "invites": "Convites",
+    "noInvites": "Nenhum convite novo.",
+    "noGames": "Ainda não há jogos ativos.",
+    "loadingGames": "Carregando jogos…",
+    "invitesYou": "convida você para jogar",
+    "accept": "Aceitar",
+    "accepting": "Entrando…",
+    "continueGame": "Continuar",
+    "delete": "Excluir",
+    "deleting": "Excluindo…",
+    "vs": "contra {name}",
+    "confirmDelete": "Excluir este jogo? Ele desaparecerá para os dois jogadores.",
+    "errLoad": "Não foi possível carregar os jogos",
+    "errCreate": "Não foi possível criar o jogo",
+    "errAccept": "Não foi possível aceitar o convite",
+    "errDelete": "Não foi possível excluir o jogo",
+    "help": "Como jogar",
+    "theme": "Tema",
+    "language": "Idioma"
+  },
+  "create": {
+    "optOpen": "Jogo aberto",
+    "optOpenHint": "Qualquer um com o link pode entrar",
+    "optFriend": "Convidar um amigo",
+    "optBot": "Jogar contra o bot",
+    "selectFriend": "Escolher um amigo",
+    "orEmail": "ou e-mail de um novo amigo",
+    "emailPlaceholder": "email@example.com",
+    "noFriends": "Sua lista de amigos está vazia",
+    "submit": "Criar",
+    "cancel": "Cancelar",
+    "creating": "Criando…"
+  },
+  "invitePopup": {
+    "title": "Você tem um novo convite",
+    "body": "{name} convida você para jogar",
+    "enter": "Entrar no jogo",
+    "later": "Mais tarde"
+  },
+  "status": {
+    "waiting": "aguardando um amigo",
+    "active": "em andamento",
+    "over": "encerrado"
+  },
+  "rules": {
+    "title": "Como jogar",
+    "body": "Fase 1 — draft: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado. Fase 2 — movimentos: cada peça move-se no máximo uma vez (desliza nas suas direções até o seu alcance). Se você capturar uma peça que também mira em você, é um duelo de dados (precisa tirar pelo menos o mesmo). O objetivo é capturar o máximo de peças do adversário. Quem captura mais, vence."
+  },
+  "game": {
+    "exit": "Sair do jogo",
+    "waitingPlayer": "Aguardando o segundo jogador…",
+    "placePiece": "Posicione sua peça: {piece}",
+    "yourDraft": "Sua vez — puxe uma peça",
+    "restart": "Reiniciar",
+    "waitingOpponent": "aguardando um amigo",
+    "inviteTitle": "Convite",
+    "inviteHint": "Envie o link a um amigo. O jogo começa quando ele entrar com o Google.",
+    "copyLink": "Copiar link",
+    "copied": "Copiado",
+    "captured": "capturadas",
+    "thinking": "pensando…",
+    "loadingGame": "Carregando jogo…",
+    "notFound": "Jogo não encontrado",
+    "toLobby": "Para o lobby",
+    "placed": "Colocadas: você {me}/{total} · adversário {opp}/{total}",
+    "youDrew": "Você puxou:",
+    "draftHint": "passe/toque numa casa — as setas mostram os lances; toque de novo para colocar",
+    "opponentPlacing": "O adversário está colocando…",
+    "yourTurn": "Sua vez — escolha uma peça",
+    "opponentTurn": "Vez do adversário",
+    "errLoadGame": "Não foi possível carregar o jogo",
+    "errRefresh": "Não foi possível atualizar o jogo",
+    "errPlace": "Não foi possível colocar a peça",
+    "errMove": "Não foi possível fazer o lance"
+  },
+  "draft": {
+    "picking": "Sorteando uma peça",
+    "choose": "Escolher",
+    "tapToChoose": "Toque para escolher",
+    "opponentPicking": "{name} está escolhendo…",
+    "yourPiece": "Sua peça",
+    "oppPiece": "Peça de {name}"
+  },
+  "presence": {
+    "inGame": "No jogo",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "duel": {
+    "title": "⚔️ Duelo",
+    "attack": "{name} · ataque",
+    "defense": "{name} · defesa",
+    "success": "Golpe certeiro!",
+    "miss": "Errou!",
+    "rolling": "rolando os dados…"
+  },
+  "result": {
+    "draw": "🤝 Empate",
+    "win": "🎉 Você venceu!",
+    "loss": "😞 Derrota",
+    "drawSub": "Capturas empatadas",
+    "winSub": "Você capturou mais peças",
+    "lossSub": "O adversário capturou mais",
+    "again": "Jogar de novo",
+    "viewBoard": "Ver o tabuleiro"
+  },
+  "friends": {
+    "title": "Amigos",
+    "loading": "Carregando contatos…",
+    "emptyGoogle": "Ainda não há outros jogadores Google. Quando um amigo entrar no Maeth, ele aparecerá aqui.",
+    "empty": "Nenhum amigo encontrado.",
+    "googlePlayer": "Jogador Google",
+    "invite": "Convidar",
+    "inviting": "Criando…",
+    "errLoad": "Não foi possível carregar os amigos",
+    "errCreate": "Não foi possível criar o convite"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "es": "Español",
+    "it": "Italiano"
+  }
+}

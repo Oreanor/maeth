@@ -1,15 +1,26 @@
-:root {
-  /* Telegram injects --tg-theme-* vars; we fall back to a dark palette. */
-  --bg: var(--tg-theme-bg-color, #0f141a);
-  --card: var(--tg-theme-secondary-bg-color, #1b232d);
-  --text: var(--tg-theme-text-color, #f2f5f8);
-  --muted: var(--tg-theme-hint-color, #8d9aa8);
-  --accent: var(--tg-theme-button-color, #4a90d9);
-  --accent-text: var(--tg-theme-button-text-color, #ffffff);
+:root,
+:root[data-theme='dark'] {
+  --bg: #0f141a;
+  --card: #1b232d;
+  --text: #f2f5f8;
+  --muted: #8d9aa8;
+  --accent: #4a90d9;
+  --accent-text: #ffffff;
 
-  color-scheme: dark light;
+  color-scheme: dark;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme='light'] {
+  --bg: #eef2f7;
+  --card: #ffffff;
+  --text: #16202b;
+  --muted: #5b6b7b;
+  --accent: #3a7bd5;
+  --accent-text: #ffffff;
+
+  color-scheme: light;
 }
 
 * {

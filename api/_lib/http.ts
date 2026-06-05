@@ -31,6 +31,18 @@ export function unwrapOne<T>(result: { data: T | null; error: { message: string 
 
 export type ValidationResult = { ok: true } | { ok: false; status: number; error: string }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Basic format check for an email invite to a friend who may not exist yet. */
+export function validateInvitedEmail(email: string | undefined, selfEmail: string | undefined): ValidationResult {
+  if (!email) return { ok: true }
+  if (!EMAIL_RE.test(email)) return { ok: false, status: 400, error: 'Invalid email address' }
+  if (selfEmail && email === selfEmail.toLowerCase()) {
+    return { ok: false, status: 400, error: 'Cannot invite yourself' }
+  }
+  return { ok: true }
+}
+
 /** Shared validation for an optional invited player on game/invite creation. */
 export async function validateInvitedUser(
   db: SupabaseClient,
@@ -123,12 +135,15 @@ async function ensureProfile(db: SupabaseClient, user: User): Promise<string | n
         ? meta.name
         : user.email ?? 'Google User'
 
+  const now = new Date().toISOString()
   const { error } = await db.from('profiles').upsert({
     id: user.id,
     display_name: displayName,
     avatar_url: typeof meta.avatar_url === 'string' ? meta.avatar_url : null,
     provider: 'google',
-    updated_at: new Date().toISOString(),
+    updated_at: now,
+    // Activity heartbeat: every authenticated request marks the user online.
+    last_seen: now,
   })
 
   return error?.message ?? null

@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react'
 import type { AppUser, AuthProvider } from './types'
-import { getTelegramUser, isTelegram } from '@/platform/telegram'
 import { supabase } from '@/lib/supabase'
 import { apiMe } from '@/lib/api'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
@@ -16,7 +15,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js'
 interface AuthContextValue {
   user: AppUser | null
   loading: boolean
-  /** Sign in with the given provider. Google uses Supabase; Telegram is deferred. */
+  /** Sign in with the given provider. Google uses Supabase; guest is local-only. */
   login: (provider: AuthProvider) => Promise<void>
   logout: () => void
 }
@@ -92,10 +91,7 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
     }
 
     setLoading(true)
-    const u: AppUser =
-      provider === 'telegram' && isTelegram() && getTelegramUser()
-        ? telegramUser()
-        : { id: `guest-${Date.now()}`, name: 'Гость', provider: 'guest' }
+    const u: AppUser = { id: `guest-${Date.now()}`, name: 'Guest', provider: 'guest' }
     setUser(u)
     storeLocalUser(u)
     setLoading(false)
@@ -136,17 +132,6 @@ function fromSupabaseUser(user: SupabaseUser): AppUser {
     username: user.email,
     avatarUrl: typeof meta.avatar_url === 'string' ? meta.avatar_url : undefined,
     provider: 'google',
-  }
-}
-
-function telegramUser(): AppUser {
-  const tg = getTelegramUser()!
-  return {
-    id: `tg-${tg.id}`,
-    name: [tg.first_name, tg.last_name].filter(Boolean).join(' '),
-    username: tg.username,
-    avatarUrl: tg.photo_url,
-    provider: 'telegram',
   }
 }
 

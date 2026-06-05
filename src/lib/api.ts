@@ -110,17 +110,50 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   headers.set('Content-Type', 'application/json')
 
   const response = await fetch(path, { ...init, headers })
-  const data = (await response.json()) as unknown
+  const data = await parseApiResponse(response)
   if (!response.ok) {
     throw new Error(apiErrorMessage(data) ?? `Request failed: ${response.status}`)
   }
   return data as T
 }
 
+async function parseApiResponse(response: Response): Promise<unknown> {
+  const text = await response.text()
+  try {
+    return text ? JSON.parse(text) : null
+  } catch {
+    const preview = text.slice(0, 80).replace(/\s+/g, ' ')
+    throw new Error(
+      `API returned non-JSON response (${response.status}). ` +
+        `Run the app through Vercel dev or deploy the API functions. Response starts with: ${preview}`,
+    )
+  }
+}
+
 function apiErrorMessage(data: unknown): string | null {
-  if (!data || typeof data !== 'object' || !('error' in data)) return null
+  if (!data || typeof data !== 'object') return null
+
+  if ('message' in data && typeof data.message === 'string') {
+    return data.message
+  }
+
+  if (!('error' in data)) {
+    try {
+      return JSON.stringify(data)
+    } catch {
+      return null
+    }
+  }
+
   const error = data.error
-  return typeof error === 'string' ? error : null
+  if (typeof error !== 'string') return null
+
+  const missing =
+    'missing' in data && Array.isArray(data.missing)
+      ? data.missing.filter((item): item is string => typeof item === 'string')
+      : []
+
+  return missing.length > 0 ? `${error}: ${missing.join(', ')}` : error
 }
 
 async function accessToken(): Promise<string> {

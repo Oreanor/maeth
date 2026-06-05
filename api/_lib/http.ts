@@ -23,7 +23,14 @@ export async function requireAuth(req: VercelRequest, res: VercelResponse): Prom
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!url || !anonKey || !serviceKey) {
-    json(res, 500, { error: 'Supabase environment variables are not configured' })
+    json(res, 500, {
+      error: 'Supabase environment variables are not configured',
+      missing: [
+        !url ? 'SUPABASE_URL or VITE_SUPABASE_URL' : null,
+        !anonKey ? 'SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY' : null,
+        !serviceKey ? 'SUPABASE_SERVICE_ROLE_KEY' : null,
+      ].filter(Boolean),
+    })
     return null
   }
 
@@ -41,7 +48,11 @@ export async function requireAuth(req: VercelRequest, res: VercelResponse): Prom
   }
 
   const db = createClient(url, serviceKey, { auth: { persistSession: false } })
-  await ensureProfile(db, data.user)
+  const profileError = await ensureProfile(db, data.user)
+  if (profileError) {
+    json(res, 500, { error: profileError })
+    return null
+  }
   return { db, user: data.user }
 }
 
@@ -53,7 +64,7 @@ function bearerToken(req: VercelRequest): string | null {
   return scheme?.toLowerCase() === 'bearer' && token ? token : null
 }
 
-async function ensureProfile(db: SupabaseClient, user: User) {
+async function ensureProfile(db: SupabaseClient, user: User): Promise<string | null> {
   const meta = user.user_metadata
   const displayName =
     typeof meta.full_name === 'string'
@@ -62,11 +73,13 @@ async function ensureProfile(db: SupabaseClient, user: User) {
         ? meta.name
         : user.email ?? 'Google User'
 
-  await db.from('profiles').upsert({
+  const { error } = await db.from('profiles').upsert({
     id: user.id,
     display_name: displayName,
     avatar_url: typeof meta.avatar_url === 'string' ? meta.avatar_url : null,
     provider: 'google',
     updated_at: new Date().toISOString(),
   })
+
+  return error?.message ?? null
 }

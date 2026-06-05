@@ -13,5 +13,9 @@ export default defineConfig({
   server: {
     host: true, // expose on LAN so a phone / Telegram can reach the dev server
     port: 5173,
+    proxy: {
+      // Local API functions run under `npm run dev:vercel` on port 3000.
+      '/api': 'http://localhost:3000',
+    },
   },
 })

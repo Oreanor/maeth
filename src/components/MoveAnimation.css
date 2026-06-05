@@ -1,0 +1,63 @@
+.move-anim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.move-anim__arrow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.move-anim__line {
+  animation: anim-arrow-draw 0.35s ease-out forwards;
+}
+@keyframes anim-arrow-draw {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.anim-attacker,
+.anim-victim {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(26px, 9vw, 44px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+}
+
+/* attacker slides after the arrow draws, and holds its end position until the
+   board state is committed (so there's no flash back to the start) */
+.anim-attacker--move {
+  animation: anim-move 0.6s ease-in 0.3s both;
+}
+.anim-victim {
+  animation: anim-shrink 0.3s ease-in 0.8s both;
+}
+
+@keyframes anim-move {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(calc(var(--dx) * 100%), calc(var(--dy) * 100%));
+  }
+}
+@keyframes anim-shrink {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}

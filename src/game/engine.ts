@@ -1,0 +1,292 @@
+import {
+  CELLS,
+  PIECES_PER_SIDE,
+  colOf,
+  idx,
+  onBoard,
+  opposite,
+  rowOf,
+  type Board,
+  type Color,
+  type GameState,
+  type GameStatus,
+  type Move,
+} from './types'
+import { ALL_KINDS, PIECES, dirsFor, type PieceKind } from './pieces'
+
+export const GAME_NAME = 'Битва за Средиземье · 4×4'
+export const GAME_DESCRIPTION =
+  'Фаза 1 — драфт: по очереди вслепую тяните фигуру и ставите на любую свободную клетку, по 4 на сторону. ' +
+  'Фаза 2 — ходы: каждая фигура ходит максимум один раз (скользит в своих направлениях на свою дальность). ' +
+  'Если бьёшь фигуру, которая нацелена и на тебя — дуэль на кубиках (нужно выбросить не меньше). ' +
+  'Цель — побить как можно больше фигур противника. Побил больше — победил.'
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+/** Fresh game: deck shuffled, white draws first and must place `pending`. */
+export function createInitialState(): GameState {
+  const deck = shuffle(ALL_KINDS)
+  const pending = deck.pop() ?? null
+  return {
+    phase: 'draft',
+    board: new Array<null>(CELLS).fill(null),
+    turn: 'white',
+    deck,
+    pending,
+    placed: { white: 0, black: 0 },
+    captures: { white: 0, black: 0 },
+    status: { kind: 'playing' },
+    history: [],
+  }
+}
+
+// ── draft phase ──────────────────────────────────────────────────────────────
+
+/** Cells where the current player may drop their pending piece. */
+export function placementCells(state: GameState): number[] {
+  if (state.phase !== 'draft' || state.pending == null) return []
+  const cells: number[] = []
+  for (let i = 0; i < CELLS; i++) if (!state.board[i]) cells.push(i)
+  return cells
+}
+
+/** Place the pending piece on `cell`, then draw for the next player or start play. */
+export function placePiece(state: GameState, cell: number): GameState {
+  if (state.phase !== 'draft' || state.pending == null) return state
+  if (state.board[cell]) return state
+
+  const board = state.board.slice()
+  board[cell] = { kind: state.pending, color: state.turn, moved: false }
+  const placed = { ...state.placed, [state.turn]: state.placed[state.turn] + 1 }
+
+  const totalPlaced = placed.white + placed.black
+  if (totalPlaced >= PIECES_PER_SIDE * 2) {
+    // Draft complete → move phase. White (player) moves first.
+    const turn: Color = 'white'
+    return normalizePlay({
+      ...state,
+      board,
+      placed,
+      pending: null,
+      phase: 'play',
+      turn,
+      status: { kind: 'playing' },
+    })
+  }
+
+  // Hand turn to the other player and draw their blind piece.
+  const deck = state.deck.slice()
+  const pending = deck.pop() ?? null
+  return {
+    ...state,
+    board,
+    placed,
+    deck,
+    pending,
+    turn: opposite(state.turn),
+  }
+}
+
+// ── move phase ───────────────────────────────────────────────────────────────
+
+/**
+ * Geometric moves for the piece on `from`: slides in its pattern up to its
+ * range, blocked by any piece, capturing an enemy at the end of the path.
+ * Does not consider whose turn it is or whether the piece already moved.
+ */
+export function pieceMoves(board: Board, from: number): Move[] {
+  const piece = board[from]
+  if (!piece) return []
+  const def = PIECES[piece.kind]
+  const moves: Move[] = []
+  const r0 = rowOf(from)
+  const c0 = colOf(from)
+  for (const [dr, dc] of dirsFor(def.pattern)) {
+    for (let step = 1; step <= def.range; step++) {
+      const r = r0 + dr * step
+      const c = c0 + dc * step
+      if (!onBoard(r, c)) break
+      const to = idx(r, c)
+      const occupant = board[to]
+      if (!occupant) {
+        moves.push({ from, to, capture: false })
+        continue
+      }
+      if (occupant.color !== piece.color) moves.push({ from, to, capture: true })
+      break // blocked by a piece either way
+    }
+  }
+  return moves
+}
+
+/**
+ * Squares a piece controls: every empty square it can slide to within range,
+ * plus the first occupied square it runs into in each direction. A friendly
+ * piece on such a square is "defended"; an enemy piece is "attacked". This is
+ * the symmetric primitive the bot uses for both threats and protection.
+ */
+export function attackSquares(board: Board, from: number): number[] {
+  const piece = board[from]
+  if (!piece) return []
+  const def = PIECES[piece.kind]
+  const out: number[] = []
+  const r0 = rowOf(from)
+  const c0 = colOf(from)
+  for (const [dr, dc] of dirsFor(def.pattern)) {
+    for (let step = 1; step <= def.range; step++) {
+      const r = r0 + dr * step
+      const c = c0 + dc * step
+      if (!onBoard(r, c)) break
+      const to = idx(r, c)
+      out.push(to)
+      if (board[to]) break // first blocker is controlled, then the ray stops
+    }
+  }
+  return out
+}
+
+/** Does any piece of `color` control `square`? */
+export function isAttackedBy(board: Board, square: number, color: Color): boolean {
+  for (let i = 0; i < CELLS; i++) {
+    if (board[i]?.color === color && i !== square && attackSquares(board, i).includes(square)) {
+      return true
+    }
+  }
+  return false
+}
+
+/** Legal moves the current player may actually make from `from` right now. */
+export function legalMovesFrom(state: GameState, from: number): Move[] {
+  if (state.phase !== 'play') return []
+  const piece = state.board[from]
+  if (!piece || piece.color !== state.turn || piece.moved) return []
+  return pieceMoves(state.board, from)
+}
+
+/** Does `color` have any un-moved piece with a legal move? */
+function sideCanMove(board: Board, color: Color): boolean {
+  for (let i = 0; i < CELLS; i++) {
+    const p = board[i]
+    if (p && p.color === color && !p.moved && pieceMoves(board, i).length > 0) return true
+  }
+  return false
+}
+
+function finalStatus(captures: Record<Color, number>): GameStatus {
+  if (captures.white > captures.black) return { kind: 'win', winner: 'white' }
+  if (captures.black > captures.white) return { kind: 'win', winner: 'black' }
+  return { kind: 'draw' }
+}
+
+/**
+ * Settle the play phase after a turn change: end the game if neither side can
+ * move, otherwise pass the turn past a side that has no legal move.
+ */
+function normalizePlay(state: GameState): GameState {
+  if (state.phase !== 'play') return state
+  const wCan = sideCanMove(state.board, 'white')
+  const bCan = sideCanMove(state.board, 'black')
+  if (!wCan && !bCan) {
+    return { ...state, phase: 'over', status: finalStatus(state.captures) }
+  }
+  const canMove = state.turn === 'white' ? wCan : bCan
+  // If the side to move is stuck (but the other isn't), it passes.
+  return canMove ? state : { ...state, turn: opposite(state.turn) }
+}
+
+export function applyMove(state: GameState, move: Move): GameState {
+  if (state.phase !== 'play') return state
+  const piece = state.board[move.from]
+  if (!piece) return state
+
+  const board = state.board.slice()
+  board[move.from] = null
+  board[move.to] = { ...piece, moved: true }
+
+  const captures = move.capture
+    ? { ...state.captures, [state.turn]: state.captures[state.turn] + 1 }
+    : state.captures
+
+  return normalizePlay({
+    ...state,
+    board,
+    captures,
+    turn: opposite(state.turn),
+    history: [...state.history, move],
+  })
+}
+
+// ── duels (contested captures) ───────────────────────────────────────────────
+//
+// When you capture a piece that is ALSO aimed at your attacker (a mutual
+// threat), the strike is contested: both roll a d6 and the attacker wins on a
+// greater-or-equal roll (ties favour the attacker). A failed strike still
+// spends the attacker's move (it stays put). Capturing a piece that can't hit
+// you back is a clean, automatic kill.
+
+/** P(attacker wins) for two d6 when ties favour the attacker (≥) = 21/36. */
+export const DUEL_ATTACKER_WIN_P = 21 / 36
+
+/** Is this capture a duel — does the victim also threaten the attacker? */
+export function isDuelMove(board: Board, move: Move): boolean {
+  return move.capture && attackSquares(board, move.to).includes(move.from)
+}
+
+/** Outcome of a failed strike: attacker stays on its square, move spent. */
+export function applyFailedStrike(state: GameState, move: Move): GameState {
+  if (state.phase !== 'play') return state
+  const piece = state.board[move.from]
+  if (!piece) return state
+  const board = state.board.slice()
+  board[move.from] = { ...piece, moved: true }
+  return normalizePlay({
+    ...state,
+    board,
+    turn: opposite(state.turn),
+    history: [...state.history, move],
+  })
+}
+
+export interface DuelRoll {
+  attacker: number
+  defender: number
+  success: boolean
+}
+
+const rollD6 = () => 1 + Math.floor(Math.random() * 6)
+
+/**
+ * Resolve a move for actual play: a contested capture rolls the dice, otherwise
+ * the move applies normally. Returns the resulting state and the roll (if any)
+ * so the UI can show the duel.
+ */
+export function resolveMove(
+  state: GameState,
+  move: Move,
+): { next: GameState; duel: DuelRoll | null } {
+  if (!isDuelMove(state.board, move)) return { next: applyMove(state, move), duel: null }
+  const attacker = rollD6()
+  const defender = rollD6()
+  const success = attacker >= defender // ties favour the attacker
+  const next = success ? applyMove(state, move) : applyFailedStrike(state, move)
+  return { next, duel: { attacker, defender, success } }
+}
+
+/** All legal moves for the side to move (used by the bot). */
+export function allLegalMoves(state: GameState): Move[] {
+  if (state.phase !== 'play') return []
+  const out: Move[] = []
+  for (let i = 0; i < CELLS; i++) {
+    if (state.board[i]?.color === state.turn) out.push(...legalMovesFrom(state, i))
+  }
+  return out
+}
+
+export { PIECES, type PieceKind }

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(npx esbuild *)",
+      "Bash(node __sim.mjs)",
+      "Bash(curl -s http://localhost:5173/src/components/PlacementPreview.tsx -o /dev/null -w \"preview-module: %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/src/components/ArrowOverlay.tsx -o /dev/null -w \"arrow-module: %{http_code}\\\\n\")",
+      "Bash(node __aisim.mjs)",
+      "Bash(curl -s -o /dev/null -w \"dev-server: %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(node __searchsim.mjs)",
+      "Bash(node __placesim.mjs)",
+      "Bash(node __dicesim.mjs)",
+      "Bash(node __verifysim.mjs)",
+      "Bash(taskkill /F /IM node.exe)",
+      "PowerShell(Get-Process *)",
+      "Bash(node __timesim.mjs)",
+      "Bash(curl -s -o /dev/null -w \"dev: %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"anim-module: %{http_code}\\\\n\" http://localhost:5173/src/components/MoveAnimation.tsx)",
+      "Bash(npm audit *)"
+    ]
+  }
+}

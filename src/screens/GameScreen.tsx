@@ -332,8 +332,8 @@ function ResultModal({
   )
 }
 
-const ROLL_MS = 500 // how long each die "shuffles" before settling
-const LEAD_MS = 250 // empty dice shown before the first one starts rolling
+const ROLL_MS = 400 // how long each die "shuffles" before settling
+const LEAD_MS = 100 // empty dice shown before the first one starts rolling
 
 // Pip positions on a 3×3 grid (cells 1‑9) for each face value.
 const PIP_MAP: Record<number, number[]> = {
@@ -460,52 +460,53 @@ function DuelModal({
   onClose: () => void
 }) {
   const { t } = useI18n()
-  // 'pre' = both dice spin while we wait for the result (hides network latency);
-  // then die 1 settles, die 2 settles, done.
-  const [stage, setStage] = useState<'pre' | 'roll1' | 'roll2' | 'done'>('pre')
-  const [face1, setFace1] = useState(0)
-  const [face2, setFace2] = useState(0)
+  // Both dice start empty; once the result is known die 1 rolls and settles,
+  // then die 2 rolls and settles. `null` faces render as a blank white die.
+  const [stage, setStage] = useState<'lead' | 'roll1' | 'roll2' | 'done'>('lead')
+  const [face1, setFace1] = useState<number | null>(null)
+  const [face2, setFace2] = useState<number | null>(null)
 
   const open = pending || !!duel
 
-  // Reset for the next duel once this one is dismissed.
+  // Reset to blank whenever the modal is fully closed.
   useEffect(() => {
-    if (!open) setStage('pre')
+    if (!open) {
+      setStage('lead')
+      setFace1(null)
+      setFace2(null)
+    }
   }, [open])
 
-  // Pre-roll: keep both dice tumbling until the result is known.
-  useEffect(() => {
-    if (!open || stage !== 'pre') return
-    const i1 = setInterval(() => setFace1(Math.floor(Math.random() * 6)), 80)
-    const i2 = setInterval(() => setFace2(Math.floor(Math.random() * 6)), 80)
-    return () => {
-      clearInterval(i1)
-      clearInterval(i2)
-    }
-  }, [open, stage])
-
-  // Settle once the result arrives: die 1 then die 2.
+  // Run the sequence once the result is known: a brief empty lead, die 1
+  // shuffles then settles, then die 2 shuffles then settles.
   useEffect(() => {
     if (!duel) return
-    setStage('roll1')
+    setStage('lead')
+    setFace1(null)
+    setFace2(null)
     const ts: ReturnType<typeof setTimeout>[] = []
-    const spin1 = setInterval(() => setFace1(Math.floor(Math.random() * 6)), 80)
-    ts.push(spin1)
     ts.push(
       setTimeout(() => {
-        clearInterval(spin1)
-        setFace1(duel.attacker - 1)
-        setStage('roll2')
-        const spin2 = setInterval(() => setFace2(Math.floor(Math.random() * 6)), 80)
-        ts.push(spin2)
+        setStage('roll1')
+        const spin1 = setInterval(() => setFace1(Math.floor(Math.random() * 6)), 80)
+        ts.push(spin1)
         ts.push(
           setTimeout(() => {
-            clearInterval(spin2)
-            setFace2(duel.defender - 1)
-            setStage('done')
+            clearInterval(spin1)
+            setFace1(duel.attacker - 1)
+            setStage('roll2')
+            const spin2 = setInterval(() => setFace2(Math.floor(Math.random() * 6)), 80)
+            ts.push(spin2)
+            ts.push(
+              setTimeout(() => {
+                clearInterval(spin2)
+                setFace2(duel.defender - 1)
+                setStage('done')
+              }, ROLL_MS),
+            )
           }, ROLL_MS),
         )
-      }, ROLL_MS),
+      }, LEAD_MS),
     )
     return () => {
       ts.forEach((tm) => {
@@ -532,15 +533,11 @@ function DuelModal({
         </div>
         <div className="duel-modal__dice">
           <div className="die-box">
-            <Die3D value={face1 + 1} spinning={stage === 'pre' || stage === 'roll1'} />
+            <Die3D value={face1 == null ? null : face1 + 1} spinning={stage === 'roll1'} />
           </div>
           <span className="duel-modal__vs">vs</span>
           <div className="die-box">
-            <Die3D
-              value={stage === 'roll1' ? null : face2 + 1}
-              spinning={stage === 'pre' || stage === 'roll2'}
-              idle={stage === 'roll1'}
-            />
+            <Die3D value={face2 == null ? null : face2 + 1} spinning={stage === 'roll2'} />
           </div>
         </div>
         <div className="duel-modal__footer">

@@ -628,9 +628,6 @@
 .pip--on {
   background: #1b1b2f;
 }
-.die3d--spin .pip--on {
-  background: #e23b34;
-}
 .duel-modal__vs {
   color: var(--muted);
   font-weight: 700;

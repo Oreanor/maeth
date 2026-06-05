@@ -15,6 +15,15 @@ export interface ApiPlayer {
   color: Color
 }
 
+export interface ApiGamePlayer {
+  user_id: string
+  color: Color
+  profiles?: {
+    display_name?: string
+    avatar_url?: string | null
+  } | null
+}
+
 export interface ApiGameListItem {
   game: ApiGame
   player: ApiPlayer
@@ -73,7 +82,7 @@ export async function createGame(options: { invitedUserId?: string } = {}): Prom
 export async function getGame(id: string): Promise<{
   game: ApiGame
   player: ApiPlayer
-  players: unknown[]
+  players: ApiGamePlayer[]
   latestAction: ApiLatestAction | null
 }> {
   return apiFetch(`/api/games/${id}`)
@@ -81,6 +90,10 @@ export async function getGame(id: string): Promise<{
 
 export async function joinGame(id: string): Promise<{ player: ApiPlayer }> {
   return apiFetch(`/api/games/${id}/join`, { method: 'POST' })
+}
+
+export async function deleteGame(id: string): Promise<{ ok: true }> {
+  return apiFetch(`/api/games/${id}`, { method: 'DELETE' })
 }
 
 export async function createInvite(

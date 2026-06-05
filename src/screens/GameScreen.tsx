@@ -8,8 +8,6 @@ import { useAuth } from '@/auth/AuthContext'
 import { useRemoteGame } from '@/game/useRemoteGame'
 import './screens.css'
 
-const DIE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
-
 interface PlayConfig {
   vsBot: boolean
   opponentName: string
@@ -230,7 +228,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         previewCell={remote.previewCell}
         previewKind={remote.previewCell != null && remote.pendingDef ? remote.pendingDef.kind : null}
         previewOwner={human}
-        orientation={human}
+        orientation="white"
         anim={null}
         onCellClick={remote.onCell}
         onCellEnter={remote.onCellEnter}
@@ -314,6 +312,44 @@ function ResultModal({
 
 const ROLL_MS = 1000 // how long each die "shuffles" before settling
 
+// Pip positions on a 3×3 grid (cells 1‑9) for each face value.
+const PIP_MAP: Record<number, number[]> = {
+  1: [5],
+  2: [1, 9],
+  3: [1, 5, 9],
+  4: [1, 3, 7, 9],
+  5: [1, 3, 5, 7, 9],
+  6: [1, 3, 4, 6, 7, 9],
+}
+
+function Pips({ value }: { value: number }) {
+  const on = PIP_MAP[value] ?? []
+  return (
+    <span className="pips">
+      {Array.from({ length: 9 }, (_, i) => (
+        <span key={i} className={`pip ${on.includes(i + 1) ? 'pip--on' : ''}`} />
+      ))}
+    </span>
+  )
+}
+
+// A flat die: a single face showing pips, with the values running while rolling.
+function Die3D({
+  value,
+  spinning,
+  idle,
+}: {
+  value: number | null
+  spinning: boolean
+  idle?: boolean
+}) {
+  return (
+    <div className={`die3d ${spinning ? 'die3d--spin' : ''} ${idle ? 'die3d--idle' : ''}`}>
+      <span className="die3d__face">{value ? <Pips value={value} /> : null}</span>
+    </div>
+  )
+}
+
 function DuelModal({
   duel,
   human,
@@ -377,29 +413,31 @@ function DuelModal({
         <div className="duel-modal__title">⚔️ Дуэль</div>
         <div className="duel-modal__dice">
           <div className="die-box">
-            <span className={`die ${stage === 'roll1' ? 'die--spin' : ''}`}>{DIE_FACES[face1]}</span>
+            <Die3D value={face1 + 1} spinning={stage === 'roll1'} />
             <span className="muted tiny">{attackerName} · атака</span>
           </div>
           <span className="duel-modal__vs">vs</span>
           <div className="die-box">
-            <span
-              className={`die ${stage === 'roll2' ? 'die--spin' : ''} ${stage === 'roll1' ? 'die--idle' : ''}`}
-            >
-              {stage === 'roll1' ? '🎲' : DIE_FACES[face2]}
-            </span>
+            <Die3D
+              value={stage === 'roll1' ? null : face2 + 1}
+              spinning={stage === 'roll2'}
+              idle={stage === 'roll1'}
+            />
             <span className="muted tiny">{defenderName} · защита</span>
           </div>
         </div>
-        {stage === 'done' ? (
-          <>
-            <div className="duel-modal__result">{duel.success ? 'Удар прошёл!' : 'Мимо!'}</div>
-            <button className="btn btn--primary" onClick={onClose}>
-              Закрыть
-            </button>
-          </>
-        ) : (
-          <div className="muted tiny">бросаем кубики…</div>
-        )}
+        <div className="duel-modal__footer">
+          {stage === 'done' ? (
+            <>
+              <div className="duel-modal__result">{duel.success ? 'Удар прошёл!' : 'Мимо!'}</div>
+              <button className="btn btn--primary" onClick={onClose}>
+                Закрыть
+              </button>
+            </>
+          ) : (
+            <div className="muted tiny">бросаем кубики…</div>
+          )}
+        </div>
       </div>
     </div>
   )

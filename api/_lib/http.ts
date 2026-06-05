@@ -10,6 +10,42 @@ export function json(res: VercelResponse, status: number, body: unknown) {
   res.status(status).json(body)
 }
 
+/**
+ * Unwrap a Supabase result, throwing on error so `withApiError` turns it into a
+ * clean 500 JSON response. Use only where an error should map to 500.
+ */
+export function unwrap<T>(result: { data: T; error: { message: string } | null }): T {
+  if (result.error) throw new Error(result.error.message)
+  return result.data
+}
+
+/**
+ * Like `unwrap`, but for `.single()` queries where exactly one row is expected:
+ * throws (→ 500) on error or when the row is missing, returning a non-null value.
+ */
+export function unwrapOne<T>(result: { data: T | null; error: { message: string } | null }): NonNullable<T> {
+  if (result.error) throw new Error(result.error.message)
+  if (result.data == null) throw new Error('Expected a row but none was returned')
+  return result.data as NonNullable<T>
+}
+
+export type ValidationResult = { ok: true } | { ok: false; status: number; error: string }
+
+/** Shared validation for an optional invited player on game/invite creation. */
+export async function validateInvitedUser(
+  db: SupabaseClient,
+  invitedUserId: string | undefined,
+  selfId: string,
+): Promise<ValidationResult> {
+  if (!invitedUserId) return { ok: true }
+  if (invitedUserId === selfId) return { ok: false, status: 400, error: 'Cannot invite yourself' }
+
+  const { data, error } = await db.from('profiles').select('id').eq('id', invitedUserId).maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!data) return { ok: false, status: 400, error: 'Invited player not found' }
+  return { ok: true }
+}
+
 export function withApiError(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>,
 ) {

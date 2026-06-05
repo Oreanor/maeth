@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { GAME_DESCRIPTION, GAME_NAME } from '@/game/engine'
 import type { Color } from '@/game/types'
-import { createGame, joinGame, listGames, type ApiGameListItem, type ApiIncomingInvite } from '@/lib/api'
+import { createGame, deleteGame, joinGame, listGames, type ApiGameListItem, type ApiIncomingInvite } from '@/lib/api'
 import { useCallback, useEffect, useState } from 'react'
 import './screens.css'
 
@@ -15,6 +15,7 @@ export function LobbyScreen() {
   const [invites, setInvites] = useState<ApiIncomingInvite[]>([])
   const [loadingGames, setLoadingGames] = useState(false)
   const [joining, setJoining] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   const loadGameLists = useCallback(async () => {
     if (user?.provider !== 'google') return
@@ -85,6 +86,20 @@ export function LobbyScreen() {
     navigate(`/play/${item.game.id}`, {
       state: { vsBot: false, opponentName: item.opponentName, humanColor: item.player.color },
     })
+  }
+
+  const removeGame = async (item: ApiGameListItem) => {
+    if (!window.confirm('Удалить эту игру? Она исчезнет у обоих игроков.')) return
+    setDeleting(item.game.id)
+    setError(null)
+    try {
+      await deleteGame(item.game.id)
+      setGames((prev) => prev.filter((g) => g.game.id !== item.game.id))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось удалить игру')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   const acceptInvite = async (invite: ApiIncomingInvite) => {
@@ -180,9 +195,18 @@ export function LobbyScreen() {
                     <div className="who__name">vs {item.opponentName}</div>
                     <div className="muted tiny">{gameStatusLabel(item.game.status)}</div>
                   </div>
-                  <button className="btn btn--sm" onClick={() => openGame(item)}>
-                    Продолжить
-                  </button>
+                  <div className="row-actions">
+                    <button className="btn btn--sm" onClick={() => openGame(item)}>
+                      Продолжить
+                    </button>
+                    <button
+                      className="btn btn--ghost btn--sm"
+                      disabled={deleting === item.game.id}
+                      onClick={() => removeGame(item)}
+                    >
+                      {deleting === item.game.id ? 'Удаляем…' : 'Удалить'}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth, withApiError } from '../../_lib/http.js'
+import { json, method, requireAuth, unwrap, withApiError } from '../../_lib/http.js'
+import { routeParam } from '../../_lib/request.js'
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['POST'])) return
@@ -13,30 +14,22 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const { data: existingPlayer, error: existingError } = await auth.db
-    .from('game_players')
-    .select('color')
-    .eq('game_id', id)
-    .eq('user_id', auth.user.id)
-    .maybeSingle()
-
-  if (existingError) {
-    json(res, 500, { error: existingError.message })
-    return
-  }
+  const existingPlayer = unwrap(
+    await auth.db
+      .from('game_players')
+      .select('color')
+      .eq('game_id', id)
+      .eq('user_id', auth.user.id)
+      .maybeSingle(),
+  )
 
   if (existingPlayer) {
     json(res, 200, { player: existingPlayer })
     return
   }
 
-  const { data: game, error: gameError } = await auth.db
-    .from('games')
-    .select('id, status')
-    .eq('id', id)
-    .single()
-
-  if (gameError || !game) {
+  const game = unwrap(await auth.db.from('games').select('id, status').eq('id', id).maybeSingle())
+  if (!game) {
     json(res, 404, { error: 'Game not found' })
     return
   }
@@ -46,17 +39,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const { data: invite, error: inviteError } = await auth.db
-    .from('game_invites')
-    .select('id, invited_user_id')
-    .eq('game_id', id)
-    .eq('status', 'open')
-    .maybeSingle()
-
-  if (inviteError) {
-    json(res, 500, { error: inviteError.message })
-    return
-  }
+  const invite = unwrap(
+    await auth.db
+      .from('game_invites')
+      .select('id, invited_user_id')
+      .eq('game_id', id)
+      .eq('status', 'open')
+      .maybeSingle(),
+  )
 
   if (!invite) {
     json(res, 409, { error: 'Invite is not available' })
@@ -73,48 +63,26 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     .select('*', { count: 'exact', head: true })
     .eq('game_id', id)
 
-  if (countError) {
-    json(res, 500, { error: countError.message })
-    return
-  }
-
+  if (countError) throw new Error(countError.message)
   if ((count ?? 0) >= 2) {
     json(res, 409, { error: 'Game is full' })
     return
   }
 
-  const { error: playerError } = await auth.db.from('game_players').insert({
-    game_id: id,
-    user_id: auth.user.id,
-    color: 'black',
-  })
+  unwrap(await auth.db.from('game_players').insert({ game_id: id, user_id: auth.user.id, color: 'black' }))
 
-  if (playerError) {
-    json(res, 500, { error: playerError.message })
-    return
-  }
+  unwrap(
+    await auth.db
+      .from('game_invites')
+      .update({ status: 'accepted', accepted_at: new Date().toISOString(), invited_user_id: auth.user.id })
+      .eq('id', invite.id),
+  )
 
-  await auth.db
-    .from('game_invites')
-    .update({ status: 'accepted', accepted_at: new Date().toISOString(), invited_user_id: auth.user.id })
-    .eq('id', invite.id)
-
-  const { error: updateError } = await auth.db
-    .from('games')
-    .update({ status: 'active', updated_at: new Date().toISOString() })
-    .eq('id', id)
-
-  if (updateError) {
-    json(res, 500, { error: updateError.message })
-    return
-  }
+  unwrap(
+    await auth.db.from('games').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', id),
+  )
 
   json(res, 200, { player: { color: 'black' } })
-}
-
-function routeParam(value: string | string[] | undefined): string | null {
-  if (Array.isArray(value)) return value[0] ?? null
-  return value ?? null
 }
 
 export default withApiError(handler)

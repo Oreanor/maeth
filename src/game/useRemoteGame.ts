@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getGame, joinGame, submitGameAction, type ApiGame } from '@/lib/api'
+import { getGame, joinGame, submitGameAction, type ApiGame, type ApiGamePlayer } from '@/lib/api'
 import type { DuelEvent } from './useGame'
 import { legalMovesFrom, placementCells } from './engine'
 import { PIECES, type PieceDef } from './pieces'
@@ -9,14 +9,7 @@ export interface RemoteGamePlayer {
   color: Color
 }
 
-export interface RemotePlayerRow {
-  user_id: string
-  color: Color
-  profiles?: {
-    display_name?: string
-    avatar_url?: string | null
-  } | null
-}
+export type RemotePlayerRow = ApiGamePlayer
 
 export interface UseRemoteGame {
   loading: boolean
@@ -57,7 +50,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     (data: Awaited<ReturnType<typeof getGame>>) => {
       setGame(data.game)
       setPlayer(data.player)
-      setPlayers(data.players as RemotePlayerRow[])
+      setPlayers(data.players)
 
       const latest = data.latestAction
       const remoteDuel = latest?.payload.duel
@@ -106,9 +99,9 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     if (!game || game.status === 'over' || game.status === 'cancelled') return
     const timer = window.setInterval(() => {
       refresh().catch((e) => setError(e instanceof Error ? e.message : 'Не удалось обновить игру'))
-    }, 1500)
+    }, 700)
     return () => window.clearInterval(timer)
-  }, [game, refresh])
+  }, [game?.status, refresh])
 
   const state = game?.state ?? null
   const isHumanTurn = Boolean(state && player && state.phase !== 'over' && state.turn === player.color)

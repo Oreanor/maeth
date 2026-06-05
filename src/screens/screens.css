@@ -280,32 +280,56 @@
   gap: 4px;
   text-align: center;
 }
-.die {
-  font-size: 68px;
-  line-height: 1;
-  display: inline-block;
+/* flat die: a single square face showing pips */
+.die3d {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
 }
-.die--idle {
+.die3d__face {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #f5f5fa;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+.die3d--idle {
   opacity: 0.4;
-  font-size: 52px;
 }
-.die--spin {
-  animation: die-spin 0.16s steps(2) infinite;
+.pips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 3px;
+  width: 32px;
+  height: 32px;
 }
-@keyframes die-spin {
-  0% {
-    transform: rotate(-12deg) scale(1.08);
-  }
-  50% {
-    transform: rotate(10deg) scale(0.96);
-  }
-  100% {
-    transform: rotate(-6deg) scale(1.08);
-  }
+.pip {
+  border-radius: 50%;
+}
+.pip--on {
+  background: #1b1b2f;
+}
+.die3d--spin .pip--on {
+  background: #e23b34;
 }
 .duel-modal__vs {
   color: var(--muted);
   font-weight: 700;
+}
+/* Reserve space so the modal height doesn't jump when the result replaces
+   the "rolling…" line. */
+.duel-modal__footer {
+  min-height: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  align-self: stretch;
 }
 
 /* result modal */

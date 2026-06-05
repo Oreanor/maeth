@@ -1,9 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { json, method, requireAuth, withApiError } from '../../_lib/http.js'
-
-interface CreateInviteBody {
-  invitedUserId?: string
-}
+import { json, method, requireAuth, unwrap, validateInvitedUser, withApiError } from '../../_lib/http.js'
+import { parseInvitedUserId, routeParam } from '../../_lib/request.js'
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (!method(req, res, ['POST'])) return
@@ -17,13 +14,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const { data: game, error: gameError } = await auth.db
-    .from('games')
-    .select('id, status, created_by')
-    .eq('id', id)
-    .single()
-
-  if (gameError || !game) {
+  const game = unwrap(await auth.db.from('games').select('id, status, created_by').eq('id', id).maybeSingle())
+  if (!game) {
     json(res, 404, { error: 'Game not found' })
     return
   }
@@ -38,70 +30,24 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const body = parseBody(req.body)
-  if (body?.invitedUserId === auth.user.id) {
-    json(res, 400, { error: 'Cannot invite yourself' })
+  const invitedUserId = parseInvitedUserId(req.body)
+  const validation = await validateInvitedUser(auth.db, invitedUserId, auth.user.id)
+  if (!validation.ok) {
+    json(res, validation.status, { error: validation.error })
     return
   }
 
-  if (body?.invitedUserId) {
-    const { data: invited, error: invitedError } = await auth.db
-      .from('profiles')
-      .select('id')
-      .eq('id', body.invitedUserId)
-      .maybeSingle()
+  unwrap(await auth.db.from('game_invites').update({ status: 'revoked' }).eq('game_id', id).eq('status', 'open'))
 
-    if (invitedError) {
-      json(res, 500, { error: invitedError.message })
-      return
-    }
-
-    if (!invited) {
-      json(res, 400, { error: 'Invited player not found' })
-      return
-    }
-  }
-
-  await auth.db.from('game_invites').update({ status: 'revoked' }).eq('game_id', id).eq('status', 'open')
-
-  const { data: invite, error: inviteError } = await auth.db
-    .from('game_invites')
-    .insert({
-      game_id: id,
-      created_by: auth.user.id,
-      invited_user_id: body?.invitedUserId ?? null,
-    })
-    .select('id, status')
-    .single()
-
-  if (inviteError) {
-    json(res, 500, { error: inviteError.message })
-    return
-  }
+  const invite = unwrap(
+    await auth.db
+      .from('game_invites')
+      .insert({ game_id: id, created_by: auth.user.id, invited_user_id: invitedUserId ?? null })
+      .select('id, status')
+      .single(),
+  )
 
   json(res, 201, { invite })
-}
-
-function routeParam(value: string | string[] | undefined): string | null {
-  if (Array.isArray(value)) return value[0] ?? null
-  return value ?? null
-}
-
-function parseBody(body: unknown): CreateInviteBody | null {
-  const value = typeof body === 'string' ? safeJson(body) : body
-  if (!value || typeof value !== 'object') return null
-  const record = value as Record<string, unknown>
-  return {
-    invitedUserId: typeof record.invitedUserId === 'string' ? record.invitedUserId : undefined,
-  }
-}
-
-function safeJson(value: string): unknown {
-  try {
-    return JSON.parse(value)
-  } catch {
-    return null
-  }
 }
 
 export default withApiError(handler)

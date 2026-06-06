@@ -39,7 +39,12 @@
     "errDelete": "Spiel konnte nicht gelöscht werden",
     "help": "Spielanleitung",
     "theme": "Design",
-    "language": "Sprache"
+    "language": "Sprache",
+    "style": "Stil",
+    "styleDefault": "Standard",
+    "styleEngraving": "Stich",
+    "styleMonochrome": "Monochrom",
+    "styleFantasy": "Fantasy"
   },
   "create": {
     "optOpen": "Offenes Spiel",

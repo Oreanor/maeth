@@ -34,6 +34,11 @@
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
 
+.anim-piece__icon {
+  width: 84%;
+  height: 84%;
+}
+
 /* attacker slides after the arrow draws, and holds its end position until the
    board state is committed (so there's no flash back to the start) */
 .anim-attacker--move {

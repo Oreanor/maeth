@@ -564,7 +564,6 @@
   font-weight: 600;
   text-align: center;
 }
-
 /* duel modal */
 .modal-backdrop {
   position: fixed;
@@ -700,6 +699,13 @@
 .pick-portrait__emoji {
   font-size: 56px;
   line-height: 1;
+}
+.pick-portrait__icon {
+  width: 88px;
+  height: 88px;
+}
+.pick-portrait__icon.piece-icon--emoji {
+  font-size: 56px;
 }
 .pick-portrait--spin {
   animation: pick-pulse 0.5s ease-in-out infinite;

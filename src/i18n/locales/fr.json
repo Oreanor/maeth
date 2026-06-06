@@ -39,7 +39,12 @@
     "errDelete": "Impossible de supprimer la partie",
     "help": "Comment jouer",
     "theme": "Thème",
-    "language": "Langue"
+    "language": "Langue",
+    "style": "Style",
+    "styleDefault": "Par défaut",
+    "styleEngraving": "Gravure",
+    "styleMonochrome": "Monochrome",
+    "styleFantasy": "Fantaisie"
   },
   "create": {
     "optOpen": "Partie ouverte",

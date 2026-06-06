@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Globe, LogOut, Moon, Sun } from 'lucide-react'
+import { Globe, LogOut, Moon, Palette, Sun } from 'lucide-react'
 import { LANGS, useI18n, type Lang } from '@/i18n'
 import { useTheme } from '@/theme'
+import { SKINS, SKIN_I18N, useSkin, type Skin } from '@/skin'
 
 /** Avatar button that opens a dropdown with the theme switch, language picker
  *  and sign-out. Shared by the lobby and the in-game header. */
 export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => void }) {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
+  const { skin, setSkin } = useSkin()
   const [open, setOpen] = useState(false)
 
   return (
@@ -32,6 +34,22 @@ export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => vo
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               <span>{t('lobby.theme')}</span>
             </button>
+
+            <label className="usermenu__item usermenu__item--lang">
+              <Palette size={18} />
+              <span>{t('lobby.style')}</span>
+              <select
+                className="usermenu__lang"
+                value={skin}
+                onChange={(e) => setSkin(e.target.value as Skin)}
+              >
+                {SKINS.map((code) => (
+                  <option key={code} value={code}>
+                    {t(SKIN_I18N[code])}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <label className="usermenu__item usermenu__item--lang">
               <Globe size={18} />

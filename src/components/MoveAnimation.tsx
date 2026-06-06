@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { SIZE, colOf, rowOf, type Color } from '@/game/types'
-import { PIECES, type PieceKind } from '@/game/pieces'
+import type { PieceKind } from '@/game/pieces'
+import { PieceIcon } from './PieceIcon'
 import './MoveAnimation.css'
 
 export type AnimKind = 'move' | 'capture' | 'duel'
@@ -73,13 +74,13 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
             { ...box(f.r, f.c), ['--dx' as string]: dx, ['--dy' as string]: dy } as CSSProperties
           }
         >
-          {PIECES[anim.attacker].emoji}
+          <PieceIcon kind={anim.attacker} className="anim-piece__icon" />
         </div>
       )}
 
       {anim.kind === 'capture' && anim.victim && (
         <div className="anim-victim" style={box(t.r, t.c)}>
-          {PIECES[anim.victim].emoji}
+          <PieceIcon kind={anim.victim} className="anim-piece__icon" />
         </div>
       )}
     </div>

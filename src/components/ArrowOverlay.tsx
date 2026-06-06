@@ -3,7 +3,8 @@ import { PIECES, dirsFor, type PieceKind } from '@/game/pieces'
 
 // Generic arrow overlay drawn over the board grid. Units are board cells
 // (viewBox 0 0 SIZE SIZE). Used for two things:
-//   • draft preview — a translucent ghost piece + one arrow per movement
+//   • draft preview — one arrow per movement direction from the hovered cell;
+//     the ghost piece itself is drawn inside the grid cell in Board.tsx
 //     direction (length capped at the board edge);
 //   • move hints — when a piece is selected, red arrows toward captures and
 //     green arrows toward empty destinations.
@@ -65,11 +66,9 @@ interface Props {
   cell: number
   arrows: ArrowSpec[]
   orientation: Color
-  /** Optional ghost piece (draft preview). */
-  ghost?: { kind: PieceKind; color: Color }
 }
 
-export function ArrowOverlay({ cell, arrows, orientation, ghost }: Props) {
+export function ArrowOverlay({ cell, arrows, orientation }: Props) {
   const row = rowOf(cell)
   const col = colOf(cell)
   const dRow = orientation === 'white' ? row : SIZE - 1 - row
@@ -79,32 +78,6 @@ export function ArrowOverlay({ cell, arrows, orientation, ghost }: Props) {
 
   return (
     <svg className="arrow-overlay" viewBox={`0 0 ${SIZE} ${SIZE}`}>
-      {ghost && (
-        <>
-          <rect
-            x={dCol + 0.09}
-            y={dRow + 0.09}
-            width={0.82}
-            height={0.82}
-            rx={0.14}
-            fill={OWNER_COLOR[ghost.color]}
-            opacity={0.28}
-            stroke={OWNER_COLOR[ghost.color]}
-            strokeWidth={0.04}
-          />
-          <text
-            x={cx}
-            y={cy}
-            fontSize={0.5}
-            textAnchor="middle"
-            dominantBaseline="central"
-            opacity={0.85}
-          >
-            {PIECES[ghost.kind].emoji}
-          </text>
-        </>
-      )}
-
       {arrows.map((a, n) => {
         const sdr = orientation === 'white' ? a.dr : -a.dr
         const sdc = orientation === 'white' ? a.dc : -a.dc

@@ -39,7 +39,12 @@
     "errDelete": "Не удалось удалить игру",
     "help": "Как играть",
     "theme": "Тема",
-    "language": "Язык"
+    "language": "Язык",
+    "style": "Стиль",
+    "styleDefault": "Обычный",
+    "styleEngraving": "Гравюра",
+    "styleMonochrome": "Монохром",
+    "styleFantasy": "Фэнтези"
   },
   "create": {
     "optOpen": "Открытая игра",

@@ -39,7 +39,12 @@
     "errDelete": "Não foi possível excluir o jogo",
     "help": "Como jogar",
     "theme": "Tema",
-    "language": "Idioma"
+    "language": "Idioma",
+    "style": "Estilo",
+    "styleDefault": "Padrão",
+    "styleEngraving": "Gravura",
+    "styleMonochrome": "Monocromático",
+    "styleFantasy": "Fantasia"
   },
   "create": {
     "optOpen": "Jogo aberto",

@@ -2,6 +2,7 @@ import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@
 import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
 import { MoveAnimation, type AnimInfo } from './MoveAnimation'
+import { PieceIcon } from './PieceIcon'
 import './Board.css'
 
 interface BoardProps {
@@ -74,6 +75,7 @@ export function Board({
         const isPlace = placementTargets.includes(i)
         const isPlaced = lastPlaced === i
         const isMovable = movable?.includes(i) ?? false
+        const isPreview = previewCell === i && previewKind != null && !piece
         return (
           <button
             key={i}
@@ -94,6 +96,11 @@ export function Board({
             aria-label={`r${rowOf(i)}c${colOf(i)}`}
           >
             {isTarget && !piece && <span className="dot" />}
+            {isPreview && (
+              <span className={`piece piece--ghost piece--${previewOwner}`}>
+                <PieceIcon kind={previewKind} className="piece__icon" />
+              </span>
+            )}
             {piece && (
               <span
                 className={[
@@ -105,7 +112,7 @@ export function Board({
                   .join(' ')}
                 title={`${PIECES[piece.kind].name} (${pieceBadge(piece.kind)})`}
               >
-                <span className="piece__emoji">{PIECES[piece.kind].emoji}</span>
+                <PieceIcon kind={piece.kind} className="piece__icon" />
                 <span className="piece__badge">{pieceBadge(piece.kind)}</span>
               </span>
             )}
@@ -119,7 +126,6 @@ export function Board({
         <ArrowOverlay
           cell={previewCell}
           arrows={edgeArrows(previewCell, previewKind, OWNER_COLOR[previewOwner])}
-          ghost={{ kind: previewKind, color: previewOwner }}
           orientation={orientation}
         />
       ) : (

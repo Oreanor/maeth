@@ -3,6 +3,7 @@ import { useI18n } from '@/i18n'
 import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import type { DraftPick } from '@/game/useGame'
+import { PieceIcon } from './PieceIcon'
 
 // The blind-draw reveal: remaining portraits riffle past; on your turn you tap
 // anywhere to stop them, then the drawn piece lingers before the modal closes.
@@ -58,7 +59,11 @@ export function DraftPickModal({
             : t('draft.picking')}
         </div>
         <div className={`pick-portrait ${settled ? 'pick-portrait--settled' : 'pick-portrait--spin'}`}>
-          <span className="pick-portrait__emoji">{def?.emoji ?? '🎲'}</span>
+          {def ? (
+            <PieceIcon kind={def.kind} className="pick-portrait__icon" />
+          ) : (
+            <span className="pick-portrait__emoji">🎲</span>
+          )}
         </div>
         <div className="pick-modal__name">
           {settled && def ? `${def.name} · ${pieceBadge(def.kind)}` : ' '}

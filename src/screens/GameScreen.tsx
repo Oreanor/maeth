@@ -105,7 +105,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         isHumanTurn={isHumanTurn}
         waiting={false}
         pendingLabel={
-          pendingDef ? `${pendingDef.emoji} ${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null
+          pendingDef ? `${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null
         }
       />
 
@@ -252,7 +252,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         waiting={waiting}
         pendingLabel={
           remote.pendingDef
-            ? `${remote.pendingDef.emoji} ${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
+            ? `${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
             : null
         }
       />

@@ -116,11 +116,11 @@
 /* owner is shown by the ring colour, since both sides share the board */
 .piece--white {
   background: rgba(74, 144, 217, 0.22);
-  box-shadow: inset 0 0 0 3px #4a90d9;
+  box-shadow: inset 0 0 0 4px #4a90d9;
 }
 .piece--black {
   background: rgba(214, 69, 69, 0.22);
-  box-shadow: inset 0 0 0 3px #d64545;
+  box-shadow: inset 0 0 0 4px #d64545;
 }
 
 .piece--moved {
@@ -128,12 +128,17 @@
   filter: grayscale(0.4);
 }
 
-.piece__emoji {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+.piece__icon {
+  width: 88%;
+  height: 88%;
 }
 
-/* pieces you can pick up: hover lifts + brightens them, and the emoji shivers.
-   The shiver is on the emoji (not .piece) so leaving hover doesn't restart the
+.piece__icon.piece-icon--emoji {
+  font-size: inherit;
+}
+
+/* pieces you can pick up: hover lifts + brightens them, and the portrait shivers.
+   The shiver is on the icon (not .piece) so leaving hover doesn't restart the
    piece's drop-in animation. */
 .cell--movable {
   cursor: pointer;
@@ -141,7 +146,7 @@
 .cell--movable:hover .piece {
   filter: brightness(1.14);
 }
-.cell--movable:hover .piece__emoji {
+.cell--movable:hover .piece__icon {
   display: inline-block;
   animation: piece-pulse 0.7s ease-in-out infinite;
 }
@@ -168,4 +173,104 @@
   line-height: 1.25;
   letter-spacing: 0.5px;
   z-index: 2;
+}
+
+.piece--ghost {
+  opacity: 0.55;
+  pointer-events: none;
+  animation: none;
+  z-index: 1;
+}
+
+/* ───────────────────────── sprite skins (board + pieces) ───────────────────────── */
+
+/* engraving + monochrome: parchment board, thick black frame, square corners */
+[data-skin='engraving'] .board,
+[data-skin='monochrome'] .board {
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  border: 8px solid #14110b;
+  background: #14110b;
+  gap: 1px;
+}
+
+[data-skin='engraving'] .cell--light,
+[data-skin='engraving'] .cell--dark,
+[data-skin='monochrome'] .cell--light,
+[data-skin='monochrome'] .cell--dark {
+  background: #ece3d0;
+}
+
+/* fantasy: stone tiles in a dark grout frame */
+[data-skin='fantasy'] .board {
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  border: 8px solid #5a6068;
+  background: #6b727a;
+  gap: 3px;
+  padding: 3px;
+}
+
+[data-skin='fantasy'] .cell {
+  border-radius: 6px;
+  border-top: 2px solid rgba(255, 255, 255, 0.5);
+  border-left: 2px solid rgba(255, 255, 255, 0.38);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.22);
+  border-right: 2px solid rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 1px 1px 3px rgba(255, 255, 255, 0.28),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.14);
+}
+
+[data-skin='fantasy'] .cell--light {
+  background: linear-gradient(155deg, #d4dae0 0%, #bcc4cb 48%, #aab2b9 100%);
+}
+
+[data-skin='fantasy'] .cell--dark {
+  background: linear-gradient(155deg, #c5ccd3 0%, #adb5bc 48%, #9aa2a9 100%);
+}
+
+[data-skin='fantasy'] .cell--selected {
+  background: linear-gradient(155deg, #d4b84a 0%, #b89a32 48%, #9a7f22 100%) !important;
+  border-top-color: rgba(255, 245, 200, 0.55);
+  border-left-color: rgba(255, 240, 180, 0.45);
+  border-bottom-color: rgba(60, 40, 0, 0.35);
+  border-right-color: rgba(40, 25, 0, 0.45);
+}
+
+[data-skin='fantasy'] .cell--target {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.45),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.18),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.22);
+}
+
+[data-skin='fantasy'] .cell--place::after {
+  border-radius: 5px;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+[data-skin='engraving'] .piece,
+[data-skin='monochrome'] .piece {
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-skin='fantasy'] .piece {
+  border-radius: 5px;
+  background: transparent;
+}
+
+[data-skin='engraving'] .piece--white,
+[data-skin='monochrome'] .piece--white,
+[data-skin='fantasy'] .piece--white {
+  box-shadow: inset 0 0 0 4px #3a7fd4;
+}
+
+[data-skin='engraving'] .piece--black,
+[data-skin='monochrome'] .piece--black,
+[data-skin='fantasy'] .piece--black {
+  box-shadow: inset 0 0 0 4px #d63030;
 }

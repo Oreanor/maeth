@@ -39,7 +39,12 @@
     "errDelete": "Impossibile eliminare la partita",
     "help": "Come si gioca",
     "theme": "Tema",
-    "language": "Lingua"
+    "language": "Lingua",
+    "style": "Stile",
+    "styleDefault": "Predefinito",
+    "styleEngraving": "Incisione",
+    "styleMonochrome": "Monocromo",
+    "styleFantasy": "Fantasy"
   },
   "create": {
     "optOpen": "Partita aperta",

@@ -5,17 +5,20 @@ import { App } from './App'
 import { AuthProviderComponent } from './auth/AuthContext'
 import { I18nProvider } from './i18n'
 import { ThemeProvider } from './theme'
+import { SkinProvider } from './skin'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <I18nProvider>
-          <AuthProviderComponent>
-            <App />
-          </AuthProviderComponent>
-        </I18nProvider>
+        <SkinProvider>
+          <I18nProvider>
+            <AuthProviderComponent>
+              <App />
+            </AuthProviderComponent>
+          </I18nProvider>
+        </SkinProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,

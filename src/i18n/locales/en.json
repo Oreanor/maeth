@@ -39,7 +39,12 @@
     "errDelete": "Could not delete the game",
     "help": "How to play",
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "style": "Style",
+    "styleDefault": "Default",
+    "styleEngraving": "Engraving",
+    "styleMonochrome": "Monochrome",
+    "styleFantasy": "Fantasy"
   },
   "create": {
     "optOpen": "Open game",

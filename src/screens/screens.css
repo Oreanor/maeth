@@ -37,6 +37,11 @@
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
+  /* Dark ink to match the wordmark on the light theme... */
+  color: #1b1b2f;
+}
+/* ...and light to match the inverted wordmark on dark themes. */
+:root:not([data-theme='light']) .hero__star {
   color: #fff;
 }
 .login__note {

@@ -22,11 +22,14 @@ create table if not exists public.games (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   -- Points to the follow-up game once a rematch is started.
-  rematch_id uuid references public.games(id) on delete set null
+  rematch_id uuid references public.games(id) on delete set null,
+  -- When false, contested captures are resolved as clean takes (no dice).
+  duels_enabled boolean not null default true
 );
 
 -- Migration for existing databases:
 --   alter table public.games add column if not exists rematch_id uuid references public.games(id) on delete set null;
+--   alter table public.games add column if not exists duels_enabled boolean not null default true;
 
 create table if not exists public.game_players (
   game_id uuid not null references public.games(id) on delete cascade,

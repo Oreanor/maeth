@@ -1,0 +1,55 @@
+.gamelog {
+  display: flex;
+  flex-direction: column;
+  width: min(86vw, 420px);
+  border-radius: 12px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+/* Exactly three lines visible; older entries scroll above. */
+.gamelog__scroll {
+  height: calc(3 * 1.45em + 8px);
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  scrollbar-width: thin;
+}
+
+.gamelog__line + .gamelog__line {
+  margin-top: 4px;
+}
+
+.gamelog__line--white {
+  color: #4a90d9;
+}
+
+.gamelog__line--black {
+  color: #d64545;
+}
+
+.gamelog__line--neutral {
+  color: var(--muted, #6b7280);
+}
+
+.gamelog__status {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted, #6b7280);
+}
+
+.gamelog__status--white {
+  color: #4a90d9;
+}
+
+.gamelog__status--black {
+  color: #d64545;
+}
+
+.gamelog__status--neutral {
+  color: var(--muted, #6b7280);
+}

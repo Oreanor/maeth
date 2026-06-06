@@ -43,8 +43,11 @@
     "style": "Estilo",
     "styleDefault": "Padrão",
     "styleEngraving": "Gravura",
+    "styleColorEngraving": "Gravura colorida",
     "styleMonochrome": "Monocromático",
-    "styleFantasy": "Fantasia"
+    "styleFantasy": "Fantasia",
+    "styleSouthPark": "South Park",
+    "styleSimpsons": "Os Simpsons"
   },
   "create": {
     "optOpen": "Jogo aberto",
@@ -55,6 +58,8 @@
     "orEmail": "ou e-mail de um novo amigo",
     "emailPlaceholder": "email@example.com",
     "noFriends": "Sua lista de amigos está vazia",
+    "duels": "Duelos",
+    "duelsHint": "Capturas disputadas são resolvidas com dados",
     "submit": "Criar",
     "cancel": "Cancelar",
     "creating": "Criando…"
@@ -73,6 +78,16 @@
   "rules": {
     "title": "Como jogar",
     "body": "O objetivo é capturar mais peças do adversário do que ele captura das suas.\nFase 1 — draft: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\nFase 2 — movimentos: cada peça move-se apenas uma vez na partida toda, deslizando nas suas direções até o seu alcance (selecione uma peça para ver as setas).\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• Captura limpa — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• Duelo — se ela também ameaça a sua atacante (ameaça mútua), o golpe é disputado: ambos rolam um dado e o atacante vence com rolagem igual ou maior. Perdeu o duelo, a captura falha: sua peça fica no lugar e seu movimento é gasto.\nQuando não há mais movimentos, vence quem capturou mais peças; empate se for igual."
+  },
+  "log": {
+    "gameStarted": "Partida iniciada.",
+    "place": "{name}: {piece} → {square}",
+    "move": "{name}: {piece} {from}–{to}",
+    "capture": "{name}: {attacker} {from}–{to} capturou {victim}",
+    "duelWin": "{name}: {attacker} vs {victim}, duelo {roll}–{def}, capturado",
+    "duelFail": "{name}: {attacker} vs {victim}, duelo {roll}–{def}, falhou",
+    "win": "{name} vence",
+    "draw": "Empate"
   },
   "game": {
     "exit": "Sair do jogo",

@@ -4,9 +4,9 @@ import { listFriends } from '@/lib/api'
 import type { Friend } from '@/auth/types'
 
 export type CreateChoice =
-  | { mode: 'open' }
-  | { mode: 'friend'; invitedUserId?: string; invitedEmail?: string }
-  | { mode: 'bot' }
+  | { mode: 'open'; duels: boolean }
+  | { mode: 'friend'; invitedUserId?: string; invitedEmail?: string; duels: boolean }
+  | { mode: 'bot'; duels: boolean }
 
 type Mode = 'open' | 'friend' | 'bot'
 
@@ -30,6 +30,7 @@ export function CreateGameModal({
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendId, setFriendId] = useState('')
   const [email, setEmail] = useState('')
+  const [duels, setDuels] = useState(true)
 
   useEffect(() => {
     if (!online) return
@@ -50,10 +51,10 @@ export function CreateGameModal({
   const canSubmit = mode !== 'friend' || emailEntered || friendId !== ''
 
   const submit = () => {
-    if (mode === 'open') return onSubmit({ mode: 'open' })
-    if (mode === 'bot') return onSubmit({ mode: 'bot' })
-    if (emailEntered) return onSubmit({ mode: 'friend', invitedEmail: email.trim() })
-    if (friendId) return onSubmit({ mode: 'friend', invitedUserId: friendId })
+    if (mode === 'open') return onSubmit({ mode: 'open', duels })
+    if (mode === 'bot') return onSubmit({ mode: 'bot', duels })
+    if (emailEntered) return onSubmit({ mode: 'friend', invitedEmail: email.trim(), duels })
+    if (friendId) return onSubmit({ mode: 'friend', invitedUserId: friendId, duels })
   }
 
   return (
@@ -107,6 +108,14 @@ export function CreateGameModal({
           <label className="radio-row">
             <input type="radio" name="create-mode" checked={mode === 'bot'} onChange={() => setMode('bot')} />
             <span className="radio-row__title">{t('create.optBot')}</span>
+          </label>
+
+          <label className="check-row">
+            <input type="checkbox" checked={duels} onChange={(e) => setDuels(e.target.checked)} />
+            <span className="check-row__text">
+              <span className="check-row__title">{t('create.duels')}</span>
+              <span className="muted tiny">{t('create.duelsHint')}</span>
+            </span>
           </label>
         </div>
 

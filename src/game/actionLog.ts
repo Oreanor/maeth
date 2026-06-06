@@ -1,0 +1,147 @@
+import {
+  applyFailedStrike,
+  applyMove,
+  createInitialState,
+  placePiece,
+  type DuelRoll,
+} from './engine'
+import { PIECES, type PieceKind } from './pieces'
+import { cellSquare } from './notation'
+import type { Color, GameState } from './types'
+
+export interface LogNames {
+  white: string
+  black: string
+}
+
+export interface StoredAction {
+  id: number
+  action_type: 'place' | 'move'
+  payload: {
+    cell?: number
+    from?: number
+    to?: number
+    by?: Color
+    duel?: DuelRoll | null
+  }
+}
+
+type LogT = (key: string, vars?: Record<string, string | number>) => string
+
+/** Player colour for log styling; neutral for system lines. */
+export type LogColor = Color | 'neutral'
+
+export interface LogEntry {
+  text: string
+  color: LogColor
+}
+
+function actorName(color: Color, names: LogNames): string {
+  return color === 'white' ? names.white : names.black
+}
+
+function pieceLabel(kind: PieceKind): string {
+  return PIECES[kind].name
+}
+
+function applyStoredMove(
+  state: GameState,
+  from: number,
+  to: number,
+  duel: DuelRoll | null | undefined,
+): GameState {
+  const move = { from, to, capture: Boolean(state.board[to]) }
+  if (duel) return duel.success ? applyMove(state, move) : applyFailedStrike(state, move)
+  return applyMove(state, move)
+}
+
+/** Rebuild the full event log by replaying stored server/local actions. */
+export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT): LogEntry[] {
+  const lines: LogEntry[] = [{ text: t('log.gameStarted'), color: 'neutral' }]
+  let state = createInitialState()
+
+  for (const action of actions) {
+    const by = action.payload.by ?? state.turn
+
+    if (action.action_type === 'place' && typeof action.payload.cell === 'number') {
+      const kind = state.pending
+      if (!kind) continue
+      lines.push({
+        color: by,
+        text: t('log.place', {
+          name: actorName(by, names),
+          piece: pieceLabel(kind),
+          square: cellSquare(action.payload.cell),
+        }),
+      })
+      state = placePiece(state, action.payload.cell)
+      continue
+    }
+
+    if (
+      action.action_type === 'move' &&
+      typeof action.payload.from === 'number' &&
+      typeof action.payload.to === 'number'
+    ) {
+      const from = action.payload.from
+      const to = action.payload.to
+      const attacker = state.board[from]
+      if (!attacker) continue
+      const victim = state.board[to]
+      const duel = action.payload.duel
+      const fromSq = cellSquare(from)
+      const toSq = cellSquare(to)
+      const name = actorName(by, names)
+      const attackerName = pieceLabel(attacker.kind)
+
+      if (duel && victim) {
+        const key = duel.success ? 'log.duelWin' : 'log.duelFail'
+        lines.push({
+          color: by,
+          text: t(key, {
+            name,
+            attacker: attackerName,
+            victim: pieceLabel(victim.kind),
+            roll: duel.attacker,
+            def: duel.defender,
+          }),
+        })
+      } else if (victim) {
+        lines.push({
+          color: by,
+          text: t('log.capture', {
+            name,
+            attacker: attackerName,
+            from: fromSq,
+            to: toSq,
+            victim: pieceLabel(victim.kind),
+          }),
+        })
+      } else {
+        lines.push({
+          color: by,
+          text: t('log.move', {
+            name,
+            piece: attackerName,
+            from: fromSq,
+            to: toSq,
+          }),
+        })
+      }
+
+      state = applyStoredMove(state, from, to, duel)
+    }
+  }
+
+  if (state.phase === 'over') {
+    if (state.status.kind === 'draw') lines.push({ text: t('log.draw'), color: 'neutral' })
+    else if (state.status.kind === 'win') {
+      lines.push({
+        color: state.status.winner,
+        text: t('log.win', { name: actorName(state.status.winner, names) }),
+      })
+    }
+  }
+
+  return lines
+}

@@ -263,8 +263,10 @@ const rollD6 = () => 1 + Math.floor(Math.random() * 6)
 export function resolveMove(
   state: GameState,
   move: Move,
+  options: { duels?: boolean } = {},
 ): { next: GameState; duel: DuelRoll | null } {
-  if (!isDuelMove(state.board, move)) return { next: applyMove(state, move), duel: null }
+  const duelsOn = options.duels !== false
+  if (!duelsOn || !isDuelMove(state.board, move)) return { next: applyMove(state, move), duel: null }
   const attacker = rollD6()
   const defender = rollD6()
   const success = attacker >= defender // ties favour the attacker

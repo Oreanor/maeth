@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getGame, joinGame, submitGameAction, type ApiGame, type ApiGamePlayer, type SeriesScore } from '@/lib/api'
+import {
+  getGame,
+  joinGame,
+  submitGameAction,
+  type ApiGame,
+  type ApiGameAction,
+  type ApiGamePlayer,
+  type SeriesScore,
+} from '@/lib/api'
 import { useI18n } from '@/i18n'
 import type { DraftPick, DuelEvent } from './useGame'
 import { isDuelMove, legalMovesFrom, placePiece, placementCells } from './engine'
@@ -22,6 +30,8 @@ export interface UseRemoteGame {
   players: RemotePlayerRow[]
   /** Running win tally between the two players, by colour. */
   series: SeriesScore | null
+  /** Full play-by-play history from the server. */
+  actions: ApiGameAction[]
   selected: number | null
   legalTargets: number[]
   selectedMoves: Move[]
@@ -58,6 +68,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   const [player, setPlayer] = useState<RemoteGamePlayer | null>(null)
   const [players, setPlayers] = useState<RemotePlayerRow[]>([])
   const [series, setSeries] = useState<SeriesScore | null>(null)
+  const [actions, setActions] = useState<ApiGameAction[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -90,6 +101,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     setPlayer(data.player)
     setPlayers(data.players)
     setSeries(data.series)
+    setActions(data.actions ?? [])
 
     const latest = data.latestAction
 
@@ -103,7 +115,13 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
 
     const remoteDuel = latest?.payload.duel
     const by = latest?.payload.by
-    if (latest && remoteDuel && by && latest.id !== seenActionIdRef.current) {
+    if (
+      latest &&
+      remoteDuel &&
+      by &&
+      latest.id !== seenActionIdRef.current &&
+      data.game.duels_enabled !== false
+    ) {
       seenActionIdRef.current = latest.id
       setDuel({ ...remoteDuel, by })
     }
@@ -295,11 +313,11 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
             setSelected(null)
             // If this strike is contested, open the rolling duel panel right away
             // so the tap feels acknowledged; the server's roll fills it in.
-            if (isDuelMove(state.board, move)) setDuelPending(true)
+            if (game?.duels_enabled !== false && isDuelMove(state.board, move)) setDuelPending(true)
             submitGameAction(gameId, { type: 'move', from: move.from, to: move.to })
               .then((data) => {
                 setGame(data.game)
-                if (data.duel) {
+                if (data.duel && data.game.duels_enabled !== false) {
                   seenActionIdRef.current = data.latestAction.id
                   setDuel({ ...data.duel, by: state.turn })
                 }
@@ -337,6 +355,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     player,
     players,
     series,
+    actions,
     selected,
     legalTargets,
     selectedMoves,

@@ -42,8 +42,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const game = unwrapOne(
-    await auth.db.from('games').select('id, status, state').eq('id', id).single(),
-  ) as { id: string; status: string; state: unknown }
+    await auth.db.from('games').select('id, status, state, duels_enabled').eq('id', id).single(),
+  ) as { id: string; status: string; state: unknown; duels_enabled: boolean }
 
   if (game.status !== 'active') {
     json(res, 409, { error: 'Game is not active' })
@@ -57,7 +57,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const result = applyAction(state, action)
+  const result = applyAction(state, action, game.duels_enabled !== false)
   if (!result) {
     json(res, 400, { error: 'Illegal action' })
     return
@@ -91,10 +91,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .single(),
   )
 
-  json(res, 200, { game: { id, status: nextStatus, state: result.state }, duel: result.duel, latestAction: savedAction })
+  json(res, 200, {
+    game: { id, status: nextStatus, state: result.state, duels_enabled: game.duels_enabled !== false },
+    duel: result.duel,
+    latestAction: savedAction,
+  })
 }
 
-function applyAction(state: GameState, action: ActionBody): { state: GameState; duel: unknown } | null {
+function applyAction(
+  state: GameState,
+  action: ActionBody,
+  duels: boolean,
+): { state: GameState; duel: unknown } | null {
   if (action.type === 'place') {
     if (state.phase !== 'draft') return null
     if (!Number.isInteger(action.cell)) return null
@@ -106,7 +114,7 @@ function applyAction(state: GameState, action: ActionBody): { state: GameState; 
   if (!Number.isInteger(action.from) || !Number.isInteger(action.to)) return null
   const move = legalMovesFrom(state, action.from).find((m) => m.to === action.to)
   if (!move) return null
-  const { next, duel } = resolveMove(state, move)
+  const { next, duel } = resolveMove(state, move, { duels })
   return { state: next, duel }
 }
 

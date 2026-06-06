@@ -12,7 +12,14 @@ export function spriteCoords(kind: PieceKind): { col: number; row: number } {
   return { col: idx % 4, row: Math.floor(idx / 4) }
 }
 
-export const SPRITE_SKINS: Exclude<Skin, 'default'>[] = ['engraving', 'monochrome', 'fantasy']
+export const SPRITE_SKINS: Exclude<Skin, 'default'>[] = [
+  'engraving',
+  'color-engraving',
+  'monochrome',
+  'fantasy',
+  'southpark',
+  'simpsons',
+]
 
 export function isSpriteSkin(skin: Skin): boolean {
   return skin !== 'default'

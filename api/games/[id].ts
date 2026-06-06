@@ -70,7 +70,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const game = unwrap(
     await auth.db
       .from('games')
-      .select('id, status, state, created_at, updated_at, rematch_id, root_id')
+      .select('id, status, state, duels_enabled, created_at, updated_at, rematch_id, root_id')
       .eq('id', id)
       .single(),
   )
@@ -91,21 +91,21 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     presence: presenceOf(p, now),
   }))
 
-  const latestAction = unwrap(
+  const actions = unwrap(
     await auth.db
       .from('game_actions')
       .select('id, user_id, action_type, payload, created_at')
       .eq('game_id', id)
-      .order('id', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .order('id', { ascending: true }),
   )
+
+  const latestAction = actions.length > 0 ? actions[actions.length - 1] : null
 
   // Score for this room only — the chain of rematches sharing a root game.
   const roomKey = (game as { root_id?: string | null } | null)?.root_id ?? id
   const series = await roomSeries(auth.db, roomKey)
 
-  json(res, 200, { game, player: membership, players: playersWithPresence, latestAction, series })
+  json(res, 200, { game, player: membership, players: playersWithPresence, actions, latestAction, series })
 }
 
 interface SeriesScore {

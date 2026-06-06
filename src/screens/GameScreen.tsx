@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Board } from '@/components/Board'
 import { AppHeader } from '@/components/AppHeader'
 import { RulesModal } from '@/components/RulesModal'
 import { Scoreboard } from '@/components/Scoreboard'
-import { StatusBar } from '@/components/StatusBar'
+import { GameLog } from '@/components/GameLog'
+import { buildActionLog, type LogNames } from '@/game/actionLog'
+import { gameLogStatusColor, gameLogStatusLine } from '@/game/logStatus'
 import { ResultModal } from '@/components/ResultModal'
 import { DraftPickModal } from '@/components/DraftPickModal'
 import { DuelModal } from '@/components/DuelModal'
@@ -35,6 +37,7 @@ interface PlayConfig {
   vsBot: boolean
   opponentName: string
   humanColor: Color
+  duels?: boolean
 }
 
 export function GameScreen() {
@@ -45,6 +48,7 @@ export function GameScreen() {
     vsBot: true,
     opponentName: t('common.bot'),
     humanColor: 'white',
+    duels: true,
   }
   if (gameId) {
     // Key by id so following a rematch remounts with fresh state.
@@ -61,7 +65,11 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
   const human = config.humanColor
   const bot: Color = human === 'white' ? 'black' : 'white'
 
-  const game = useGame({ humanColor: human, vsBot: config.vsBot })
+  const game = useGame({
+    humanColor: human,
+    vsBot: config.vsBot,
+    duels: config.duels !== false,
+  })
   const {
     state,
     selected,
@@ -88,6 +96,26 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
   }, [state.phase])
   const showResult = state.phase === 'over' && !duel && !anim && !resultClosed
 
+  const logNames = useMemo<LogNames>(
+    () => ({
+      white: human === 'white' ? (user?.name ?? t('common.you')) : config.opponentName,
+      black: human === 'black' ? (user?.name ?? t('common.you')) : config.opponentName,
+    }),
+    [human, user?.name, config.opponentName, t],
+  )
+  const logEntries = useMemo(
+    () => buildActionLog(game.actions, logNames, t),
+    [game.actions, logNames, t],
+  )
+  const logStatus = gameLogStatusLine(
+    state.phase,
+    false,
+    isHumanTurn,
+    pendingDef ? `${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null,
+    t,
+  )
+  const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
+
   return (
     <div className="screen screen--game">
       <GameTopbar name={user?.name} onHelp={() => setRulesOpen(true)} onLogout={logout} />
@@ -100,14 +128,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         youName={user?.name ?? t('common.you')}
       />
 
-      <StatusBar
-        phase={state.phase}
-        isHumanTurn={isHumanTurn}
-        waiting={false}
-        pendingLabel={
-          pendingDef ? `${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null
-        }
-      />
+      <GameLog entries={logEntries} statusLine={logStatus} statusColor={logStatusColor} />
 
       <Board
         board={state.board}
@@ -202,6 +223,43 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
     }
   }
 
+  const human = remote.player?.color ?? config.humanColor
+  const opponentColor: Color = human === 'white' ? 'black' : 'white'
+  const opponent = remote.players.find((p) => p.color === opponentColor)
+  const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
+  const waiting = remote.game?.status === 'waiting'
+  const youName = user?.name ?? t('common.you')
+
+  const logNames = useMemo<LogNames>(() => {
+    const nameFor = (color: Color) => {
+      const row = remote.players.find((p) => p.color === color)
+      return row?.profiles?.display_name ?? (color === human ? youName : opponentName)
+    }
+    return { white: nameFor('white'), black: nameFor('black') }
+  }, [remote.players, human, youName, opponentName])
+  const logEntries = useMemo(
+    () => buildActionLog(remote.actions, logNames, t),
+    [remote.actions, logNames, t],
+  )
+  const logStatus = remote.state
+    ? gameLogStatusLine(
+        remote.state.phase,
+        waiting,
+        remote.isHumanTurn && !waiting,
+        remote.pendingDef
+          ? `${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
+          : null,
+        t,
+      )
+    : waiting
+      ? t('game.waitingPlayer')
+      : null
+  const logStatusColor = remote.state
+    ? gameLogStatusColor(remote.state.phase, waiting, remote.state.turn)
+    : waiting
+      ? 'neutral'
+      : null
+
   if (remote.loading) {
     return (
       <div className="screen screen--center">
@@ -222,11 +280,6 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   }
 
   const state = remote.state
-  const human = remote.player.color
-  const opponentColor: Color = human === 'white' ? 'black' : 'white'
-  const opponent = remote.players.find((p) => p.color === opponentColor)
-  const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
-  const waiting = remote.game?.status === 'waiting'
   // Only declare the result once the duel ceremony is fully played out and
   // dismissed — otherwise the win/loss modal pops over a still-rolling duel.
   const showResult = state.phase === 'over' && !remote.duel && !remote.duelPending && !resultClosed
@@ -246,16 +299,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         opponentPresence={opponent?.presence ?? null}
       />
 
-      <StatusBar
-        phase={state.phase}
-        isHumanTurn={remote.isHumanTurn && !waiting}
-        waiting={waiting}
-        pendingLabel={
-          remote.pendingDef
-            ? `${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
-            : null
-        }
-      />
+      <GameLog entries={logEntries} statusLine={logStatus} statusColor={logStatusColor} />
 
       <Board
         board={state.board}

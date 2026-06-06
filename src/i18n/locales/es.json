@@ -43,8 +43,11 @@
     "style": "Estilo",
     "styleDefault": "Predeterminado",
     "styleEngraving": "Grabado",
+    "styleColorEngraving": "Grabado en color",
     "styleMonochrome": "Monocromo",
-    "styleFantasy": "Fantasía"
+    "styleFantasy": "Fantasía",
+    "styleSouthPark": "South Park",
+    "styleSimpsons": "Los Simpson"
   },
   "create": {
     "optOpen": "Partida abierta",
@@ -55,6 +58,8 @@
     "orEmail": "o el e-mail de un nuevo amigo",
     "emailPlaceholder": "email@example.com",
     "noFriends": "Tu lista de amigos está vacía",
+    "duels": "Duelos",
+    "duelsHint": "Las capturas disputadas se resuelven con dados",
     "submit": "Crear",
     "cancel": "Cancelar",
     "creating": "Creando…"
@@ -73,6 +78,16 @@
   "rules": {
     "title": "Cómo jugar",
     "body": "El objetivo es capturar más piezas del rival de las que él capture de las tuyas.\nFase 1 — draft: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\nFase 2 — movimientos: cada pieza se mueve solo una vez en toda la partida, deslizándose en sus direcciones hasta su alcance (selecciona una pieza para ver sus flechas).\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• Captura limpia — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• Duelo — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya capturado más piezas; empate si es igual."
+  },
+  "log": {
+    "gameStarted": "Partida iniciada.",
+    "place": "{name}: {piece} → {square}",
+    "move": "{name}: {piece} {from}–{to}",
+    "capture": "{name}: {attacker} {from}–{to} capturó {victim}",
+    "duelWin": "{name}: {attacker} vs {victim}, duelo {roll}–{def}, capturado",
+    "duelFail": "{name}: {attacker} vs {victim}, duelo {roll}–{def}, fallido",
+    "win": "Gana {name}",
+    "draw": "Tablas"
   },
   "game": {
     "exit": "Salir del juego",

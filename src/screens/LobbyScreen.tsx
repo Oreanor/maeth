@@ -100,7 +100,14 @@ export function LobbyScreen() {
 
   const handleCreate = async (choice: CreateChoice) => {
     if (choice.mode === 'bot') {
-      navigate('/play', { state: { vsBot: true, opponentName: t('common.bot'), humanColor: 'white' } })
+      navigate('/play', {
+        state: {
+          vsBot: true,
+          opponentName: t('common.bot'),
+          humanColor: 'white',
+          duels: choice.duels,
+        },
+      })
       return
     }
 
@@ -109,8 +116,8 @@ export function LobbyScreen() {
     try {
       const options =
         choice.mode === 'friend'
-          ? { invitedUserId: choice.invitedUserId, invitedEmail: choice.invitedEmail }
-          : {}
+          ? { invitedUserId: choice.invitedUserId, invitedEmail: choice.invitedEmail, duels: choice.duels }
+          : { duels: choice.duels }
       const { game } = await createGame(options)
       // Open game: stay in the lobby and hand the creator a share link to send.
       // Friend invite: the friend gets it in their lobby, so just enter the game.

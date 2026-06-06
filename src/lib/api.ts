@@ -7,6 +7,8 @@ export interface ApiGame {
   id: string
   status: 'waiting' | 'active' | 'over' | 'cancelled'
   state: GameState
+  /** When false, contested captures are clean takes (no dice). */
+  duels_enabled?: boolean
   created_at?: string
   updated_at?: string
   /** Set once a rematch has been started — points to the follow-up game. */
@@ -47,17 +49,23 @@ export interface ApiIncomingInvite {
   }
 }
 
-export interface ApiLatestAction {
+export interface ApiGameAction {
   id: number
   user_id: string
   action_type: 'place' | 'move'
   payload: {
     duel?: DuelRoll | null
     by?: Color
+    cell?: number
+    from?: number
+    to?: number
     [key: string]: unknown
   }
   created_at: string
 }
+
+/** @deprecated alias */
+export type ApiLatestAction = ApiGameAction
 
 export type GameAction =
   | { type: 'place'; cell: number }
@@ -89,7 +97,7 @@ export async function getStats(): Promise<{ players: PlayerStats[] }> {
 }
 
 export async function createGame(
-  options: { invitedUserId?: string; invitedEmail?: string } = {},
+  options: { invitedUserId?: string; invitedEmail?: string; duels?: boolean } = {},
 ): Promise<{
   game: ApiGame
   player: ApiPlayer
@@ -112,7 +120,8 @@ export async function getGame(id: string): Promise<{
   game: ApiGame
   player: ApiPlayer
   players: ApiGamePlayer[]
-  latestAction: ApiLatestAction | null
+  actions: ApiGameAction[]
+  latestAction: ApiGameAction | null
   series: SeriesScore
 }> {
   return apiFetch(`/api/games/${id}`)
@@ -145,7 +154,7 @@ export async function createInvite(
 export async function submitGameAction(
   id: string,
   action: GameAction,
-): Promise<{ game: ApiGame; duel: DuelRoll | null; latestAction: ApiLatestAction }> {
+): Promise<{ game: ApiGame; duel: DuelRoll | null; latestAction: ApiGameAction }> {
   return apiFetch(`/api/games/${id}/actions`, {
     method: 'POST',
     body: JSON.stringify(action),

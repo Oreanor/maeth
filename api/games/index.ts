@@ -11,7 +11,7 @@ import {
   validateInvitedUser,
   withApiError,
 } from '../_lib/http.js'
-import { parseInvitedEmail, parseInvitedUserId } from '../_lib/request.js'
+import { parseDuelsEnabled, parseInvitedEmail, parseInvitedUserId } from '../_lib/request.js'
 
 interface GameRow {
   id: string
@@ -154,6 +154,7 @@ async function createGame(
 ) {
   const invitedUserId = parseInvitedUserId(body)
   const invitedEmail = parseInvitedEmail(body)
+  const duelsEnabled = parseDuelsEnabled(body)
   const validation = await validateInvitedUser(db, invitedUserId, userId)
   if (!validation.ok) {
     json(res, validation.status, { error: validation.error })
@@ -168,8 +169,13 @@ async function createGame(
   const game = unwrapOne(
     await db
       .from('games')
-      .insert({ created_by: userId, status: 'waiting', state: createInitialState() })
-      .select('id, status, state, created_at, updated_at')
+      .insert({
+        created_by: userId,
+        status: 'waiting',
+        state: createInitialState(),
+        duels_enabled: duelsEnabled,
+      })
+      .select('id, status, state, duels_enabled, created_at, updated_at')
       .single(),
   ) as GameRow
 
@@ -194,7 +200,10 @@ async function createGame(
 async function loadGames(db: SupabaseClient, ids: string[]): Promise<GameRow[]> {
   if (ids.length === 0) return []
   return (unwrap(
-    await db.from('games').select('id, status, state, created_at, updated_at, created_by').in('id', ids),
+    await db
+      .from('games')
+      .select('id, status, state, duels_enabled, created_at, updated_at, created_by')
+      .in('id', ids),
   ) ?? []) as GameRow[]
 }
 
@@ -224,11 +233,12 @@ async function loadProfiles(db: SupabaseClient, ids: string[]): Promise<Map<stri
   return new Map(rows.map((profile) => [profile.id, profile]))
 }
 
-function publicGame(game: GameRow) {
+function publicGame(game: GameRow & { duels_enabled?: boolean }) {
   return {
     id: game.id,
     status: game.status,
     state: game.state,
+    duels_enabled: game.duels_enabled !== false,
     created_at: game.created_at,
     updated_at: game.updated_at,
   }

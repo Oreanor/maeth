@@ -2,15 +2,33 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 // Visual skin: board colours and piece art. 'default' keeps emoji + the blue/grey
 // board; the others use sprite sheets from /public.
-export type Skin = 'default' | 'engraving' | 'monochrome' | 'fantasy'
+export type Skin =
+  | 'default'
+  | 'engraving'
+  | 'color-engraving'
+  | 'monochrome'
+  | 'fantasy'
+  | 'southpark'
+  | 'simpsons'
 
-export const SKINS: Skin[] = ['default', 'engraving', 'monochrome', 'fantasy']
+export const SKINS: Skin[] = [
+  'default',
+  'engraving',
+  'color-engraving',
+  'monochrome',
+  'fantasy',
+  'southpark',
+  'simpsons',
+]
 
 export const SKIN_I18N: Record<Skin, string> = {
   default: 'lobby.styleDefault',
   engraving: 'lobby.styleEngraving',
+  'color-engraving': 'lobby.styleColorEngraving',
   monochrome: 'lobby.styleMonochrome',
   fantasy: 'lobby.styleFantasy',
+  southpark: 'lobby.styleSouthPark',
+  simpsons: 'lobby.styleSimpsons',
 }
 
 const STORAGE_KEY = 'maeth.skin'

@@ -27,9 +27,18 @@
 [data-skin='engraving'] .piece-icon--sprite::before {
   background-image: url('/pieces-engraving.png');
 }
+[data-skin='color-engraving'] .piece-icon--sprite::before {
+  background-image: url('/pieces-color-engraving.png');
+}
 [data-skin='monochrome'] .piece-icon--sprite::before {
   background-image: url('/pieces-monochrome.png');
 }
 [data-skin='fantasy'] .piece-icon--sprite::before {
   background-image: url('/pieces-fantasy.png');
+}
+[data-skin='southpark'] .piece-icon--sprite::before {
+  background-image: url('/pieces-southpark.png');
+}
+[data-skin='simpsons'] .piece-icon--sprite::before {
+  background-image: url('/pieces-simpsons.png');
 }

@@ -20,6 +20,13 @@ export function parseInvitedUserId(body: unknown): string | undefined {
   return typeof record.invitedUserId === 'string' ? record.invitedUserId : undefined
 }
 
+/** Whether contested captures roll dice; defaults to true when omitted. */
+export function parseDuelsEnabled(body: unknown): boolean {
+  const record = readJsonBody(body)
+  if (!record || record.duels === undefined) return true
+  return record.duels !== false
+}
+
 /** Extract an optional, normalised `invitedEmail` shared by create-game/invite bodies. */
 export function parseInvitedEmail(body: unknown): string | undefined {
   const record = readJsonBody(body)

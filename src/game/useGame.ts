@@ -13,6 +13,7 @@ import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
 import type { Color, GameState, Move } from './types'
 import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
 import type { SeriesScore } from '@/lib/api'
+import type { StoredAction } from './actionLog'
 
 /** A resolved duel plus who attacked, for the UI banner. */
 export type DuelEvent = DuelRoll & { by: Color }
@@ -48,12 +49,16 @@ export interface UseGameOptions {
   /** Color the human plays (the other side is the bot when vsBot). */
   humanColor: Color
   vsBot: boolean
+  /** When false, contested captures are clean takes (no dice). */
+  duels: boolean
 }
 
 export interface UseGame {
   state: GameState
   /** Running score of this local session's games (rematches via reset), by colour. */
   series: SeriesScore
+  /** Local play-by-play history (same shape as server actions). */
+  actions: StoredAction[]
   /** Empty cells the human may drop the pending piece on (draft phase). */
   placementTargets: number[]
   /** Selected piece during the move phase. */
@@ -92,7 +97,7 @@ export interface UseGame {
   reset: () => void
 }
 
-export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
+export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   const [state, setState] = useState<GameState>(createInitialState)
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
@@ -109,7 +114,17 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
   // Per-session room score. Persists across `reset()` (a local rematch) and only
   // clears when the screen unmounts (i.e. you leave the room).
   const [series, setSeries] = useState<SeriesScore>({ white: 0, black: 0, draws: 0 })
+  const [localActions, setLocalActions] = useState<StoredAction[]>([])
+  const actionIdRef = useRef(0)
   const countedOverRef = useRef(false)
+
+  const recordAction = useCallback(
+    (action_type: StoredAction['action_type'], payload: StoredAction['payload']) => {
+      actionIdRef.current += 1
+      setLocalActions((prev) => [...prev, { id: actionIdRef.current, action_type, payload }])
+    },
+    [],
+  )
   const pickSlotRef = useRef(-1)
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const animTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -123,7 +138,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     (move: Move) => {
       const attacker = state.board[move.from]
       if (!attacker) return
-      const { next, duel: roll } = resolveMove(state, move)
+      const { next, duel: roll } = resolveMove(state, move, { duels })
       const kind: AnimKind = roll ? 'duel' : move.capture ? 'capture' : 'move'
       setSelected(null)
       setAnim({
@@ -137,7 +152,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
         duelEvent: roll ? { ...roll, by: state.turn } : null,
       })
     },
-    [state],
+    [state, duels],
   )
 
   const isHumanTurn = state.phase !== 'over' && (!vsBot || state.turn === humanColor)
@@ -181,6 +196,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
         // previewed cell confirms placement. On desktop the hover sets the
         // preview first, so a single click still places immediately.
         if (preview === cell) {
+          recordAction('place', { by: state.turn, cell })
           setState((prev) => placePiece(prev, cell))
           setPreview(null)
           setLastPlaced(cell)
@@ -208,7 +224,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
         else setSelected(null)
       }
     },
-    [isHumanTurn, anim, duel, state, selected, preview, startMove, pickReady],
+    [isHumanTurn, anim, duel, state, selected, preview, startMove, pickReady, recordAction],
   )
 
   const onCellEnter = useCallback(
@@ -239,12 +255,20 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     setPendingMove(null)
     setPendingNext(null)
     if (!next) return
+    if (move) {
+      recordAction('move', {
+        by: move.owner,
+        from: move.from,
+        to: move.to,
+        duel: duel ?? null,
+      })
+    }
     if (won && move) {
       setAnim({ ...move, kind: 'capture', next, duelEvent: null })
     } else {
       setState(next)
     }
-  }, [duel, pendingMove, pendingNext])
+  }, [duel, pendingMove, pendingNext, recordAction])
 
   const reset = useCallback(() => {
     clearTimeout(timer.current)
@@ -264,6 +288,8 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     setPick(null)
     setPickReady(false)
     setLastPlaced(null)
+    setLocalActions([])
+    actionIdRef.current = 0
   }, [])
 
   // Start a fresh pick ceremony whenever a new piece is drawn (a new draft
@@ -337,6 +363,12 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
           })
           setDuel(anim.duelEvent)
         } else {
+          recordAction('move', {
+            by: anim.owner,
+            from: anim.from,
+            to: anim.to,
+            duel: null,
+          })
           setState(anim.next)
         }
         setAnim(null)
@@ -344,7 +376,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
       anim.kind === 'duel' ? ANIM_DUEL_MS : ANIM_MOVE_MS,
     )
     return () => clearTimeout(animTimer.current)
-  }, [anim])
+  }, [anim, recordAction])
 
   // Bot turn (draft placement or move), with a short "thinking" delay. The bot
   // waits while a move is animating or a duel modal is open.
@@ -362,6 +394,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
         if (state.phase === 'draft') {
           const cell = chooseBotPlacement(state)
           if (cell != null) {
+            recordAction('place', { by: state.turn, cell })
             setState(placePiece(state, cell))
             setLastPlaced(cell)
           }
@@ -375,7 +408,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
     )
 
     return () => clearTimeout(timer.current)
-  }, [state, vsBot, humanColor, anim, duel, startMove, pickReady])
+  }, [state, vsBot, humanColor, anim, duel, startMove, pickReady, recordAction])
 
   // Tally the room score once per finished game (the count survives reset()).
   useEffect(() => {
@@ -405,6 +438,7 @@ export function useGame({ humanColor, vsBot }: UseGameOptions): UseGame {
   return {
     state,
     series,
+    actions: localActions,
     placementTargets,
     selected,
     legalTargets,

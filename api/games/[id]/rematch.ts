@@ -31,8 +31,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const game = unwrapOne(
-    await db.from('games').select('id, status, created_by, rematch_id, root_id').eq('id', id).single(),
-  ) as { id: string; status: string; created_by: string; rematch_id: string | null; root_id: string | null }
+    await db
+      .from('games')
+      .select('id, status, created_by, rematch_id, root_id, duels_enabled')
+      .eq('id', id)
+      .single(),
+  ) as {
+    id: string
+    status: string
+    created_by: string
+    rematch_id: string | null
+    root_id: string | null
+    duels_enabled: boolean
+  }
 
   if (game.status !== 'over') {
     json(res, 409, { error: 'Game is not finished' })
@@ -60,6 +71,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         status: 'active',
         state: createInitialState(),
         root_id: game.root_id ?? game.id,
+        duels_enabled: game.duels_enabled !== false,
       })
       .select('id')
       .single(),

@@ -294,6 +294,14 @@
 .rules-modal__body {
   font-size: 14px;
   line-height: 1.5;
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+}
+.rules-modal__body p {
+  margin: 0 0 10px;
+}
+.rules-modal__body p:last-child {
+  margin-bottom: 0;
 }
 
 /* full-width primary action (e.g. "Create game") */

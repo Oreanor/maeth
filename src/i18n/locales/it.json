@@ -67,7 +67,7 @@
   },
   "rules": {
     "title": "Come si gioca",
-    "body": "Fase 1 — draft: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato. Fase 2 — mosse: ogni pedina si muove al massimo una volta (scivola nelle sue direzioni fino alla sua portata). Se catturi una pedina che mira anche a te, è un duello ai dadi (devi fare almeno lo stesso punteggio). L'obiettivo è catturare più pedine avversarie possibile. Chi cattura di più vince."
+    "body": "L'obiettivo è catturare più pedine avversarie di quante l'avversario ne catturi delle tue.\nFase 1 — draft: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato.\nFase 2 — mosse: ogni pedina si muove una sola volta in tutta la partita, scivolando nelle sue direzioni fino alla sua portata (seleziona una pedina per vedere le frecce).\nCatturi muovendoti su una pedina nemica. Ci sono due casi:\n• Cattura netta — se quella pedina non può colpire a sua volta la tua attaccante, la prendi automaticamente.\n• Duello — se minaccia anche la tua attaccante (minaccia reciproca), il colpo è conteso: entrambi tirano un dado e l'attaccante vince con un tiro pari o superiore. Se perdi il duello, la cattura fallisce: la tua pedina resta dov'è e la sua mossa è spesa.\nQuando non restano mosse, vince chi ha catturato più pedine; pareggio se sono pari."
   },
   "game": {
     "exit": "Esci dalla partita",

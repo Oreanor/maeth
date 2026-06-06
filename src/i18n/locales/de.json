@@ -67,7 +67,7 @@
   },
   "rules": {
     "title": "Spielanleitung",
-    "body": "Phase 1 — Draft: Zieht abwechselnd blind eine Figur und setzt sie auf ein beliebiges freies Feld, 4 pro Seite. Phase 2 — Züge: Jede Figur zieht höchstens einmal (gleitet in ihren Richtungen bis zu ihrer Reichweite). Schlägst du eine Figur, die auch dich bedroht, gibt es ein Würfelduell (du musst mindestens gleich hoch würfeln). Ziel ist es, möglichst viele gegnerische Figuren zu schlagen. Wer mehr schlägt, gewinnt."
+    "body": "Ziel ist es, mehr gegnerische Figuren zu schlagen, als der Gegner von deinen schlägt.\nPhase 1 — Draft: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\nPhase 2 — Züge: Jede Figur zieht im ganzen Spiel nur einmal und gleitet in ihren Richtungen bis zu ihrer Reichweite (wähle eine Figur, um ihre Pfeile zu sehen).\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• Sauberer Schlag — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• Duell — bedroht sie auch deine Angreiferin (gegenseitige Bedrohung), ist der Schlag umkämpft: beide würfeln, und die Angreiferin gewinnt bei gleich hohem oder höherem Wurf. Verlierst du das Duell, misslingt der Schlag: deine Figur bleibt stehen und ihr Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer mehr Figuren geschlagen hat; bei Gleichstand unentschieden."
   },
   "game": {
     "exit": "Spiel verlassen",

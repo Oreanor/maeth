@@ -67,7 +67,7 @@
   },
   "rules": {
     "title": "Cómo jugar",
-    "body": "Fase 1 — draft: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando. Fase 2 — movimientos: cada pieza se mueve como máximo una vez (se desliza en sus direcciones hasta su alcance). Si capturas una pieza que también te apunta, hay un duelo de dados (debes sacar al menos lo mismo). El objetivo es capturar tantas piezas del rival como sea posible. Quien captura más, gana."
+    "body": "El objetivo es capturar más piezas del rival de las que él capture de las tuyas.\nFase 1 — draft: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\nFase 2 — movimientos: cada pieza se mueve solo una vez en toda la partida, deslizándose en sus direcciones hasta su alcance (selecciona una pieza para ver sus flechas).\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• Captura limpia — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• Duelo — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya capturado más piezas; empate si es igual."
   },
   "game": {
     "exit": "Salir del juego",

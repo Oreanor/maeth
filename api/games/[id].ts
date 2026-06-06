@@ -91,13 +91,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     presence: presenceOf(p, now),
   }))
 
-  const actions = unwrap(
-    await auth.db
-      .from('game_actions')
-      .select('id, user_id, action_type, payload, created_at')
-      .eq('game_id', id)
-      .order('id', { ascending: true }),
-  )
+  const actions =
+    unwrap(
+      await auth.db
+        .from('game_actions')
+        .select('id, user_id, action_type, payload, created_at')
+        .eq('game_id', id)
+        .order('id', { ascending: true }),
+    ) ?? []
 
   const latestAction = actions.length > 0 ? actions[actions.length - 1] : null
 

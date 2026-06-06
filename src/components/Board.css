@@ -128,13 +128,14 @@
   filter: grayscale(0.4);
 }
 
-.piece__icon {
+.piece__icon.piece-icon--sprite {
   width: 88%;
   height: 88%;
 }
 
 .piece__icon.piece-icon--emoji {
   font-size: inherit;
+  line-height: 1;
 }
 
 /* pieces you can pick up: hover lifts + brightens them, and the portrait shivers.

@@ -34,7 +34,7 @@
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
 
-.anim-piece__icon {
+.anim-piece__icon.piece-icon--sprite {
   width: 84%;
   height: 84%;
 }

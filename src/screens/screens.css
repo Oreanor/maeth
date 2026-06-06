@@ -882,6 +882,12 @@
   font-weight: 600;
 }
 
+.game-end-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 .screen__exit {
-  margin-top: 4px;
+  margin-top: 0;
 }

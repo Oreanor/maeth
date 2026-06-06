@@ -100,7 +100,7 @@
   "draft": {
     "picking": "Выбор фигуры",
     "choose": "Выбрать",
-    "tapToChoose": "Ткните, чтобы выбрать",
+    "tapToChoose": "Тапните, чтобы выбрать",
     "opponentPicking": "{name} выбирает…",
     "yourPiece": "Ваша фигура",
     "oppPiece": "Фигура: {name}"

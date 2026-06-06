@@ -130,9 +130,16 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
 
       <SeriesBar series={game.series} human={human} opponent={bot} />
 
-      <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
-        {t('game.exit')}
-      </button>
+      <div className="game-end-actions">
+        {state.phase === 'over' && resultClosed && (
+          <button className="btn btn--sm" onClick={game.reset}>
+            {t('result.again')}
+          </button>
+        )}
+        <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
+          {t('game.exit')}
+        </button>
+      </div>
 
       <DraftPickModal
         pick={draftPick}
@@ -270,9 +277,16 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
 
       {remote.series && <SeriesBar series={remote.series} human={human} opponent={opponentColor} />}
 
-      <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
-        {t('game.exit')}
-      </button>
+      <div className="game-end-actions">
+        {state.phase === 'over' && resultClosed && (
+          <button className="btn btn--sm" onClick={playAgain} disabled={rematching}>
+            {t('result.again')}
+          </button>
+        )}
+        <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
+          {t('game.exit')}
+        </button>
+      </div>
 
       <DraftPickModal
         pick={remote.draftPick}

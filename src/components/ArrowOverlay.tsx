@@ -123,7 +123,9 @@ export function ArrowOverlay({ cell, arrows, orientation, ghost }: Props) {
         const py = ux
         return (
           <g key={n} stroke={a.color} fill={a.color}>
-            <line x1={sx} y1={sy} x2={ex} y2={ey} strokeWidth={0.07} strokeLinecap="round" />
+            {/* Stop the shaft at the head's base so its rounded cap doesn't poke
+                out past the tip (which made the head look slid-back). */}
+            <line x1={sx} y1={sy} x2={bx} y2={by} strokeWidth={0.07} strokeLinecap="round" />
             <polygon
               points={`${ex},${ey} ${bx + px * half},${by + py * half} ${bx - px * half},${by - py * half}`}
               stroke="none"

@@ -8,6 +8,7 @@ import { StatusBar } from '@/components/StatusBar'
 import { ResultModal } from '@/components/ResultModal'
 import { DraftPickModal } from '@/components/DraftPickModal'
 import { DuelModal } from '@/components/DuelModal'
+import { SeriesBar } from '@/components/SeriesBar'
 import { useGame } from '@/game/useGame'
 import type { Color } from '@/game/types'
 import { pieceBadge } from '@/game/pieces'
@@ -126,6 +127,8 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         onBoardLeave={game.clearPreview}
         interactive={isHumanTurn && !anim && !duel}
       />
+
+      <SeriesBar series={game.series} human={human} opponent={bot} />
 
       <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
         {t('game.exit')}
@@ -264,6 +267,8 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         onBoardLeave={remote.clearPreview}
         interactive={remote.isHumanTurn && !waiting && !remote.duel && !remote.thinking}
       />
+
+      {remote.series && <SeriesBar series={remote.series} human={human} opponent={opponentColor} />}
 
       <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
         {t('game.exit')}

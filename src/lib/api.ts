@@ -101,11 +101,19 @@ export async function createGame(
   })
 }
 
+/** Running head-to-head tally between the two players, by colour. */
+export interface SeriesScore {
+  white: number
+  black: number
+  draws: number
+}
+
 export async function getGame(id: string): Promise<{
   game: ApiGame
   player: ApiPlayer
   players: ApiGamePlayer[]
   latestAction: ApiLatestAction | null
+  series: SeriesScore
 }> {
   return apiFetch(`/api/games/${id}`)
 }

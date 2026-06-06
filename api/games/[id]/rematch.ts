@@ -31,8 +31,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const game = unwrapOne(
-    await db.from('games').select('id, status, created_by, rematch_id').eq('id', id).single(),
-  ) as { id: string; status: string; created_by: string; rematch_id: string | null }
+    await db.from('games').select('id, status, created_by, rematch_id, root_id').eq('id', id).single(),
+  ) as { id: string; status: string; created_by: string; rematch_id: string | null; root_id: string | null }
 
   if (game.status !== 'over') {
     json(res, 409, { error: 'Game is not finished' })
@@ -51,10 +51,16 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   ) ?? []) as PlayerRow[]
 
   // Both players are already known, so the rematch starts active right away.
+  // Inherit the room root (the original game) so the whole chain groups together.
   const fresh = unwrapOne(
     await db
       .from('games')
-      .insert({ created_by: game.created_by, status: 'active', state: createInitialState() })
+      .insert({
+        created_by: game.created_by,
+        status: 'active',
+        state: createInitialState(),
+        root_id: game.root_id ?? game.id,
+      })
       .select('id')
       .single(),
   ) as { id: string }

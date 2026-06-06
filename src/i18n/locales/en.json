@@ -83,6 +83,7 @@
     "loadingGame": "Loading game…",
     "notFound": "Game not found",
     "toLobby": "To lobby",
+    "series": "Series",
     "placed": "Placed: you {me}/{total} · opponent {opp}/{total}",
     "youDrew": "You drew:",
     "draftHint": "hover/tap a square — arrows show the moves; tap again to place",

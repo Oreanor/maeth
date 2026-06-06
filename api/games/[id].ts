@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { json, method, requireAuth, unwrap, withApiError } from '../_lib/http.js'
 import { routeParam } from '../_lib/request.js'
 
@@ -69,7 +70,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const game = unwrap(
     await auth.db
       .from('games')
-      .select('id, status, state, created_at, updated_at, rematch_id')
+      .select('id, status, state, created_at, updated_at, rematch_id, root_id')
       .eq('id', id)
       .single(),
   )
@@ -100,7 +101,41 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .maybeSingle(),
   )
 
-  json(res, 200, { game, player: membership, players: playersWithPresence, latestAction })
+  // Score for this room only — the chain of rematches sharing a root game.
+  const roomKey = (game as { root_id?: string | null } | null)?.root_id ?? id
+  const series = await roomSeries(auth.db, roomKey)
+
+  json(res, 200, { game, player: membership, players: playersWithPresence, latestAction, series })
+}
+
+interface SeriesScore {
+  white: number
+  black: number
+  draws: number
+}
+
+// Win tally for the room: every finished game in the rematch chain (the games
+// sharing this root), read straight from each game's final state and keyed by
+// colour. Colours stay fixed across rematches, so this reads as the running
+// score for the room and lives and dies with the room's games (no separate
+// per-opponent record is kept — the leaderboard handles all-time totals).
+async function roomSeries(db: SupabaseClient, roomKey: string): Promise<SeriesScore> {
+  const score: SeriesScore = { white: 0, black: 0, draws: 0 }
+  const roomGames = (unwrap(
+    await db.from('games').select('status, state').or(`id.eq.${roomKey},root_id.eq.${roomKey}`),
+  ) ?? []) as { status: string; state: { status?: { kind: string; winner?: string } } | null }[]
+
+  for (const g of roomGames) {
+    if (g.status !== 'over') continue
+    const result = g.state?.status
+    if (!result) continue
+    if (result.kind === 'draw') score.draws++
+    else if (result.kind === 'win') {
+      if (result.winner === 'white') score.white++
+      else if (result.winner === 'black') score.black++
+    }
+  }
+  return score
 }
 
 export default withApiError(handler)

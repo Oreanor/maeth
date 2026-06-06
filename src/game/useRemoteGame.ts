@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getGame, joinGame, submitGameAction, type ApiGame, type ApiGamePlayer } from '@/lib/api'
+import { getGame, joinGame, submitGameAction, type ApiGame, type ApiGamePlayer, type SeriesScore } from '@/lib/api'
 import { useI18n } from '@/i18n'
 import type { DraftPick, DuelEvent } from './useGame'
 import { isDuelMove, legalMovesFrom, placePiece, placementCells } from './engine'
@@ -20,6 +20,8 @@ export interface UseRemoteGame {
   state: GameState | null
   player: RemoteGamePlayer | null
   players: RemotePlayerRow[]
+  /** Running win tally between the two players, by colour. */
+  series: SeriesScore | null
   selected: number | null
   legalTargets: number[]
   selectedMoves: Move[]
@@ -55,6 +57,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   const [game, setGame] = useState<ApiGame | null>(null)
   const [player, setPlayer] = useState<RemoteGamePlayer | null>(null)
   const [players, setPlayers] = useState<RemotePlayerRow[]>([])
+  const [series, setSeries] = useState<SeriesScore | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -86,6 +89,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     setGame(data.game)
     setPlayer(data.player)
     setPlayers(data.players)
+    setSeries(data.series)
 
     const latest = data.latestAction
 
@@ -332,6 +336,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     state,
     player,
     players,
+    series,
     selected,
     legalTargets,
     selectedMoves,

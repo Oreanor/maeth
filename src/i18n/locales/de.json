@@ -85,6 +85,7 @@
     "loadingGame": "Spiel wird geladen…",
     "notFound": "Spiel nicht gefunden",
     "toLobby": "Zur Lobby",
+    "series": "Serie",
     "placed": "Gesetzt: du {me}/{total} · Gegner {opp}/{total}",
     "youDrew": "Du hast gezogen:",
     "draftHint": "Feld antippen/darüberfahren — Pfeile zeigen die Züge; erneut tippen zum Setzen",

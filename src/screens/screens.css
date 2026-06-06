@@ -25,6 +25,27 @@
   font-size: 64px;
   line-height: 1;
 }
+/* Wrap the wordmark so the footnote asterisk can sit in its top corner. */
+.hero__logo-wrap {
+  position: relative;
+  display: inline-block;
+}
+.hero__star {
+  position: absolute;
+  top: 4px;
+  right: -2px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+}
+.login__note {
+  margin-top: 14px;
+  max-width: min(82vw, 360px);
+}
+.login__note-star {
+  font-weight: 800;
+}
 /* Tengwar "Maeth" wordmark. The art is dark ink on transparent, so it reads on
    the light theme as-is; on dark themes we invert it to a light glyph. */
 .hero__wordmark {
@@ -699,7 +720,8 @@
   cursor: pointer;
 }
 /* On close the window collapses almost to a point, then unmounts. */
-.pick-modal--closing {
+.pick-modal--closing,
+.modal--closing {
   animation: pick-collapse 0.3s ease-in-out forwards;
   pointer-events: none;
 }

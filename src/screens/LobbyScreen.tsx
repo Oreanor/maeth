@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import './screens.css'
 
 export function LobbyScreen() {
-  const { user, logout } = useAuth()
+  const { user, logout, online } = useAuth()
   const { t, lang } = useI18n()
   // Day + time so two games against the same opponent are still distinguishable.
   const formatWhen = (iso?: string) =>
@@ -44,10 +44,8 @@ export function LobbyScreen() {
   const [dismissedInvites, setDismissedInvites] = useState<string[]>([])
   const [confirmTarget, setConfirmTarget] = useState<ApiGameListItem | null>(null)
 
-  const isGoogle = user?.provider === 'google'
-
   const loadGameLists = useCallback(async () => {
-    if (!isGoogle) return
+    if (!online) return
     setLoadingGames(true)
     setError(null)
     try {
@@ -59,10 +57,10 @@ export function LobbyScreen() {
     } finally {
       setLoadingGames(false)
     }
-  }, [isGoogle])
+  }, [online])
 
   useEffect(() => {
-    if (!isGoogle) return
+    if (!online) return
     let alive = true
     setLoadingGames(true)
     setError(null)
@@ -81,12 +79,12 @@ export function LobbyScreen() {
     return () => {
       alive = false
     }
-  }, [isGoogle])
+  }, [online])
 
   // Quietly poll so a freshly received invite (or game update) appears without a
   // manual refresh — and the new-invite popup can pop on its own.
   useEffect(() => {
-    if (!isGoogle) return
+    if (!online) return
     const timer = window.setInterval(() => {
       listGames()
         .then((data) => {
@@ -98,7 +96,7 @@ export function LobbyScreen() {
         })
     }, 5000)
     return () => window.clearInterval(timer)
-  }, [isGoogle])
+  }, [online])
 
   const handleCreate = async (choice: CreateChoice) => {
     if (choice.mode === 'bot') {
@@ -201,7 +199,7 @@ export function LobbyScreen() {
 
       {error && <p className="muted tiny">{error}</p>}
 
-      {isGoogle && (
+      {online && (
         <section className="card">
           <div className="section-head">
             <h3>{t('lobby.yourGames')}</h3>
@@ -258,7 +256,7 @@ export function LobbyScreen() {
         </section>
       )}
 
-      {isGoogle && (
+      {online && (
         <section className="card">
           <div className="section-head">
             <h3>{t('lobby.invites')}</h3>
@@ -300,7 +298,7 @@ export function LobbyScreen() {
 
       {createOpen && (
         <CreateGameModal
-          isGoogle={isGoogle}
+          online={online}
           submitting={creating}
           error={createError}
           onSubmit={handleCreate}
@@ -311,7 +309,14 @@ export function LobbyScreen() {
       {shareGameId && (
         <ShareLinkModal
           url={`${window.location.origin}/play/${shareGameId}`}
-          onClose={() => setShareGameId(null)}
+          onClose={() => {
+            // Drop the creator straight into their freshly made open game.
+            const id = shareGameId
+            setShareGameId(null)
+            navigate(`/play/${id}`, {
+              state: { vsBot: false, opponentName: t('common.friend'), humanColor: 'white' },
+            })
+          }}
         />
       )}
 

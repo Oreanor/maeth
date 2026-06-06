@@ -15,7 +15,11 @@ import type { User as SupabaseUser } from '@supabase/supabase-js'
 interface AuthContextValue {
   user: AppUser | null
   loading: boolean
-  /** Sign in with the given provider. Google uses Supabase; guest is local-only. */
+  /** True when the user is backed by a Supabase session (Google or anonymous
+   *  guest) and can therefore use the networked API. */
+  online: boolean
+  /** Sign in with the given provider. Google uses Supabase OAuth; guest uses an
+   *  anonymous Supabase session (or a local-only user when Supabase is absent). */
   login: (provider: AuthProvider) => Promise<void>
   logout: () => void
 }
@@ -54,13 +58,13 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
       const sessionUser = data.session?.user
-      setUser(sessionUser ? fromSupabaseUser(sessionUser) : loadLocalUser())
+      setUser(sessionUser ? fromSupabaseUser(sessionUser) : null)
       if (sessionUser) void syncProfile()
       setLoading(false)
     })
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? fromSupabaseUser(session.user) : loadLocalUser())
+      setUser(session?.user ? fromSupabaseUser(session.user) : null)
       if (session?.user) void syncProfile()
       setLoading(false)
     })
@@ -90,6 +94,19 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
       return
     }
 
+    // Guest: an anonymous Supabase session gives a real id + token so guests can
+    // play networked games (they're just kept out of the stats). Without
+    // Supabase configured, fall back to a purely local user (bot-only).
+    if (supabase) {
+      setLoading(true)
+      const { error } = await supabase.auth.signInAnonymously()
+      if (error) {
+        setLoading(false)
+        throw error
+      }
+      return // onAuthStateChange sets the user
+    }
+
     setLoading(true)
     const u: AppUser = { id: `guest-${Date.now()}`, name: 'Guest', provider: 'guest' }
     setUser(u)
@@ -103,9 +120,10 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
     void supabase?.auth.signOut()
   }, [])
 
+  const online = Boolean(supabase) && !!user
   const value = useMemo(
-    () => ({ user, loading, login, logout }),
-    [user, loading, login, logout],
+    () => ({ user, loading, online, login, logout }),
+    [user, loading, online, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -120,6 +138,9 @@ async function syncProfile() {
 }
 
 function fromSupabaseUser(user: SupabaseUser): AppUser {
+  if (user.is_anonymous) {
+    return { id: user.id, name: 'Guest', provider: 'guest' }
+  }
   const meta = user.user_metadata
   return {
     id: user.id,

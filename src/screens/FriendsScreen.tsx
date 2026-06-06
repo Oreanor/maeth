@@ -8,10 +8,9 @@ import { createGame, listFriends } from '@/lib/api'
 import './screens.css'
 
 export function FriendsScreen() {
-  const { user } = useAuth()
+  const { online } = useAuth()
   const { t } = useI18n()
   const navigate = useNavigate()
-  const isGoogle = user?.provider === 'google'
 
   const [friends, setFriends] = useState<Friend[] | null>(null)
   const [creatingFor, setCreatingFor] = useState<string | null>(null)
@@ -21,7 +20,7 @@ export function FriendsScreen() {
     let alive = true
     setFriends(null)
     setError(null)
-    const request = isGoogle ? listFriends().then(({ friends }) => friends) : fetchFriends()
+    const request = online ? listFriends().then(({ friends }) => friends) : fetchFriends()
     request
       .then((f) => {
         if (alive) setFriends(f)
@@ -34,10 +33,10 @@ export function FriendsScreen() {
     return () => {
       alive = false
     }
-  }, [isGoogle, t])
+  }, [online, t])
 
   const invite = async (f: Friend) => {
-    if (!isGoogle) return
+    if (!online) return
     setCreatingFor(f.id)
     setError(null)
     try {
@@ -67,7 +66,7 @@ export function FriendsScreen() {
       ) : error ? (
         <p className="muted">{error}</p>
       ) : friends.length === 0 ? (
-        <p className="muted">{isGoogle ? t('friends.emptyGoogle') : t('friends.empty')}</p>
+        <p className="muted">{online ? t('friends.emptyGoogle') : t('friends.empty')}</p>
       ) : (
         <ul className="list">
           {friends.map((f) => (
@@ -77,7 +76,7 @@ export function FriendsScreen() {
                 <div>
                   <div className="who__name">{f.name}</div>
                   <div className="muted tiny">
-                    {isGoogle
+                    {online
                       ? t('friends.googlePlayer')
                       : `${f.username ? `@${f.username} · ` : ''}${f.online ? '●' : '○'}`}
                   </div>
@@ -86,7 +85,7 @@ export function FriendsScreen() {
               <div className="row-actions">
                 <button
                   className="btn btn--sm"
-                  disabled={!isGoogle || creatingFor === f.id}
+                  disabled={!online || creatingFor === f.id}
                   onClick={() => invite(f)}
                 >
                   {creatingFor === f.id ? t('friends.inviting') : t('friends.invite')}

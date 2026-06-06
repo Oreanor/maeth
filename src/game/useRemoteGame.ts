@@ -5,12 +5,7 @@ import type { DraftPick, DuelEvent } from './useGame'
 import { isDuelMove, legalMovesFrom, placePiece, placementCells } from './engine'
 import { PIECES, type PieceDef } from './pieces'
 import type { Color, GameState, Move } from './types'
-
-// Same blind-draw pacing as the local game (see useGame): linger on the drawn
-// portrait, the shrink-to-a-point close, then the wait before the next pick.
-const PICK_REVEAL_MS = 1000
-const PICK_CLOSE_MS = 300
-const PICK_OPEN_DELAY_MS = 1000
+import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
 
 export interface RemoteGamePlayer {
   color: Color
@@ -122,7 +117,16 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     getGame(gameId)
       .catch(async (e) => {
         if (e instanceof Error && e.message === 'Game not found') {
-          await joinGame(gameId)
+          try {
+            await joinGame(gameId)
+          } catch (joinErr) {
+            // A concurrent join (e.g. StrictMode's double-mount, or a quick
+            // double-click) may have already seated us. Re-check membership: if
+            // we're in, carry on; only surface the error if we truly aren't.
+            const recheck = await getGame(gameId).catch(() => null)
+            if (recheck) return recheck
+            throw joinErr
+          }
           return getGame(gameId)
         }
         throw e
@@ -197,9 +201,12 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   }, [state?.pending])
 
   // Start a fresh pick ceremony each time it becomes your turn to draw, after a
-  // short beat so the opponent's just-placed piece registers first.
+  // short beat so the opponent's just-placed piece registers first. While the
+  // game is still waiting for the second player, hold the roulette — there's no
+  // point drawing a piece you can't place yet.
+  const waiting = game?.status === 'waiting'
   const draftSlot =
-    state?.phase === 'draft' && isHumanTurn && state.pending != null
+    state?.phase === 'draft' && isHumanTurn && !waiting && state.pending != null
       ? state.placed.white + state.placed.black
       : -1
   useEffect(() => {

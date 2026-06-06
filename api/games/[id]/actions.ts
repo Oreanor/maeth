@@ -120,6 +120,9 @@ async function recordResult(db: SupabaseClient, gameId: string, status: GameStat
   const white = players.find((p) => p.color === 'white')?.user_id
   const black = players.find((p) => p.color === 'black')?.user_id
   if (!white || !black) return
+  // The row is always written; the leaderboard query filters out guest profiles,
+  // so a registered player still gets credit for beating a guest, while the
+  // guest themselves never shows up or accumulates a record.
   const outcome = status.kind === 'win' ? status.winner : 'draw'
   unwrap(
     await db

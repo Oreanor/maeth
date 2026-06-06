@@ -21,7 +21,7 @@ function detectLang(): Lang {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored && (LANGS as string[]).includes(stored)) return stored as Lang
   const nav = navigator.language.slice(0, 2).toLowerCase()
-  return (LANGS as string[]).includes(nav) ? (nav as Lang) : 'ru'
+  return (LANGS as string[]).includes(nav) ? (nav as Lang) : 'en'
 }
 
 /** Resolve a dotted key like "lobby.create" against a dictionary. */

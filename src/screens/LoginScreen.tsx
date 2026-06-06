@@ -22,8 +22,10 @@ export function LoginScreen() {
   return (
     <div className="screen screen--center">
       <div className="hero">
-        <img className="hero__wordmark" src={logoMaeth} alt="Maeth" />
-        <p className="muted">{t('login.subtitle')}</p>
+        <div className="hero__logo-wrap">
+          <img className="hero__wordmark" src={logoMaeth} alt="Maeth" />
+          <span className="hero__star" aria-hidden="true">*</span>
+        </div>
       </div>
 
       <div className="stack">
@@ -38,6 +40,10 @@ export function LoginScreen() {
           {t('login.guest')}
         </button>
       </div>
+
+      <p className="login__note muted tiny">
+        <span className="login__note-star" aria-hidden="true">*</span> {t('login.subtitle')}
+      </p>
 
       {error && <p className="muted tiny">{error}</p>}
       {!isSupabaseConfigured && <p className="muted tiny">{t('login.needConfig')}</p>}

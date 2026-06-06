@@ -127,9 +127,13 @@ function bearerToken(req: VercelRequest): string | null {
 }
 
 async function ensureProfile(db: SupabaseClient, user: User): Promise<string | null> {
+  // Anonymous (guest) sessions get a minimal profile marked `guest`, which keeps
+  // them out of the leaderboard while still naming them in games.
+  const isGuest = user.is_anonymous === true
   const meta = user.user_metadata
-  const displayName =
-    typeof meta.full_name === 'string'
+  const displayName = isGuest
+    ? 'Guest'
+    : typeof meta.full_name === 'string'
       ? meta.full_name
       : typeof meta.name === 'string'
         ? meta.name
@@ -139,8 +143,8 @@ async function ensureProfile(db: SupabaseClient, user: User): Promise<string | n
   const { error } = await db.from('profiles').upsert({
     id: user.id,
     display_name: displayName,
-    avatar_url: typeof meta.avatar_url === 'string' ? meta.avatar_url : null,
-    provider: 'google',
+    avatar_url: !isGuest && typeof meta.avatar_url === 'string' ? meta.avatar_url : null,
+    provider: isGuest ? 'guest' : 'google',
     updated_at: now,
     // Activity heartbeat: every authenticated request marks the user online.
     last_seen: now,

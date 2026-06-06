@@ -11,6 +11,7 @@ import { chooseBotMove, chooseBotPlacement } from './bot'
 import { PIECES, type PieceDef, type PieceKind } from './pieces'
 import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
 import type { Color, GameState, Move } from './types'
+import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
 
 /** A resolved duel plus who attacked, for the UI banner. */
 export type DuelEvent = DuelRoll & { by: Color }
@@ -36,12 +37,6 @@ type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner
 const ANIM_MOVE_MS = 1100
 const ANIM_DUEL_MS = 650 // just the arrow; the dice then roll in the modal
 
-// How long the drawn portrait lingers after it's chosen, then how long the
-// shrink-to-a-point close animation runs, then how long to wait after a piece
-// lands before opening the human's next pick (so the placement is noticed).
-const PICK_REVEAL_MS = 1000
-const PICK_CLOSE_MS = 300
-const PICK_OPEN_DELAY_MS = 1000
 // The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
 // (~2× the old delay) placement, and a 2–3s idle "think" before each move.
 const botPickDelay = () => 1000 + Math.random() * 1000

@@ -7,6 +7,7 @@ const STORAGE_KEY = 'maeth.theme'
 function detectTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === 'dark' || stored === 'light') return stored
+  // Honour an explicit OS light preference; otherwise default to dark.
   return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
 }
 

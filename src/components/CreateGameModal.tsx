@@ -10,28 +10,29 @@ export type CreateChoice =
 
 type Mode = 'open' | 'friend' | 'bot'
 
-/** Panel to start a game: open (link), invite a friend (list or email), or bot. */
+/** Panel to start a game: open (link), invite a friend (list or email), or bot.
+ *  Networked modes need an online account; offline users only get the bot. */
 export function CreateGameModal({
-  isGoogle,
+  online,
   submitting,
   error,
   onSubmit,
   onClose,
 }: {
-  isGoogle: boolean
+  online: boolean
   submitting: boolean
   error: string | null
   onSubmit: (choice: CreateChoice) => void
   onClose: () => void
 }) {
   const { t } = useI18n()
-  const [mode, setMode] = useState<Mode>('open')
+  const [mode, setMode] = useState<Mode>(online ? 'open' : 'bot')
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendId, setFriendId] = useState('')
   const [email, setEmail] = useState('')
 
   useEffect(() => {
-    if (!isGoogle) return
+    if (!online) return
     let alive = true
     listFriends()
       .then(({ friends }) => {
@@ -43,7 +44,7 @@ export function CreateGameModal({
     return () => {
       alive = false
     }
-  }, [isGoogle])
+  }, [online])
 
   const emailEntered = email.trim() !== ''
   const canSubmit = mode !== 'friend' || emailEntered || friendId !== ''
@@ -61,19 +62,23 @@ export function CreateGameModal({
         <h3>{t('lobby.create')}</h3>
 
         <div className="create-opts">
-          <label className="radio-row">
-            <input type="radio" name="create-mode" checked={mode === 'open'} onChange={() => setMode('open')} />
-            <span className="radio-row__text">
-              <span className="radio-row__title">{t('create.optOpen')}</span>
-              <span className="muted tiny">{t('create.optOpenHint')}</span>
-            </span>
-          </label>
+          {online && (
+            <label className="radio-row">
+              <input type="radio" name="create-mode" checked={mode === 'open'} onChange={() => setMode('open')} />
+              <span className="radio-row__text">
+                <span className="radio-row__title">{t('create.optOpen')}</span>
+                <span className="muted tiny">{t('create.optOpenHint')}</span>
+              </span>
+            </label>
+          )}
 
-          <label className="radio-row">
-            <input type="radio" name="create-mode" checked={mode === 'friend'} onChange={() => setMode('friend')} />
-            <span className="radio-row__title">{t('create.optFriend')}</span>
-          </label>
-          {mode === 'friend' && (
+          {online && (
+            <label className="radio-row">
+              <input type="radio" name="create-mode" checked={mode === 'friend'} onChange={() => setMode('friend')} />
+              <span className="radio-row__title">{t('create.optFriend')}</span>
+            </label>
+          )}
+          {online && mode === 'friend' && (
             <div className="create-friend">
               <select
                 className="lang-select create-friend__select"

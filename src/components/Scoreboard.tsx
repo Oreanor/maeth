@@ -28,6 +28,7 @@ export function Scoreboard({
     <div className="score">
       <div className="score__names">
         <span className="score__name">{youName}</span>
+        <span className="score__vs">vs</span>
         <span className="score__name">
           {opponentPresence && (
             <span className={`presence-dot presence-dot--${opponentPresence}`} title={presenceTitle} />

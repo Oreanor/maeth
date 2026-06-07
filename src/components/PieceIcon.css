@@ -45,3 +45,14 @@
 [data-skin='chess'] .piece-icon--sprite::before {
   background-image: url('/pieces-chess.png');
 }
+[data-skin='8bit'] .piece-icon--sprite::before {
+  background-image: url('/pieces-8bit.png');
+}
+[data-skin='16bit'] .piece-icon--sprite::before {
+  background-image: url('/pieces-16bit.png');
+}
+
+[data-skin='8bit'] .piece-icon--sprite,
+[data-skin='16bit'] .piece-icon--sprite {
+  image-rendering: pixelated;
+}

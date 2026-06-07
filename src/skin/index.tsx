@@ -11,6 +11,8 @@ export type Skin =
   | 'southpark'
   | 'simpsons'
   | 'chess'
+  | '8bit'
+  | '16bit'
 
 export const SKINS: Skin[] = [
   'default',
@@ -21,6 +23,8 @@ export const SKINS: Skin[] = [
   'southpark',
   'simpsons',
   'chess',
+  '8bit',
+  '16bit',
 ]
 
 export const SKIN_I18N: Record<Skin, string> = {
@@ -32,6 +36,8 @@ export const SKIN_I18N: Record<Skin, string> = {
   southpark: 'lobby.styleSouthPark',
   simpsons: 'lobby.styleSimpsons',
   chess: 'lobby.styleChess',
+  '8bit': 'lobby.style8bit',
+  '16bit': 'lobby.style16bit',
 }
 
 const STORAGE_KEY = 'maeth.skin'

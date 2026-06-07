@@ -38,6 +38,7 @@
     "errAccept": "Could not accept the invitation",
     "errDelete": "Could not delete the game",
     "help": "How to play",
+    "settings": "Settings",
     "theme": "Theme",
     "language": "Language",
     "style": "Style",
@@ -48,7 +49,9 @@
     "styleFantasy": "Fantasy",
     "styleSouthPark": "South Park",
     "styleSimpsons": "The Simpsons",
-    "styleChess": "Chess"
+    "styleChess": "Chess",
+    "style8bit": "8-bit",
+    "style16bit": "16-bit"
   },
   "create": {
     "optOpen": "Open game",
@@ -78,7 +81,7 @@
   },
   "rules": {
     "title": "How to play",
-    "body": "The goal is to capture more of the opponent's pieces than they capture of yours.\nPhase 1 — draft: take turns blindly drawing a piece and placing it on any free square, 4 per side.\nPhase 2 — moves: each piece may move only once the whole game, sliding along its own directions up to its range (select a piece to see its arrows).\nYou capture by moving onto an enemy piece. There are two cases:\n• Clean capture — if that piece can't strike your attacker back, you take it automatically.\n• Duel — if it also threatens your attacker (you menace each other), the strike is contested: both roll a die and the attacker wins on an equal-or-higher roll. Lose the duel and the capture fails — your piece stays put and its move is spent.\nWhen no moves remain, whoever captured more pieces wins; an equal count is a draw."
+    "body": "The goal is to **capture more of the opponent's pieces** than they capture of yours.\n**Phase 1 — draft**: take turns blindly drawing a piece and placing it on any free square, 4 per side.\n**Phase 2 — moves**: each piece may move **only once** the whole game, sliding along its own directions up to its **range** (select a piece to see its arrows).\n**Piece markings** (e.g. 1+, 2*, 3x): the number is **range** — how many cells the piece can slide. The symbol is **direction**:\n• **+** — straight only (horizontal and vertical)\n• **x** — diagonal only\n• **\u002a** — all eight directions\nYou capture by moving onto an enemy piece. There are two cases:\n• **Clean capture** — if that piece can't strike your attacker back, you take it automatically.\n• **Duel** — if it also threatens your attacker (you menace each other), the strike is contested: both roll a die and the attacker wins on an equal-or-higher roll. Lose the duel and the capture fails — your piece stays put and its move is spent.\nWhen no moves remain, whoever **captured more pieces** wins; an equal count is a **draw**."
   },
   "log": {
     "gameStarted": "Game started.",
@@ -137,7 +140,8 @@
     "defense": "{name} · defense",
     "success": "Hit landed!",
     "miss": "Missed!",
-    "rolling": "rolling the dice…"
+    "rolling": "rolling the dice…",
+    "tapToClose": "Tap to continue"
   },
   "result": {
     "draw": "🤝 Draw",

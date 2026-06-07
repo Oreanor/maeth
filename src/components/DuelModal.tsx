@@ -5,7 +5,6 @@ import type { DuelEvent } from '@/game/useGame'
 
 const ROLL_MS = 400 // how long each die "shuffles" before settling
 const LEAD_MS = 100 // empty dice shown before the first one starts rolling
-const RESULT_HOLD_MS = 1100 // how long the result lingers before it auto-closes
 const CLOSE_MS = 300 // collapse animation duration (matches the CSS keyframe)
 
 // Pip positions on a 3×3 grid (cells 1‑9) for each face value.
@@ -125,19 +124,11 @@ export function DuelModal({
     }
   }, [duel])
 
-  // After the result shows, linger, play the same shrink-to-a-point close as the
-  // draft pick modal, then commit (replays the capture / advances the game).
-  useEffect(() => {
-    if (stage !== 'done') return
-    const ts: ReturnType<typeof setTimeout>[] = []
-    ts.push(
-      setTimeout(() => {
-        setClosing(true)
-        ts.push(setTimeout(() => onCloseRef.current(), CLOSE_MS))
-      }, RESULT_HOLD_MS),
-    )
-    return () => ts.forEach(clearTimeout)
-  }, [stage])
+  const dismiss = () => {
+    if (stage !== 'done' || closing) return
+    setClosing(true)
+    setTimeout(() => onCloseRef.current(), CLOSE_MS)
+  }
 
   if (!open) return null
   const attackerIsYou = duel ? duel.by === human : true // a pending duel is always your own strike
@@ -147,10 +138,20 @@ export function DuelModal({
   const tone = stage !== 'done' ? '' : good ? 'duel-modal--good' : 'duel-modal--bad'
 
   return (
-    <div className={`modal-backdrop ${closing ? 'modal-backdrop--closing' : ''}`}>
+    <div
+      className={`modal-backdrop ${closing ? 'modal-backdrop--closing' : ''} ${
+        stage === 'done' ? 'modal-backdrop--dismissible' : ''
+      }`.trim()}
+      onClick={stage === 'done' ? dismiss : undefined}
+    >
       <div
-        className={`modal duel-modal ${tone} ${closing ? 'modal--closing' : ''}`}
-        onClick={(e) => e.stopPropagation()}
+        className={`modal duel-modal ${tone} ${closing ? 'modal--closing' : ''} ${
+          stage === 'done' ? 'duel-modal--done' : ''
+        }`.trim()}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (stage === 'done') dismiss()
+        }}
       >
         <div className="duel-modal__title">{t('duel.title')}</div>
         <div className="duel-modal__players">
@@ -168,7 +169,12 @@ export function DuelModal({
         </div>
         <div className="duel-modal__footer">
           {stage === 'done' ? (
-            <div className="duel-modal__result">{duel?.success ? t('duel.success') : t('duel.miss')}</div>
+            <>
+              <div className="duel-modal__result">{duel?.success ? t('duel.success') : t('duel.miss')}</div>
+              <button type="button" className="btn btn--ghost duel-modal__dismiss" onClick={dismiss}>
+                {t('duel.tapToClose')}
+              </button>
+            </>
           ) : (
             <div className="muted tiny">{t('duel.rolling')}</div>
           )}

@@ -155,24 +155,24 @@
   align-items: center;
   gap: 10px;
 }
-/* avatar dropdown menu (theme / language / sign out), shared lobby + game */
+/* settings dropdown (theme / style / language / sign out), shared lobby + game */
 .usermenu {
   position: relative;
 }
-.usermenu__avatar {
+.usermenu__trigger {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 10px;
   border: none;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 700;
-  font-size: 15px;
-  text-transform: uppercase;
+  background: transparent;
+  color: var(--text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.usermenu__trigger:hover {
+  background: rgba(127, 127, 127, 0.15);
 }
 .usermenu__overlay {
   position: fixed;
@@ -299,6 +299,10 @@
 }
 .rules-modal__body p {
   margin: 0 0 10px;
+}
+.rules-modal__body p strong {
+  color: var(--text);
+  font-weight: 700;
 }
 .rules-modal__body p:last-child {
   margin-bottom: 0;
@@ -607,6 +611,9 @@
   align-items: center;
   gap: 16px;
 }
+.modal.rules-modal {
+  width: min(92vw, 540px);
+}
 .duel-modal {
   border-top: 5px solid transparent;
 }
@@ -813,7 +820,16 @@
 .duel-modal--bad .duel-modal__result {
   color: #e23b34;
 }
-.duel-modal .btn {
+.modal-backdrop--dismissible {
+  cursor: pointer;
+}
+.duel-modal--done {
+  cursor: pointer;
+}
+.duel-modal__dismiss {
+  margin-top: 8px;
+  font-size: 13px;
+}
   width: 100%;
 }
 
@@ -828,7 +844,16 @@
 .score__names {
   display: flex;
   width: 100%;
-  align-items: flex-start;
+  align-items: center;
+}
+.score__vs {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: lowercase;
+  padding: 0 4px;
+  line-height: 1;
 }
 .score__name {
   flex: 1 1 0;
@@ -841,11 +866,11 @@
    symmetric (and aligned over their score) regardless of name length. */
 .score__name:first-child {
   text-align: right;
-  padding-right: 12px;
+  padding-right: 6px;
 }
 .score__name:last-child {
   text-align: left;
-  padding-left: 12px;
+  padding-left: 6px;
 }
 /* opponent presence: red offline · amber online · green in this game */
 .presence-dot {

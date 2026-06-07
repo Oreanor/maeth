@@ -38,6 +38,7 @@
     "errAccept": "No se pudo aceptar la invitación",
     "errDelete": "No se pudo eliminar la partida",
     "help": "Cómo jugar",
+    "settings": "Ajustes",
     "theme": "Tema",
     "language": "Idioma",
     "style": "Estilo",
@@ -48,7 +49,9 @@
     "styleFantasy": "Fantasía",
     "styleSouthPark": "South Park",
     "styleSimpsons": "Los Simpson",
-    "styleChess": "Ajedrez"
+    "styleChess": "Ajedrez",
+    "style8bit": "8 bits",
+    "style16bit": "16 bits"
   },
   "create": {
     "optOpen": "Partida abierta",
@@ -78,7 +81,7 @@
   },
   "rules": {
     "title": "Cómo jugar",
-    "body": "El objetivo es capturar más piezas del rival de las que él capture de las tuyas.\nFase 1 — draft: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\nFase 2 — movimientos: cada pieza se mueve solo una vez en toda la partida, deslizándose en sus direcciones hasta su alcance (selecciona una pieza para ver sus flechas).\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• Captura limpia — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• Duelo — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya capturado más piezas; empate si es igual."
+    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas** (p. ej. 1+, 2*, 3x): el número es el **alcance** en casillas; el símbolo, la **dirección**:\n• **+** — solo recto (horizontal y vertical)\n• **x** — solo diagonal\n• **\u002a** — las ocho direcciones\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual."
   },
   "log": {
     "gameStarted": "Partida iniciada.",
@@ -137,7 +140,8 @@
     "defense": "{name} · defensa",
     "success": "¡Golpe acertado!",
     "miss": "¡Fallaste!",
-    "rolling": "lanzando los dados…"
+    "rolling": "lanzando los dados…",
+    "tapToClose": "Toca para continuar"
   },
   "result": {
     "draw": "🤝 Empate",

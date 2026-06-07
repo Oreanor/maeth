@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Globe, LogOut, Moon, Palette, Sun } from 'lucide-react'
+import { Globe, LogOut, Moon, Palette, Settings, Sun } from 'lucide-react'
 import { LANGS, useI18n, type Lang } from '@/i18n'
 import { useTheme } from '@/theme'
 import { SKINS, SKIN_I18N, useSkin, type Skin } from '@/skin'
 
-/** Avatar button that opens a dropdown with the theme switch, language picker
- *  and sign-out. Shared by the lobby and the in-game header. */
+/** Settings button that opens theme, style, language and sign-out. */
 export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => void }) {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
@@ -15,13 +14,13 @@ export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => vo
   return (
     <div className="usermenu">
       <button
-        className="usermenu__avatar"
+        className="usermenu__trigger"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={name}
+        aria-label={t('lobby.settings')}
       >
-        {name?.[0] ?? '?'}
+        <Settings size={22} strokeWidth={2} />
       </button>
 
       {open && (

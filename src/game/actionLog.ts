@@ -5,7 +5,7 @@ import {
   replayPlace,
   type DuelRoll,
 } from './engine'
-import { PIECES, type PieceKind } from './pieces'
+import { type PieceKind } from './pieces'
 import { cellSquare } from './notation'
 import type { Color, GameState } from './types'
 
@@ -41,8 +41,8 @@ function actorName(color: Color, names: LogNames): string {
   return color === 'white' ? names.white : names.black
 }
 
-function pieceLabel(kind: PieceKind): string {
-  return PIECES[kind].name
+function pieceLabel(kind: PieceKind, t: LogT): string {
+  return t(`pieces.${kind}`)
 }
 
 function applyStoredMove(
@@ -71,7 +71,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
         color: by,
         text: t('log.place', {
           name: actorName(by, names),
-          piece: pieceLabel(kind),
+          piece: pieceLabel(kind, t),
           square: cellSquare(action.payload.cell),
         }),
       })
@@ -93,7 +93,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
       const fromSq = cellSquare(from)
       const toSq = cellSquare(to)
       const name = actorName(by, names)
-      const attackerName = pieceLabel(attacker.kind)
+      const attackerName = pieceLabel(attacker.kind, t)
 
       if (duel && victim) {
         const key = duel.success ? 'log.duelWin' : 'log.duelFail'
@@ -102,7 +102,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
           text: t(key, {
             name,
             attacker: attackerName,
-            victim: pieceLabel(victim.kind),
+            victim: pieceLabel(victim.kind, t),
             roll: duel.attacker,
             def: duel.defender,
           }),
@@ -115,7 +115,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
             attacker: attackerName,
             from: fromSq,
             to: toSq,
-            victim: pieceLabel(victim.kind),
+            victim: pieceLabel(victim.kind, t),
           }),
         })
       } else {

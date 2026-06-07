@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { useI18n } from '@/i18n'
-import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, type Pattern, type PieceKind } from '@/game/pieces'
+import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, pieceName, type Pattern, type PieceKind } from '@/game/pieces'
 import { MoveCompass } from './MoveCompass'
 import { PatternRose } from './PatternRose'
 import { useAnimatedClose } from './useAnimatedClose'
@@ -66,7 +66,7 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
               </div>
               {RULES_SORTED_KINDS.map((kind: PieceKind) => (
                 <div key={kind} className="rules-pieces__row" role="row">
-                  <span role="cell">{t(`pieces.${kind}`)}</span>
+                  <span role="cell">{pieceName(kind, t)}</span>
                   <span className="rules-pieces__range" role="cell">
                     {PIECES[kind].range}
                   </span>

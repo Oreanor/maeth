@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
 import type { Color, LotteryState } from '@/game/types'
+import { ModalContentSizer } from './ModalContentSizer'
 
 const ROLL_MS = 2200
 const SPIN_INTERVAL = 80
@@ -47,6 +48,7 @@ export function TurnLotteryModal({
   onStart,
   rolling,
   starting,
+  humanConfirmsStart = false,
 }: {
   lottery: LotteryState
   myColor: Color
@@ -57,6 +59,8 @@ export function TurnLotteryModal({
   onStart: () => void
   rolling: boolean
   starting: boolean
+  /** Local bot game: human confirms start even when the bot moves first. */
+  humanConfirmsStart?: boolean
 }) {
   const { t } = useI18n()
   const [face, setFace] = useState<number | null>(null)
@@ -95,20 +99,21 @@ export function TurnLotteryModal({
   }, [lottery.step, roll])
 
   const canStart = settled && firstTurn != null && myColor === firstTurn
+  const showStartButton =
+    settled && firstTurn != null && (canStart || (humanConfirmsStart && !canStart))
 
   return (
     <div className="modal-backdrop">
       <div className="modal duel-modal turn-lottery-modal">
+        <ModalContentSizer>
         {lottery.step === 'await_roll' ? (
           <>
-            <div className="duel-modal__title">
-              {isCreator ? t('lottery.opponentJoined') : t('lottery.title')}
-            </div>
+            <div className="duel-modal__title">{t('lottery.title')}</div>
             {isCreator ? (
               <>
                 <p className="muted turn-lottery-modal__hint">{t('lottery.rollPrompt')}</p>
                 <button type="button" className="btn" onClick={onRoll} disabled={rolling}>
-                  {t('lottery.rollButton')}
+                  {t('lottery.okButton')}
                 </button>
               </>
             ) : (
@@ -118,9 +123,6 @@ export function TurnLotteryModal({
         ) : (
           <>
             <div className="duel-modal__title">{t('lottery.title')}</div>
-            <p className="muted tiny turn-lottery-modal__rule">
-              {spinning || !settled ? t('lottery.rule') : t('lottery.rolled', { value: String(roll ?? '') })}
-            </p>
             <div className="duel-modal__dice turn-lottery-modal__dice">
               <div className="die-box">
                 <Die3D value={face} spinning={spinning} />
@@ -130,25 +132,29 @@ export function TurnLotteryModal({
               {settled && firstTurn != null ? (
                 <>
                   <div className="turn-lottery-modal__result">
+                    <div className="muted tiny turn-lottery-modal__first-turn">
+                      {t('lottery.firstTurnLabel')}
+                    </div>
                     <PlayerName
                       color={firstTurn}
                       name={firstTurn === 'white' ? whiteName : blackName}
                     />
                   </div>
-                  {canStart ? (
+                  {showStartButton ? (
                     <button type="button" className="btn" onClick={onStart} disabled={starting}>
-                      {t('lottery.startButton')}
+                      {canStart ? t('lottery.startButton') : t('lottery.okButton')}
                     </button>
                   ) : (
                     <p className="muted tiny">{t('lottery.waitingStart')}</p>
                   )}
                 </>
               ) : (
-                <div className="muted tiny">{t('lottery.spinning')}</div>
+                <p className="muted tiny turn-lottery-modal__rule">{t('lottery.rule')}</p>
               )}
             </div>
           </>
         )}
+        </ModalContentSizer>
       </div>
     </div>
   )

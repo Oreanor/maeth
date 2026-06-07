@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
-import { PIECES, type PieceKind } from '@/game/pieces'
+import { PIECES, pieceName, type PieceKind } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import type { DraftPick } from '@/game/useGame'
 import { PieceBadge } from './PieceBadge'
@@ -83,7 +83,7 @@ export function DraftPickModal({
         <div className="pick-modal__name">
           {settled && def ? (
             <span className="pick-modal__badge-line">
-              {def.name} · <PieceBadge kind={def.kind} roseSize={13} />
+              {pieceName(def.kind, t)} · <PieceBadge kind={def.kind} roseSize={13} />
             </span>
           ) : (
             ' '

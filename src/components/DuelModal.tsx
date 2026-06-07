@@ -135,22 +135,23 @@ export function DuelModal({
   const attackerName = attackerIsYou ? youName : opponentName
   const defenderName = attackerIsYou ? opponentName : youName
   const good = duel ? duel.success === attackerIsYou : false
-  const tone = stage !== 'done' ? '' : good ? 'duel-modal--good' : 'duel-modal--bad'
+  const done = stage === 'done'
+  const resultTone = done && duel ? (good ? 'duel-modal__result--good' : 'duel-modal__result--bad') : ''
 
   return (
     <div
       className={`modal-backdrop ${closing ? 'modal-backdrop--closing' : ''} ${
-        stage === 'done' ? 'modal-backdrop--dismissible' : ''
+        done ? 'modal-backdrop--dismissible' : ''
       }`.trim()}
-      onClick={stage === 'done' ? dismiss : undefined}
+      onClick={done ? dismiss : undefined}
     >
       <div
-        className={`modal duel-modal ${tone} ${closing ? 'modal--closing' : ''} ${
-          stage === 'done' ? 'duel-modal--done' : ''
+        className={`modal duel-modal ${closing ? 'modal--closing' : ''} ${
+          done ? 'duel-modal--done' : ''
         }`.trim()}
         onClick={(e) => {
           e.stopPropagation()
-          if (stage === 'done') dismiss()
+          if (done) dismiss()
         }}
       >
         <div className="duel-modal__title">{t('duel.title')}</div>
@@ -168,16 +169,21 @@ export function DuelModal({
           </div>
         </div>
         <div className="duel-modal__footer">
-          {stage === 'done' ? (
-            <>
-              <div className="duel-modal__result">{duel?.success ? t('duel.success') : t('duel.miss')}</div>
-              <button type="button" className="btn btn--ghost duel-modal__dismiss" onClick={dismiss}>
-                {t('duel.tapToClose')}
-              </button>
-            </>
-          ) : (
-            <div className="muted tiny">{t('duel.rolling')}</div>
-          )}
+          <div
+            className={`duel-modal__result ${done ? resultTone : 'duel-modal__result--rolling'}`.trim()}
+          >
+            {done ? (duel?.success ? t('duel.success') : t('duel.miss')) : t('duel.rolling')}
+          </div>
+          <button
+            type="button"
+            className={`btn btn--ghost duel-modal__dismiss ${done ? 'duel-modal__dismiss--visible' : ''}`}
+            onClick={dismiss}
+            disabled={!done}
+            tabIndex={done ? 0 : -1}
+            aria-hidden={!done}
+          >
+            {t('duel.tapToClose')}
+          </button>
         </div>
       </div>
     </div>

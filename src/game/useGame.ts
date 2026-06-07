@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   beginDraft,
-  createInitialState,
   createLotteryState,
   firstTurnFromRoll,
   legalMovesFrom,
@@ -38,7 +37,6 @@ type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner
 
 const ANIM_MOVE_MS = 1100
 const ANIM_DUEL_AIM_MS = 650
-const LOTTERY_START_MS = 2200
 
 // The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
 // (~2× the old delay) placement, and a 2–3s idle "think" before each move.
@@ -96,14 +94,14 @@ export interface UseGame {
   /** Drop the draft preview (e.g. pointer left the board). */
   clearPreview: () => void
   reset: () => void
-  /** Turn lottery before the draft (shown again on each local rematch). */
+  /** Turn lottery before the draft (every local game and rematch). */
   inLottery: boolean
   rollLottery: () => void
   startLottery: () => void
 }
 
 export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
-  const [state, setState] = useState<GameState>(createInitialState)
+  const [state, setState] = useState<GameState>(createLotteryState)
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
   const [duel, setDuel] = useState<DuelEvent | null>(null)
@@ -299,10 +297,10 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
       if (prev.phase !== 'lottery' || prev.lottery?.step !== 'revealed' || !prev.lottery.firstTurn) {
         return prev
       }
-      if (prev.lottery.firstTurn !== humanColor) return prev
+      if (!vsBot && prev.lottery.firstTurn !== humanColor) return prev
       return beginDraft(prev.lottery.firstTurn)
     })
-  }, [humanColor])
+  }, [humanColor, vsBot])
 
   // Settle the spinning portrait on the actually-drawn piece (human's button, or
   // the bot's auto-pick). The reveal effect then closes the modal after a beat.
@@ -379,16 +377,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     }, ms)
     return () => clearTimeout(animTimer.current)
   }, [anim, recordAction])
-
-  // Bot goes first after the dice settle — no Start button for the human.
-  useEffect(() => {
-    if (!vsBot) return
-    if (state.phase !== 'lottery' || state.lottery?.step !== 'revealed') return
-    const first = state.lottery.firstTurn
-    if (!first || first === humanColor) return
-    const id = setTimeout(() => setState(beginDraft(first)), LOTTERY_START_MS)
-    return () => clearTimeout(id)
-  }, [state, vsBot, humanColor])
 
   // Bot turn (draft placement or move), with a short "thinking" delay. The bot
   // waits while a move is animating or a duel modal is open.

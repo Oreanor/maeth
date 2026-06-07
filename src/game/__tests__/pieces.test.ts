@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ALL_KINDS, PIECES, dirsFor, isArcher, pieceBadgeAria } from '../pieces'
+import { ALL_KINDS, PIECES, dirsFor, isArcher, pieceBadgeAria, pieceName } from '../pieces'
 
 describe('PIECES table', () => {
   it('has 16 pieces, each keyed by its own kind with a valid range', () => {
@@ -56,5 +56,10 @@ describe('isArcher / pieceBadgeAria', () => {
     const plainLabel = pieceBadgeAria('rohanWarrior', t)
     expect(plainLabel).not.toContain('rules.colArcher')
     expect(plainLabel).toContain('2')
+  })
+
+  it('resolves localized piece names via i18n keys', () => {
+    const t = (key: string) => key
+    expect(pieceName('farmer', t)).toBe('pieces.farmer')
   })
 })

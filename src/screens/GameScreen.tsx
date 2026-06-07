@@ -13,6 +13,7 @@ import { DuelModal } from '@/components/DuelModal'
 import { TurnLotteryModal } from '@/components/TurnLotteryModal'
 import { SeriesBar } from '@/components/SeriesBar'
 import { useGame } from '@/game/useGame'
+import { pieceName } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
@@ -111,7 +112,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     state.phase,
     false,
     isHumanTurn,
-    pendingDef ? t(`pieces.${pendingDef.kind}`) : null,
+    pendingDef ? pieceName(pendingDef.kind, t) : null,
     t,
     state.lottery,
   )
@@ -179,6 +180,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
           onStart={game.startLottery}
           rolling={false}
           starting={false}
+          humanConfirmsStart={config.vsBot}
         />
       )}
 
@@ -266,7 +268,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         remote.state.phase,
         waiting,
         remote.isHumanTurn && !waiting,
-        remote.pendingDef ? t(`pieces.${remote.pendingDef.kind}`) : null,
+        remote.pendingDef ? pieceName(remote.pendingDef.kind, t) : null,
         t,
         remote.state.lottery,
       )

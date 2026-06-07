@@ -185,8 +185,8 @@
 
 .btn {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: var(--card);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
   color: var(--text);
   font-size: 16px;
   font-weight: 600;
@@ -336,8 +336,8 @@
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  border: none;
-  background: var(--card);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
   color: var(--text);
   font-size: 15px;
   line-height: 1;
@@ -357,6 +357,7 @@
 .icon-btn--primary {
   background: var(--accent);
   color: var(--accent-text);
+  border-color: transparent;
 }
 .spin {
   animation: icon-spin 0.8s linear infinite;
@@ -369,8 +370,8 @@
 .lang-select {
   height: 32px;
   border-radius: 9px;
-  border: none;
-  background: var(--card);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
   color: var(--text);
   font-size: 13px;
   font-weight: 600;
@@ -645,7 +646,7 @@
 }
 .card--muted {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--surface-border);
 }
 .share-modal {
   align-items: stretch;
@@ -854,14 +855,9 @@
 .modal.rules-modal {
   width: min(92vw, 480px);
 }
-.duel-modal {
-  border-top: 5px solid transparent;
-}
-.duel-modal--good {
-  border-top-color: #3fae5a;
-}
-.duel-modal--bad {
-  border-top-color: #e23b34;
+.duel-modal:not(.turn-lottery-modal) {
+  min-height: 318px;
+  box-sizing: border-box;
 }
 .duel-modal__title {
   font-size: 20px;
@@ -932,15 +928,14 @@
   color: var(--muted);
   font-weight: 700;
 }
-/* Reserve space so the modal height doesn't jump when the result replaces
-   the "rolling…" line. */
+/* Fixed footer slots so height stays stable from roll through result. */
 .duel-modal__footer {
-  min-height: 78px;
+  min-height: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   align-self: stretch;
 }
 
@@ -1028,14 +1023,7 @@
 
 /* result modal */
 .result-modal {
-  border-top: 5px solid transparent;
   text-align: center;
-}
-.result-modal--good {
-  border-top-color: #3fae5a;
-}
-.result-modal--bad {
-  border-top-color: #e23b34;
 }
 .result-modal__title {
   font-size: 24px;
@@ -1045,13 +1033,24 @@
   width: 100%;
 }
 .duel-modal__result {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font-size: 22px;
   font-weight: 800;
+  line-height: 1.2;
 }
-.duel-modal--good .duel-modal__result {
+.duel-modal__result--rolling {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.duel-modal__result--good {
   color: #3fae5a;
 }
-.duel-modal--bad .duel-modal__result {
+.duel-modal__result--bad {
   color: #e23b34;
 }
 .modal-backdrop--dismissible {
@@ -1061,8 +1060,41 @@
   cursor: pointer;
 }
 .duel-modal__dismiss {
-  margin-top: 8px;
+  width: 100%;
+  margin-top: 0;
   font-size: 13px;
+  visibility: hidden;
+  pointer-events: none;
+}
+.duel-modal__dismiss--visible {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.turn-lottery-modal {
+  gap: 0;
+  min-height: 0;
+}
+
+.turn-lottery-modal .duel-modal__footer {
+  min-height: 0;
+}
+
+.modal-content-sizer {
+  overflow: hidden;
+  width: 100%;
+}
+
+.modal-content-sizer--animate {
+  transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content-sizer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
 }
 
 .turn-lottery-modal__name--white {
@@ -1076,6 +1108,9 @@
   font-size: 22px;
   font-weight: 800;
 }
+.turn-lottery-modal__first-turn {
+  margin-bottom: 4px;
+}
 .turn-lottery-modal__hint {
   margin: 0 0 16px;
   text-align: center;
@@ -1084,6 +1119,7 @@
   margin: 0 0 12px;
   text-align: center;
   min-height: 1.2em;
+  white-space: pre-line;
 }
 .turn-lottery-modal__dice {
   justify-content: center;

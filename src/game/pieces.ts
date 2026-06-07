@@ -100,6 +100,10 @@ export const PATTERN_I18N: Record<Pattern, string> = {
   all: 'rules.patternAll',
 }
 
+export function pieceName(kind: PieceKind, t: (key: string) => string): string {
+  return t(`pieces.${kind}`)
+}
+
 export function pieceBadgeAria(kind: PieceKind, t: (key: string) => string): string {
   const def = PIECES[kind]
   const archer = isArcher(kind) ? `${t('rules.colArcher')}, ` : ''

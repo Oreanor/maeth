@@ -1,6 +1,9 @@
 :root {
   --game-column: 460px;
   --game-column-w: min(86vw, var(--game-column));
+  /* Default skin sprite (chess) before the skin JS applies the stored choice;
+     kept here rather than as an inline <html> style so Vite can build the HTML. */
+  --skin-sprite-url: url('/pieces-chess.png');
 
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -13,6 +16,9 @@
   --muted: #8d9aa8;
   --accent: #4a90d9;
   --accent-text: #ffffff;
+  --btn-border: rgba(255, 255, 255, 0.12);
+  --btn-bg: #1b232d;
+  --surface-border: rgba(255, 255, 255, 0.08);
   --bg-gradient: linear-gradient(
     180deg,
     #0a0e14 0%,
@@ -31,6 +37,9 @@
   --muted: #5b6b7b;
   --accent: #3a7bd5;
   --accent-text: #ffffff;
+  --btn-border: rgba(22, 32, 43, 0.18);
+  --btn-bg: #e8eef4;
+  --surface-border: rgba(22, 32, 43, 0.12);
   --bg-gradient: linear-gradient(
     180deg,
     #e4eaf1 0%,

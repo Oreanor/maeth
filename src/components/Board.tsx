@@ -1,6 +1,6 @@
 import { useI18n } from '@/i18n'
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
-import { PIECES, isArcher, pieceBadgeAria, type PieceKind } from '@/game/pieces'
+import { isArcher, pieceBadgeAria, pieceName, type PieceKind } from '@/game/pieces'
 import { PieceBadge } from './PieceBadge'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
 import { MoveAnimation, type AnimInfo } from './MoveAnimation'
@@ -112,7 +112,7 @@ export function Board({
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                title={`${PIECES[piece.kind].name} (${pieceBadgeAria(piece.kind, t)})`}
+                title={`${pieceName(piece.kind, t)} (${pieceBadgeAria(piece.kind, t)})`}
               >
                 <PieceIcon kind={piece.kind} className="piece__icon" />
                 <PieceBadge kind={piece.kind} />

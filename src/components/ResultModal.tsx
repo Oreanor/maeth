@@ -24,13 +24,9 @@ export function ResultModal({
   const won = status.kind === 'win' && status.winner === human
   const title = draw ? t('result.draw') : won ? t('result.win') : t('result.loss')
   const sub = draw ? t('result.drawSub') : won ? t('result.winSub') : t('result.lossSub')
-  const tone = draw ? 'neutral' : won ? 'good' : 'bad'
   return (
     <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
-      <div
-        className={`modal result-modal result-modal--${tone} ${closing ? 'modal--out' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`modal result-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="result-modal__title">{title}</div>
         <div className="muted">{sub}</div>
         <button className="btn btn--primary" onClick={onAgain} disabled={againBusy}>

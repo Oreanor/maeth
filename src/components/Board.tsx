@@ -56,11 +56,12 @@ export function Board({
   const order = [...board.keys()]
   const cells = orientation === 'white' ? order : order.slice().reverse()
 
-  // While animating, hide pieces drawn by the overlay. Pre-duel aim keeps both
-  // combatants visible on the grid.
+  // While animating, hide grid pieces drawn by the overlay. Archer shots keep the
+  // shooter on `from`; archer slides and other moves hide `from`.
   const hidden = new Set<number>()
   if (anim && anim.kind !== 'duel') {
-    if (!isArcher(anim.attacker)) hidden.add(anim.from)
+    const archerShot = isArcher(anim.attacker) && anim.kind === 'capture'
+    if (!archerShot) hidden.add(anim.from)
     if (anim.kind === 'capture') hidden.add(anim.to)
   }
 

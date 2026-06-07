@@ -39,7 +39,7 @@ export function CreateGameModal({
     let alive = true
     listFriends()
       .then(({ friends }) => {
-        if (alive) setFriends(friends)
+        if (alive) setFriends(friends.filter((f) => f.provider === 'google'))
       })
       .catch(() => {
         /* friends are optional; email invite still works */
@@ -109,7 +109,10 @@ export function CreateGameModal({
 
           <label className="radio-row">
             <input type="radio" name="create-mode" checked={mode === 'bot'} onChange={() => setMode('bot')} />
-            <span className="radio-row__title">{t('create.optBot')}</span>
+            <span className="radio-row__text">
+              <span className="radio-row__title">{t('create.optBot')}</span>
+              <span className="muted tiny">{t('create.optBotHint')}</span>
+            </span>
           </label>
 
           <label className="check-row">

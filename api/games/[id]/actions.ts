@@ -52,6 +52,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
   const color = membership.color as Color
   const state = game.state as GameState
+  if (state.phase === 'lottery') {
+    json(res, 409, { error: 'Turn lottery in progress' })
+    return
+  }
   if (state.turn !== color || state.phase === 'over') {
     json(res, 409, { error: 'It is not your turn' })
     return

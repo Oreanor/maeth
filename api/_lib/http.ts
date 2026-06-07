@@ -52,9 +52,15 @@ export async function validateInvitedUser(
   if (!invitedUserId) return { ok: true }
   if (invitedUserId === selfId) return { ok: false, status: 400, error: 'Cannot invite yourself' }
 
-  const { data, error } = await db.from('profiles').select('id').eq('id', invitedUserId).maybeSingle()
+  const { data, error } = await db
+    .from('profiles')
+    .select('id, provider')
+    .eq('id', invitedUserId)
+    .maybeSingle()
   if (error) throw new Error(error.message)
-  if (!data) return { ok: false, status: 400, error: 'Invited player not found' }
+  if (!data || data.provider !== 'google') {
+    return { ok: false, status: 400, error: 'Invited player not found' }
+  }
   return { ok: true }
 }
 

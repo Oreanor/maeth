@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createInitialState } from '../../src/game/engine.js'
+import { createLotteryState } from '../../src/game/engine.js'
 import {
   json,
   method,
@@ -172,7 +172,7 @@ async function createGame(
       .insert({
         created_by: userId,
         status: 'waiting',
-        state: createInitialState(),
+        state: createLotteryState(),
         duels_enabled: duelsEnabled,
       })
       .select('id, status, state, duels_enabled, created_at, updated_at')

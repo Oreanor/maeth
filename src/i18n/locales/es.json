@@ -59,6 +59,7 @@
     "optOpenHint": "Cualquiera con el enlace puede unirse",
     "optFriend": "Invitar a un amigo",
     "optBot": "Jugar contra el bot",
+    "optBotHint": "Entrenamiento — no cuenta para el ranking",
     "selectFriend": "Elegir un amigo",
     "orEmail": "o el e-mail de un nuevo amigo",
     "emailPlaceholder": "email@example.com",
@@ -82,7 +83,7 @@
   },
   "rules": {
     "title": "Cómo jugar",
-    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas**: en la pastilla, el número es el **alcance** y junto a él el **icono de direcciones** (leyenda antes de la tabla).\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **no abandonan su casilla**: solo golpean piezas **enemigas** a su alcance en sus direcciones. En el tablero, flechas **discontinuas** y ↗ en la pastilla; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
+    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas**: en la pastilla, el número es el **alcance** y junto a él el **icono de direcciones** (leyenda antes de la tabla).\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **se mueven a casillas libres** como el resto; si un **enemigo** es el **primero** en un rayo, **disparan desde su casilla** (sin entrar en la suya). Flechas **discontinuas** en los disparos y ↗ en la pastilla; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
     "piecesTitle": "Las 16 piezas",
     "colPiece": "Pieza",
     "colRange": "Alcance",
@@ -144,6 +145,24 @@
     "inGame": "En la partida",
     "online": "En línea",
     "offline": "Desconectado"
+  },
+  "lottery": {
+    "title": "Primer movimiento",
+    "opponentJoined": "Tu oponente se ha unido",
+    "rollPrompt": "Tira el dado para decidir quién empieza.",
+    "rollButton": "Sortear primer movimiento",
+    "waitingRoll": "Esperando la tirada del anfitrión…",
+    "rule": "Impar — primer jugador · Par — segundo jugador",
+    "rolled": "Salió {value}",
+    "spinning": "Tirando…",
+    "firstTurnLabel": "Mueve primero",
+    "startButton": "Empezar",
+    "waitingStart": "Esperando a que el primer jugador empiece…",
+    "status": "Sorteo del primer movimiento",
+    "statusAwaitRoll": "Sortear primer movimiento",
+    "statusRevealed": "Primer movimiento decidido — esperando inicio",
+    "errRoll": "No se pudo tirar el dado",
+    "errStart": "No se pudo empezar la partida"
   },
   "duel": {
     "title": "⚔️ Duelo",

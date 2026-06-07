@@ -27,9 +27,9 @@ export function Scoreboard({
   return (
     <div className="score">
       <div className="score__names">
-        <span className="score__name">{youName}</span>
+        <span className={`score__name score__name--${human}`}>{youName}</span>
         <span className="score__vs">vs</span>
-        <span className="score__name">
+        <span className={`score__name score__name--${bot}`}>
           {opponentPresence && (
             <span className={`presence-dot presence-dot--${opponentPresence}`} title={presenceTitle} />
           )}

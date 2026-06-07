@@ -3,11 +3,13 @@ import {
   getGame,
   joinGame,
   submitGameAction,
+  submitLottery,
   type ApiGame,
   type ApiGameAction,
   type ApiGamePlayer,
   type SeriesScore,
 } from '@/lib/api'
+import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import type { DuelEvent } from './useGame'
 import { useDraftPick, type DraftPick } from './useDraftPick'
@@ -49,6 +51,13 @@ export interface UseRemoteGame {
   isHumanTurn: boolean
   thinking: boolean
   dismissDuel: () => void
+  /** Turn lottery before the draft (online games only). */
+  inLottery: boolean
+  isCreator: boolean
+  lotteryRolling: boolean
+  lotteryStarting: boolean
+  rollLottery: () => void
+  startLottery: () => void
   onCell: (cell: number) => void
   onCellEnter: (cell: number) => void
   clearPreview: () => void
@@ -57,6 +66,7 @@ export interface UseRemoteGame {
 
 export function useRemoteGame(gameId: string): UseRemoteGame {
   const { t } = useI18n()
+  const { user } = useAuth()
   // Keep the latest translator in a ref so callbacks/effects read current
   // strings without listing `t` in their dependency arrays.
   const tRef = useRef(t)
@@ -78,6 +88,8 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   submittingRef.current = submitting
   const [duel, setDuel] = useState<DuelEvent | null>(null)
   const [duelPending, setDuelPending] = useState(false)
+  const [lotteryRolling, setLotteryRolling] = useState(false)
+  const [lotteryStarting, setLotteryStarting] = useState(false)
   // The last action whose duel we've already shown (or chosen to skip). A ref so
   // applySnapshot stays stable and reads the current value without re-closing.
   const seenActionIdRef = useRef<number | null>(null)
@@ -175,7 +187,11 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   }, [game?.status, refresh])
 
   const state = game?.state ?? null
-  const isHumanTurn = Boolean(state && player && state.phase !== 'over' && state.turn === player.color)
+  const inLottery = state?.phase === 'lottery'
+  const isCreator = Boolean(game?.created_by && user?.id && game.created_by === user.id)
+  const isHumanTurn = Boolean(
+    state && player && state.phase !== 'over' && state.phase !== 'lottery' && state.turn === player.color,
+  )
   // Latest state/player for timer callbacks, so the pick effect can key purely
   // on the draft slot (a number) and not re-fire on every poll's new snapshot.
   const stateRef = useRef<GameState | null>(null)
@@ -204,7 +220,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   // for the second player (no point drawing a piece you can't place yet).
   const waiting = game?.status === 'waiting'
   const draftSlot =
-    state?.phase === 'draft' && isHumanTurn && !waiting && state.pending != null
+    state?.phase === 'draft' && isHumanTurn && !waiting && !inLottery && state.pending != null
       ? state.placed.white + state.placed.black
       : -1
   const {
@@ -303,6 +319,24 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     [isHumanTurn, pickReady, placementTargets, state?.phase],
   )
 
+  const rollLottery = useCallback(() => {
+    if (lotteryRolling) return
+    setLotteryRolling(true)
+    submitLottery(gameId, 'roll')
+      .then((data) => setGame(data.game))
+      .catch((e) => setError(e instanceof Error ? e.message : tRef.current('lottery.errRoll')))
+      .finally(() => setLotteryRolling(false))
+  }, [gameId, lotteryRolling])
+
+  const startLottery = useCallback(() => {
+    if (lotteryStarting) return
+    setLotteryStarting(true)
+    submitLottery(gameId, 'start')
+      .then((data) => setGame(data.game))
+      .catch((e) => setError(e instanceof Error ? e.message : tRef.current('lottery.errStart')))
+      .finally(() => setLotteryStarting(false))
+  }, [gameId, lotteryStarting])
+
   return {
     loading,
     error,
@@ -329,6 +363,12 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
       setDuel(null)
       setDuelPending(false)
     },
+    inLottery,
+    isCreator,
+    lotteryRolling,
+    lotteryStarting,
+    rollLottery,
+    startLottery,
     onCell,
     onCellEnter,
     clearPreview: () => setPreview(null),

@@ -59,6 +59,7 @@
     "optOpenHint": "Anyone with the link can join",
     "optFriend": "Invite a friend",
     "optBot": "Play with the bot",
+    "optBotHint": "Practice — rating is not saved",
     "selectFriend": "Choose a friend",
     "orEmail": "or a new friend's e-mail",
     "emailPlaceholder": "email@example.com",
@@ -82,7 +83,7 @@
   },
   "rules": {
     "title": "How to play",
-    "body": "The goal is to **capture more of the opponent's pieces** than they capture of yours.\n**Phase 1 — draft**: take turns blindly drawing a piece and placing it on any free square, 4 per side.\n**Phase 2 — moves**: each piece may move **only once** the whole game, sliding along its own directions up to its **range** (select a piece to see its arrows).\n**Piece markings**: the pill shows **range** as a number and a **direction icon** (legend before the table).\n**Archers** (Orc Archer, Shelob, Wizard, Elven Warrior) **do not leave their square**: they strike **enemy** pieces only, at their range in their directions. On the board they use **dashed** arrows and a ↗ mark on the badge; in the table — • in the **Archer** column.\nYou capture by moving onto an enemy piece. There are two cases:\n• **Clean capture** — if that piece can't strike your attacker back, you take it automatically.\n• **Duel** — if it also threatens your attacker (you menace each other), the strike is contested: both roll a die and the attacker wins on an equal-or-higher roll. Lose the duel and the capture fails — your piece stays put and its move is spent.\nWhen no moves remain, whoever **captured more pieces** wins; an equal count is a **draw**.",
+    "body": "The goal is to **capture more of the opponent's pieces** than they capture of yours.\n**Phase 1 — draft**: take turns blindly drawing a piece and placing it on any free square, 4 per side.\n**Phase 2 — moves**: each piece may move **only once** the whole game, sliding along its own directions up to its **range** (select a piece to see its arrows).\n**Piece markings**: the pill shows **range** as a number and a **direction icon** (legend before the table).\n**Archers** (Orc Archer, Shelob, Wizard, Elven Warrior) **slide to empty squares** like other pieces; if an **enemy** is **first** on a ray, they **shoot from place** (without entering that square). **Dashed** arrows mark shots and ↗ on the badge; in the table — • in the **Archer** column.\nYou capture by moving onto an enemy piece. There are two cases:\n• **Clean capture** — if that piece can't strike your attacker back, you take it automatically.\n• **Duel** — if it also threatens your attacker (you menace each other), the strike is contested: both roll a die and the attacker wins on an equal-or-higher roll. Lose the duel and the capture fails — your piece stays put and its move is spent.\nWhen no moves remain, whoever **captured more pieces** wins; an equal count is a **draw**.",
     "piecesTitle": "All 16 pieces",
     "colPiece": "Piece",
     "colRange": "Range",
@@ -144,6 +145,24 @@
     "inGame": "In the game",
     "online": "Online",
     "offline": "Offline"
+  },
+  "lottery": {
+    "title": "First move",
+    "opponentJoined": "Your opponent has joined",
+    "rollPrompt": "Roll the dice to decide who moves first.",
+    "rollButton": "Roll for first move",
+    "waitingRoll": "Waiting for the host to roll…",
+    "rule": "Odd — first player · Even — second player",
+    "rolled": "Rolled {value}",
+    "spinning": "Rolling…",
+    "firstTurnLabel": "Moves first",
+    "startButton": "Start",
+    "waitingStart": "Waiting for the first player to start…",
+    "status": "Turn lottery",
+    "statusAwaitRoll": "Roll for first move",
+    "statusRevealed": "First move decided — waiting to start",
+    "errRoll": "Could not roll the dice",
+    "errStart": "Could not start the game"
   },
   "duel": {
     "title": "⚔️ Duel",

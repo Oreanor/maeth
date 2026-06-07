@@ -20,7 +20,9 @@ export function FriendsScreen() {
     let alive = true
     setFriends(null)
     setError(null)
-    const request = online ? listFriends().then(({ friends }) => friends) : fetchFriends()
+    const request = online
+      ? listFriends().then(({ friends }) => friends.filter((f) => f.provider === 'google'))
+      : fetchFriends()
     request
       .then((f) => {
         if (alive) setFriends(f)

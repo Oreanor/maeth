@@ -70,7 +70,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const game = unwrap(
     await auth.db
       .from('games')
-      .select('id, status, state, duels_enabled, created_at, updated_at, rematch_id, root_id')
+      .select('id, status, state, duels_enabled, created_at, updated_at, rematch_id, root_id, created_by')
       .eq('id', id)
       .single(),
   )

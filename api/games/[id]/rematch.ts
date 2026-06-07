@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { createInitialState } from '../../../src/game/engine.js'
+import { createLotteryState } from '../../../src/game/engine.js'
 import { json, method, requireAuth, unwrap, unwrapOne, withApiError } from '../../_lib/http.js'
 import { routeParam } from '../../_lib/request.js'
 
@@ -69,7 +69,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .insert({
         created_by: game.created_by,
         status: 'active',
-        state: createInitialState(),
+        state: createLotteryState(),
         root_id: game.root_id ?? game.id,
         duels_enabled: game.duels_enabled !== false,
       })

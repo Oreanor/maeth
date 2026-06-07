@@ -44,7 +44,8 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
   const lineLen = Math.hypot(tcx - fcx, tcy - fcy)
   const color = OWNER_COLOR[anim.owner]
   const archer = isArcher(anim.attacker)
-  const slide = anim.kind !== 'duel' && !archer
+  const archerShot = archer && anim.kind === 'capture'
+  const slide = anim.kind !== 'duel' && !archerShot
 
   const box = (r: number, c: number): CSSProperties => ({
     left: `${c * cell}%`,
@@ -64,7 +65,7 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
     <div className="move-anim">
       <svg className="move-anim__arrow" viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <line
-          className={`move-anim__line ${archer ? 'move-anim__line--archer' : ''}`.trim()}
+          className={`move-anim__line ${archerShot ? 'move-anim__line--archer' : ''}`.trim()}
           x1={fcx}
           y1={fcy}
           x2={tcx}
@@ -90,7 +91,7 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
 
       {anim.kind === 'capture' && anim.victim && (
         <div
-          className={`anim-victim ${archer ? 'anim-victim--archer' : ''}`.trim()}
+          className={`anim-victim ${archerShot ? 'anim-victim--archer' : ''}`.trim()}
           style={box(t.r, t.c)}
         >
           {animPiece(anim.victim, opposite(anim.owner))}

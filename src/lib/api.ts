@@ -12,6 +12,8 @@ export interface ApiGame {
   duels_enabled?: boolean
   created_at?: string
   updated_at?: string
+  /** Host who created the room — rolls for first turn. */
+  created_by?: string
   /** Set once a rematch has been started — points to the follow-up game. */
   rematch_id?: string | null
 }
@@ -157,6 +159,16 @@ export async function submitGameAction(
   return apiFetch(`/api/games/${id}/actions`, {
     method: 'POST',
     body: JSON.stringify(action),
+  })
+}
+
+export async function submitLottery(
+  id: string,
+  action: 'roll' | 'start',
+): Promise<{ game: ApiGame }> {
+  return apiFetch(`/api/games/${id}/lottery`, {
+    method: 'POST',
+    body: JSON.stringify({ action }),
   })
 }
 

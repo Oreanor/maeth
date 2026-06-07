@@ -14,6 +14,7 @@ import gameById from '../api/games/[id].js'
 import actions from '../api/games/[id]/actions.js'
 import invite from '../api/games/[id]/invite.js'
 import join from '../api/games/[id]/join.js'
+import lottery from '../api/games/[id]/lottery.js'
 import rematch from '../api/games/[id]/rematch.js'
 import me from '../api/me.js'
 import friends from '../api/friends.js'
@@ -51,6 +52,7 @@ const routes: { re: RegExp; handler: Handler }[] = [
   { re: /^\/api\/games\/([^/]+)\/actions\/?$/, handler: actions as Handler },
   { re: /^\/api\/games\/([^/]+)\/invite\/?$/, handler: invite as Handler },
   { re: /^\/api\/games\/([^/]+)\/join\/?$/, handler: join as Handler },
+  { re: /^\/api\/games\/([^/]+)\/lottery\/?$/, handler: lottery as Handler },
   { re: /^\/api\/games\/([^/]+)\/rematch\/?$/, handler: rematch as Handler },
   { re: /^\/api\/games\/([^/]+)\/?$/, handler: gameById as Handler },
 ]

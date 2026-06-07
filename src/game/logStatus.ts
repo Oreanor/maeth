@@ -1,4 +1,4 @@
-import type { Color, GameState } from './types'
+import type { Color, GameState, LotteryState } from './types'
 import type { LogColor } from './actionLog'
 
 type StatusT = (key: string, vars?: Record<string, string>) => string
@@ -10,9 +10,15 @@ export function gameLogStatusLine(
   isHumanTurn: boolean,
   pendingLabel: string | null,
   t: StatusT,
+  lottery?: LotteryState | null,
 ): string | null {
   if (waiting) return t('game.waitingPlayer')
   if (phase === 'over') return null
+  if (phase === 'lottery') {
+    if (lottery?.step === 'await_roll') return t('lottery.statusAwaitRoll')
+    if (lottery?.step === 'revealed') return t('lottery.statusRevealed')
+    return t('lottery.status')
+  }
   if (phase === 'draft') {
     if (!isHumanTurn) return t('game.opponentPlacing')
     if (pendingLabel) return t('game.placePiece', { piece: pendingLabel })
@@ -28,6 +34,6 @@ export function gameLogStatusColor(
   turn: Color,
 ): LogColor | null {
   if (phase === 'over') return null
-  if (waiting) return 'neutral'
+  if (waiting || phase === 'lottery') return 'neutral'
   return turn
 }

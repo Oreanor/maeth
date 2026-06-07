@@ -59,6 +59,7 @@
     "optOpenHint": "Qualquer um com o link pode entrar",
     "optFriend": "Convidar um amigo",
     "optBot": "Jogar contra o bot",
+    "optBotHint": "Treino — ranking não é salvo",
     "selectFriend": "Escolher um amigo",
     "orEmail": "ou e-mail de um novo amigo",
     "emailPlaceholder": "email@example.com",
@@ -82,7 +83,7 @@
   },
   "rules": {
     "title": "Como jogar",
-    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças**: na placa, o número é o **alcance** e ao lado o **ícone de direções** (legenda antes da tabela).\n**Arqueiros** (orc arqueiro, Shelob, mago, guerreiro élfico) **não saem da casa**: só atingem peças **inimigas** ao alcance nas suas direções. No tabuleiro, setas **tracejadas** e ↗ na placa; na tabela, • na coluna **Arqueiro**.\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se ela também ameaça a sua atacante (ameaça mútua), o golpe é disputado: ambos rolam um dado e o atacante vence com rolagem igual ou maior. Perdeu o duelo, a captura falha: sua peça fica no lugar e seu movimento é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual.",
+    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças**: na placa, o número é o **alcance** e ao lado o **ícone de direções** (legenda antes da tabela).\n**Arqueiros** (orc arqueiro, Shelob, mago, guerreiro élfico) **movem-se para casas livres** como os outros; se um **inimigo** é o **primeiro** num raio, **atiram do lugar** (sem entrar na casa dele). Setas **tracejadas** nos tiros e ↗ na placa; na tabela, • na coluna **Arqueiro**.\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se ela também ameaça a sua atacante (ameaça mútua), o golpe é disputado: ambos rolam um dado e o atacante vence com rolagem igual ou maior. Perdeu o duelo, a captura falha: sua peça fica no lugar e seu movimento é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual.",
     "piecesTitle": "Todas as 16 peças",
     "colPiece": "Peça",
     "colRange": "Alcance",
@@ -144,6 +145,24 @@
     "inGame": "No jogo",
     "online": "Online",
     "offline": "Offline"
+  },
+  "lottery": {
+    "title": "Primeiro lance",
+    "opponentJoined": "Seu oponente entrou",
+    "rollPrompt": "Role o dado para decidir quem começa.",
+    "rollButton": "Sortear primeiro lance",
+    "waitingRoll": "Aguardando o lançamento do anfitrião…",
+    "rule": "Ímpar — primeiro jogador · Par — segundo jogador",
+    "rolled": "Saiu {value}",
+    "spinning": "Rolando…",
+    "firstTurnLabel": "Joga primeiro",
+    "startButton": "Começar",
+    "waitingStart": "Aguardando o primeiro jogador começar…",
+    "status": "Sorteio do primeiro lance",
+    "statusAwaitRoll": "Sortear primeiro lance",
+    "statusRevealed": "Primeiro lance definido — aguardando início",
+    "errRoll": "Não foi possível rolar o dado",
+    "errStart": "Não foi possível iniciar a partida"
   },
   "duel": {
     "title": "⚔️ Duelo",

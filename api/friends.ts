@@ -12,6 +12,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .from('profiles')
       .select('id, display_name, avatar_url, provider')
       .neq('id', auth.user.id)
+      .eq('provider', 'google')
       .order('display_name', { ascending: true }),
   )
 

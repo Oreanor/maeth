@@ -924,6 +924,34 @@
   font-size: 13px;
 }
 
+.turn-lottery-modal__name--white {
+  color: #4a90d9;
+}
+.turn-lottery-modal__name--black {
+  color: #d64545;
+}
+.turn-lottery-modal__result {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+}
+.turn-lottery-modal__hint {
+  margin: 0 0 16px;
+  text-align: center;
+}
+.turn-lottery-modal__rule {
+  margin: 0 0 12px;
+  text-align: center;
+  min-height: 1.2em;
+}
+.turn-lottery-modal__dice {
+  justify-content: center;
+}
+.turn-lottery-modal .btn {
+  width: 100%;
+  margin-top: 12px;
+}
+
 /* captures scoreboard */
 .score {
   display: flex;
@@ -965,6 +993,12 @@
 .score__name:last-child {
   text-align: left;
   padding-left: 6px;
+}
+.score__name--white {
+  color: #4a90d9;
+}
+.score__name--black {
+  color: #d64545;
 }
 /* opponent presence: red offline · amber online · green in this game */
 .presence-dot {

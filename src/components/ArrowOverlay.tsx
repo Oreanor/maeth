@@ -31,7 +31,6 @@ export function edgeArrows(cell: number, kind: PieceKind, color: string): ArrowS
   const row = rowOf(cell)
   const col = colOf(cell)
   const def = PIECES[kind]
-  const dashed = isArcher(kind)
   const out: ArrowSpec[] = []
   for (const [dr, dc] of dirsFor(def.pattern)) {
     let len = 0
@@ -39,25 +38,31 @@ export function edgeArrows(cell: number, kind: PieceKind, color: string): ArrowS
       if (onBoard(row + dr * k, col + dc * k)) len = k
       else break
     }
-    if (len > 0) out.push({ dr, dc, len, color, dashed })
+    if (len > 0) out.push({ dr, dc, len, color })
   }
   return out
 }
 
-/** Turn a selected piece's legal moves into aim arrows. Archers get one line per
- *  target; sliders get one arrow per direction (farthest reachable cell). */
+/** Turn a selected piece's legal moves into aim arrows. Archer shots are dashed
+ *  to the target; archer slides and other pieces use solid arrows. */
 export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowSpec[] {
   const fr = rowOf(from)
   const fc = colOf(from)
-  const dashed = isArcher(kind)
 
-  if (dashed) {
-    return moves.map((m) => {
+  if (isArcher(kind)) {
+    const byKey = new Map<string, ArrowSpec>()
+    for (const m of moves) {
       const dr = sign(rowOf(m.to) - fr)
       const dc = sign(colOf(m.to) - fc)
       const len = Math.max(Math.abs(rowOf(m.to) - fr), Math.abs(colOf(m.to) - fc))
-      return { dr, dc, len, to: m.to, color: CAPTURE_COLOR, dashed: true }
-    })
+      const key = `${dr},${dc},${m.capture ? 'c' : 'm'}`
+      if (m.capture) {
+        byKey.set(key, { dr, dc, len, to: m.to, color: CAPTURE_COLOR, dashed: true })
+      } else {
+        byKey.set(key, { dr, dc, len, color: MOVE_COLOR })
+      }
+    }
+    return [...byKey.values()]
   }
 
   const byDir = new Map<string, { dr: number; dc: number; len: number; capture: boolean }>()
@@ -74,7 +79,6 @@ export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowS
     dc,
     len,
     color: capture ? CAPTURE_COLOR : MOVE_COLOR,
-    dashed,
   }))
 }
 

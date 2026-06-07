@@ -10,6 +10,7 @@ import { gameLogStatusColor, gameLogStatusLine } from '@/game/logStatus'
 import { ResultModal } from '@/components/ResultModal'
 import { DraftPickModal } from '@/components/DraftPickModal'
 import { DuelModal } from '@/components/DuelModal'
+import { TurnLotteryModal } from '@/components/TurnLotteryModal'
 import { SeriesBar } from '@/components/SeriesBar'
 import { useGame } from '@/game/useGame'
 import type { Color } from '@/game/types'
@@ -215,6 +216,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const opponent = remote.players.find((p) => p.color === opponentColor)
   const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
   const waiting = remote.game?.status === 'waiting'
+  const inLottery = remote.inLottery
+  const showLottery = inLottery && remote.state?.lottery && remote.players.length >= 2
+  const blocked = waiting || inLottery || remote.duel || remote.thinking
   const youName = user?.name ?? t('common.you')
 
   const logNames = useMemo<LogNames>(() => {
@@ -235,6 +239,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         remote.isHumanTurn && !waiting,
         remote.pendingDef ? t(`pieces.${remote.pendingDef.kind}`) : null,
         t,
+        remote.state.lottery,
       )
     : waiting
       ? t('game.waitingPlayer')
@@ -292,7 +297,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         legalTargets={remote.legalTargets}
         selectedMoves={remote.selectedMoves}
         placementTargets={remote.pendingDef ? remote.placementTargets : []}
-        movable={remote.isHumanTurn && !waiting && !remote.duel && !remote.thinking ? remote.movableCells : []}
+        movable={remote.isHumanTurn && !blocked ? remote.movableCells : []}
         previewCell={remote.previewCell}
         previewKind={remote.previewCell != null && remote.pendingDef ? remote.pendingDef.kind : null}
         previewOwner={human}
@@ -301,7 +306,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         onCellClick={remote.onCell}
         onCellEnter={remote.onCellEnter}
         onBoardLeave={remote.clearPreview}
-        interactive={remote.isHumanTurn && !waiting && !remote.duel && !remote.thinking}
+        interactive={remote.isHumanTurn && !blocked}
       />
 
       {remote.series && <SeriesBar series={remote.series} human={human} opponent={opponentColor} />}
@@ -312,6 +317,20 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         opponentName={opponentName}
         onConfirm={remote.confirmDraftPick}
       />
+
+      {showLottery && remote.state.lottery && (
+        <TurnLotteryModal
+          lottery={remote.state.lottery}
+          myColor={human}
+          isCreator={remote.isCreator}
+          whiteName={logNames.white}
+          blackName={logNames.black}
+          onRoll={remote.rollLottery}
+          onStart={remote.startLottery}
+          rolling={remote.lotteryRolling}
+          starting={remote.lotteryStarting}
+        />
+      )}
 
       <DuelModal
         duel={remote.duel}

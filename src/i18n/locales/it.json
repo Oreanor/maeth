@@ -59,6 +59,7 @@
     "optOpenHint": "Chiunque abbia il link può unirsi",
     "optFriend": "Invita un amico",
     "optBot": "Gioca contro il bot",
+    "optBotHint": "Allenamento — nessun rating",
     "selectFriend": "Scegli un amico",
     "orEmail": "o l'e-mail di un nuovo amico",
     "emailPlaceholder": "email@example.com",
@@ -82,7 +83,7 @@
   },
   "rules": {
     "title": "Come si gioca",
-    "body": "L'obiettivo è **catturare più pedine avversarie** di quante l'avversario ne catturi delle tue.\n**Fase 1 — draft**: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato.\n**Fase 2 — mosse**: ogni pedina si muove **una sola volta** in tutta la partita, scivolando nelle sue direzioni fino alla sua **portata** (seleziona una pedina per vedere le frecce).\n**Etichette sulle pedine**: sul cartellino il numero è la **portata**, accanto l’**icona delle direzioni** (legenda prima della tabella).\n**Arcieri** (orco arciere, Shelob, mago, guerriero elfico) **non lasciano la casella**: colpiscono solo pedine **nemiche** alla loro portata nelle loro direzioni. Sulla scacchiera, frecce **tratteggiate** e ↗ sul cartellino; nella tabella, • nella colonna **Arciere**.\nCatturi muovendoti su una pedina nemica. Ci sono due casi:\n• **Cattura netta** — se quella pedina non può colpire a sua volta la tua attaccante, la prendi automaticamente.\n• **Duello** — se minaccia anche la tua attaccante (minaccia reciproca), il colpo è conteso: entrambi tirano un dado e l'attaccante vince con un tiro pari o superiore. Se perdi il duello, la cattura fallisce: la tua pedina resta dov'è e la sua mossa è spesa.\nQuando non restano mosse, vince chi ha **catturato più pedine**; **pareggio** se sono pari.",
+    "body": "L'obiettivo è **catturare più pedine avversarie** di quante l'avversario ne catturi delle tue.\n**Fase 1 — draft**: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato.\n**Fase 2 — mosse**: ogni pedina si muove **una sola volta** in tutta la partita, scivolando nelle sue direzioni fino alla sua **portata** (seleziona una pedina per vedere le frecce).\n**Etichette sulle pedine**: sul cartellino il numero è la **portata**, accanto l’**icona delle direzioni** (legenda prima della tabella).\n**Arcieri** (orco arciere, Shelob, mago, guerriero elfico) **vanno sulle caselle libere** come le altre; se un **nemico** è il **primo** su un raggio, **sparano dal posto** (senza entrare nella sua casella). Frecce **tratteggiate** per i colpi e ↗ sul cartellino; nella tabella, • nella colonna **Arciere**.\nCatturi muovendoti su una pedina nemica. Ci sono due casi:\n• **Cattura netta** — se quella pedina non può colpire a sua volta la tua attaccante, la prendi automaticamente.\n• **Duello** — se minaccia anche la tua attaccante (minaccia reciproca), il colpo è conteso: entrambi tirano un dado e l'attaccante vince con un tiro pari o superiore. Se perdi il duello, la cattura fallisce: la tua pedina resta dov'è e la sua mossa è spesa.\nQuando non restano mosse, vince chi ha **catturato più pedine**; **pareggio** se sono pari.",
     "piecesTitle": "Tutte le 16 pedine",
     "colPiece": "Pedina",
     "colRange": "Portata",
@@ -144,6 +145,24 @@
     "inGame": "In partita",
     "online": "Online",
     "offline": "Offline"
+  },
+  "lottery": {
+    "title": "Prima mossa",
+    "opponentJoined": "Il tuo avversario si è unito",
+    "rollPrompt": "Lancia il dado per decidere chi inizia.",
+    "rollButton": "Sorteggiare la prima mossa",
+    "waitingRoll": "In attesa del lancio dell'host…",
+    "rule": "Dispari — primo giocatore · Pari — secondo giocatore",
+    "rolled": "Uscito {value}",
+    "spinning": "Lancio…",
+    "firstTurnLabel": "Muove per primo",
+    "startButton": "Inizia",
+    "waitingStart": "In attesa che il primo giocatore inizi…",
+    "status": "Sorteggio della prima mossa",
+    "statusAwaitRoll": "Sorteggiare la prima mossa",
+    "statusRevealed": "Prima mossa decisa — in attesa dell'inizio",
+    "errRoll": "Impossibile lanciare il dado",
+    "errStart": "Impossibile avviare la partita"
   },
   "duel": {
     "title": "⚔️ Duello",

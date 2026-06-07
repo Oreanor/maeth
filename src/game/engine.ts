@@ -23,7 +23,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-/** Fresh game: deck shuffled, white draws first and must place `pending`. */
+/** Fresh local/bot game: deck shuffled, white draws first and must place `pending`. */
 export function createInitialState(): GameState {
   const deck = shuffle(ALL_KINDS)
   const pending = deck.pop() ?? null
@@ -31,6 +31,45 @@ export function createInitialState(): GameState {
     phase: 'draft',
     board: new Array<null>(CELLS).fill(null),
     turn: 'white',
+    deck,
+    pending,
+    placed: { white: 0, black: 0 },
+    captures: { white: 0, black: 0 },
+    status: { kind: 'playing' },
+    history: [],
+  }
+}
+
+/** Online game before the turn lottery — empty board, no deck yet. */
+export function createLotteryState(): GameState {
+  return {
+    phase: 'lottery',
+    lottery: { step: 'await_roll' },
+    board: new Array<null>(CELLS).fill(null),
+    turn: 'white',
+    deck: [],
+    pending: null,
+    placed: { white: 0, black: 0 },
+    captures: { white: 0, black: 0 },
+    status: { kind: 'playing' },
+    history: [],
+  }
+}
+
+/** Map a d6 roll to the side that drafts and moves first. */
+export function firstTurnFromRoll(roll: number): Color {
+  return roll % 2 === 1 ? 'white' : 'black'
+}
+
+/** Begin the draft after the turn lottery — deck shuffled, `firstTurn` draws first. */
+export function beginDraft(firstTurn: Color): GameState {
+  const deck = shuffle(ALL_KINDS)
+  const pending = deck.pop() ?? null
+  return {
+    phase: 'draft',
+    lottery: null,
+    board: new Array<null>(CELLS).fill(null),
+    turn: firstTurn,
     deck,
     pending,
     placed: { white: 0, black: 0 },
@@ -139,7 +178,7 @@ export function pieceMoves(board: Board, from: number): Move[] {
       const to = idx(r, c)
       const occupant = board[to]
       if (!occupant) {
-        if (!def.archer) moves.push({ from, to, capture: false })
+        moves.push({ from, to, capture: false })
         continue
       }
       if (occupant.color !== piece.color) moves.push({ from, to, capture: true })
@@ -230,10 +269,10 @@ export function applyMove(state: GameState, move: Move): GameState {
   if (!piece) return state
 
   const board = state.board.slice()
-  const archer = PIECES[piece.kind].archer === true
-  if (archer) {
+  const archerShot = PIECES[piece.kind].archer === true && move.capture
+  if (archerShot) {
     board[move.from] = { ...piece, moved: true }
-    if (move.capture) board[move.to] = null
+    board[move.to] = null
   } else {
     board[move.from] = null
     board[move.to] = { ...piece, moved: true }

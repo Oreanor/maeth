@@ -24,7 +24,14 @@ export interface Move {
   capture: boolean
 }
 
-export type Phase = 'draft' | 'play' | 'over'
+export type Phase = 'lottery' | 'draft' | 'play' | 'over'
+
+/** Online turn lottery before the draft — odd roll → white, even → black. */
+export interface LotteryState {
+  step: 'await_roll' | 'revealed'
+  roll?: number
+  firstTurn?: Color
+}
 
 export type GameStatus =
   | { kind: 'playing' }
@@ -33,6 +40,8 @@ export type GameStatus =
 
 export interface GameState {
   phase: Phase
+  /** Present only while `phase === 'lottery'`. */
+  lottery?: LotteryState | null
   board: Board
   /** Whose turn it is to act (draw+place during draft, or move during play). */
   turn: Color

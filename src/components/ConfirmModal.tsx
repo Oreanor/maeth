@@ -1,4 +1,4 @@
-import { useModalDismiss } from './useModalDismiss'
+import { useAnimatedClose } from './useAnimatedClose'
 
 /** Generic in-app confirmation dialog (replaces window.confirm). */
 export function ConfirmModal({
@@ -16,13 +16,13 @@ export function ConfirmModal({
   onConfirm: () => void
   onClose: () => void
 }) {
-  useModalDismiss(onClose)
+  const { closing, close } = useAnimatedClose(onClose)
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
+      <div className={`modal confirm-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
         <p className="confirm-modal__message">{message}</p>
         <div className="create-actions">
-          <button className="btn btn--ghost" onClick={onClose} disabled={busy}>
+          <button className="btn btn--ghost" onClick={close} disabled={busy}>
             {cancelLabel}
           </button>
           <button className="btn btn--danger" onClick={onConfirm} disabled={busy}>

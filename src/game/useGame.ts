@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  beginDraft,
   createInitialState,
+  createLotteryState,
+  firstTurnFromRoll,
   legalMovesFrom,
   movablePieces,
   placePiece,
@@ -35,6 +38,7 @@ type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner
 
 const ANIM_MOVE_MS = 1100
 const ANIM_DUEL_AIM_MS = 650
+const LOTTERY_START_MS = 2200
 
 // The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
 // (~2× the old delay) placement, and a 2–3s idle "think" before each move.
@@ -92,6 +96,10 @@ export interface UseGame {
   /** Drop the draft preview (e.g. pointer left the board). */
   clearPreview: () => void
   reset: () => void
+  /** Turn lottery before the draft (shown again on each local rematch). */
+  inLottery: boolean
+  rollLottery: () => void
+  startLottery: () => void
 }
 
 export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
@@ -193,7 +201,11 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     [state, duels, vsBot, humanColor],
   )
 
-  const isHumanTurn = state.phase !== 'over' && (!vsBot || state.turn === humanColor)
+  const isHumanTurn =
+    state.phase !== 'over' &&
+    state.phase !== 'lottery' &&
+    (!vsBot || state.turn === humanColor)
+  const inLottery = state.phase === 'lottery'
 
   const placementTargets = useMemo(
     () => (state.phase === 'draft' ? placementCells(state) : []),
@@ -269,6 +281,29 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
 
   const clearPreview = useCallback(() => setPreview(null), [])
 
+  const rollLottery = useCallback(() => {
+    setState((prev) => {
+      if (prev.phase !== 'lottery' || prev.lottery?.step !== 'await_roll') return prev
+      const roll = 1 + Math.floor(Math.random() * 6)
+      const firstTurn = firstTurnFromRoll(roll)
+      return {
+        ...prev,
+        lottery: { step: 'revealed', roll, firstTurn },
+        turn: firstTurn,
+      }
+    })
+  }, [])
+
+  const startLottery = useCallback(() => {
+    setState((prev) => {
+      if (prev.phase !== 'lottery' || prev.lottery?.step !== 'revealed' || !prev.lottery.firstTurn) {
+        return prev
+      }
+      if (prev.lottery.firstTurn !== humanColor) return prev
+      return beginDraft(prev.lottery.firstTurn)
+    })
+  }, [humanColor])
+
   // Settle the spinning portrait on the actually-drawn piece (human's button, or
   // the bot's auto-pick). The reveal effect then closes the modal after a beat.
   // Closing the duel modal: on a win, replay the attacker sliding onto the
@@ -300,7 +335,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     clearTimeout(timer.current)
     clearTimeout(animTimer.current)
     resetPick()
-    setState(createInitialState())
+    setState(createLotteryState())
     setSelected(null)
     setPreview(null)
     setDuel(null)
@@ -345,12 +380,22 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     return () => clearTimeout(animTimer.current)
   }, [anim, recordAction])
 
+  // Bot goes first after the dice settle — no Start button for the human.
+  useEffect(() => {
+    if (!vsBot) return
+    if (state.phase !== 'lottery' || state.lottery?.step !== 'revealed') return
+    const first = state.lottery.firstTurn
+    if (!first || first === humanColor) return
+    const id = setTimeout(() => setState(beginDraft(first)), LOTTERY_START_MS)
+    return () => clearTimeout(id)
+  }, [state, vsBot, humanColor])
+
   // Bot turn (draft placement or move), with a short "thinking" delay. The bot
   // waits while a move is animating or a duel modal is open.
   useEffect(() => {
     if (!vsBot) return
     if (anim || duel) return
-    if (state.phase === 'over') return
+    if (state.phase === 'lottery' || state.phase === 'over') return
     if (state.turn === humanColor) return
     // In the draft, the bot only places after its reveal ceremony has finished.
     if (state.phase === 'draft' && !canPlace) return
@@ -425,5 +470,8 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     onCellEnter,
     clearPreview,
     reset,
+    inLottery,
+    rollLottery,
+    startLottery,
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { listFriends } from '@/lib/api'
 import type { Friend } from '@/auth/types'
-import { useModalDismiss } from './useModalDismiss'
+import { useAnimatedClose } from './useAnimatedClose'
 
 export type CreateChoice =
   | { mode: 'open'; duels: boolean }
@@ -27,7 +27,7 @@ export function CreateGameModal({
   onClose: () => void
 }) {
   const { t } = useI18n()
-  useModalDismiss(onClose)
+  const { closing, close } = useAnimatedClose(onClose)
   const [mode, setMode] = useState<Mode>(online ? 'open' : 'bot')
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendId, setFriendId] = useState('')
@@ -60,8 +60,8 @@ export function CreateGameModal({
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal create-modal" onClick={(e) => e.stopPropagation()}>
+    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
+      <div className={`modal create-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
         <h3>{t('lobby.create')}</h3>
 
         <div className="create-opts">
@@ -127,7 +127,7 @@ export function CreateGameModal({
         {error && <p className="muted tiny">{error}</p>}
 
         <div className="create-actions">
-          <button className="btn btn--ghost" onClick={onClose} disabled={submitting}>
+          <button className="btn btn--ghost" onClick={close} disabled={submitting}>
             {t('create.cancel')}
           </button>
           <button className="btn btn--primary" onClick={submit} disabled={submitting || !canSubmit}>

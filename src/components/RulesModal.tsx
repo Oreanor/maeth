@@ -3,7 +3,7 @@ import { useI18n } from '@/i18n'
 import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, type Pattern, type PieceKind } from '@/game/pieces'
 import { MoveCompass } from './MoveCompass'
 import { PatternRose } from './PatternRose'
-import { useModalDismiss } from './useModalDismiss'
+import { useAnimatedClose } from './useAnimatedClose'
 
 const PATTERN_LEGEND: Pattern[] = ['ortho', 'diag', 'zh', 'all']
 
@@ -34,11 +34,11 @@ function formatRulesLine(line: string) {
  *  body is one i18n string with paragraphs separated by blank lines. */
 export function RulesModal({ onClose }: { onClose: () => void }) {
   const { t } = useI18n()
-  useModalDismiss(onClose)
+  const { closing, close } = useAnimatedClose(onClose)
   const paragraphs = t('rules.body').split('\n').filter((line) => line.trim() !== '')
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal rules-modal" onClick={(e) => e.stopPropagation()}>
+    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
+      <div className={`modal rules-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
         <h3>{t('rules.title')}</h3>
         <div className="rules-modal__body">
           {paragraphs.map((line, i) => (
@@ -81,7 +81,7 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
             </div>
           </section>
         </div>
-        <button className="btn btn--primary" onClick={onClose}>
+        <button className="btn btn--primary" onClick={close}>
           {t('common.close')}
         </button>
       </div>

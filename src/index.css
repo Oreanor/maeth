@@ -8,6 +8,13 @@
   --accent-text: #ffffff;
   --game-column: 460px;
   --game-column-w: min(86vw, var(--game-column));
+  --bg-gradient: linear-gradient(
+    180deg,
+    #0a0e14 0%,
+    #0f141a 38%,
+    #151c26 62%,
+    #0a0e14 100%
+  );
 
   color-scheme: dark;
   font-family:
@@ -37,7 +44,7 @@ body,
 }
 
 body {
-  background: var(--bg);
+  background: var(--bg-gradient, var(--bg));
   color: var(--text);
 }
 

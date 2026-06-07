@@ -738,6 +738,8 @@
   padding: 20px;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(2px);
+  /* every modal fades its backdrop in… */
+  animation: backdrop-in 0.18s ease-out;
 }
 .modal {
   width: min(90vw, 340px);
@@ -749,6 +751,38 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  /* …and rises from a slightly compressed state, so it never pops in abruptly. */
+  animation: modal-in 0.18s ease-out;
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes modal-in {
+  from {
+    transform: scale(0.9);
+  }
+}
+/* Generic close: mirror of the entrance (scale down + fade). Pick/duel modals
+   keep their own --closing collapse. */
+.modal-backdrop--out {
+  animation: backdrop-out 0.18s ease-in forwards;
+}
+.modal--out {
+  animation: modal-out 0.18s ease-in forwards;
+  pointer-events: none;
+}
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes modal-out {
+  to {
+    transform: scale(0.9);
+    opacity: 0;
+  }
 }
 .modal.rules-modal {
   width: min(92vw, 480px);

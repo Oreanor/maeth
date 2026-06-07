@@ -1,6 +1,6 @@
 import { useI18n } from '@/i18n'
 import type { Color, GameState } from '@/game/types'
-import { useModalDismiss } from './useModalDismiss'
+import { useAnimatedClose } from './useAnimatedClose'
 
 /** End-of-game win/loss/draw modal. Can be dismissed to inspect the board. */
 export function ResultModal({
@@ -19,21 +19,24 @@ export function ResultModal({
   againBusy?: boolean
 }) {
   const { t } = useI18n()
-  useModalDismiss(onClose)
+  const { closing, close } = useAnimatedClose(onClose)
   const draw = status.kind === 'draw'
   const won = status.kind === 'win' && status.winner === human
   const title = draw ? t('result.draw') : won ? t('result.win') : t('result.loss')
   const sub = draw ? t('result.drawSub') : won ? t('result.winSub') : t('result.lossSub')
   const tone = draw ? 'neutral' : won ? 'good' : 'bad'
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className={`modal result-modal result-modal--${tone}`} onClick={(e) => e.stopPropagation()}>
+    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
+      <div
+        className={`modal result-modal result-modal--${tone} ${closing ? 'modal--out' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="result-modal__title">{title}</div>
         <div className="muted">{sub}</div>
         <button className="btn btn--primary" onClick={onAgain} disabled={againBusy}>
           {againLabel ?? t('result.again')}
         </button>
-        <button className="btn btn--ghost btn--sm" onClick={onClose}>
+        <button className="btn btn--ghost btn--sm" onClick={close}>
           {t('result.viewBoard')}
         </button>
       </div>

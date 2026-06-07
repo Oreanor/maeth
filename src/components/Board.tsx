@@ -72,7 +72,6 @@ export function Board({
     >
       {cells.map((i) => {
         const piece = hidden.has(i) ? null : board[i]
-        const dark = (rowOf(i) + colOf(i)) % 2 === 1
         const isSel = selected === i
         const isTarget = legalTargets.includes(i)
         const isPlace = placementTargets.includes(i)
@@ -85,7 +84,6 @@ export function Board({
             type="button"
             className={[
               'cell',
-              dark ? 'cell--dark' : 'cell--light',
               isSel ? 'cell--selected' : '',
               isTarget ? 'cell--target' : '',
               isPlace ? 'cell--place' : '',

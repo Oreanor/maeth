@@ -113,8 +113,11 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     isHumanTurn,
     pendingDef ? t(`pieces.${pendingDef.kind}`) : null,
     t,
+    state.lottery,
   )
   const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
+  const showLottery = game.inLottery && state.lottery
+  const blocked = game.inLottery || !!anim || !!duel
 
   return (
     <div className="screen screen--game">
@@ -144,7 +147,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         selectedMoves={selectedMoves}
         placementTargets={pendingDef ? placementTargets : []}
         lastPlaced={state.phase === 'draft' ? lastPlaced : null}
-        movable={isHumanTurn && !anim && !duel ? movableCells : []}
+        movable={isHumanTurn && !blocked ? movableCells : []}
         previewCell={previewCell}
         previewKind={previewCell != null && pendingDef ? pendingDef.kind : null}
         previewOwner={human}
@@ -153,7 +156,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         onCellClick={game.onCell}
         onCellEnter={game.onCellEnter}
         onBoardLeave={game.clearPreview}
-        interactive={isHumanTurn && !anim && !duel}
+        interactive={isHumanTurn && !blocked}
       />
 
       <SeriesBar series={game.series} human={human} opponent={bot} />
@@ -164,6 +167,20 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         opponentName={config.opponentName}
         onConfirm={confirmDraftPick}
       />
+
+      {showLottery && state.lottery && (
+        <TurnLotteryModal
+          lottery={state.lottery}
+          myColor={human}
+          isCreator
+          whiteName={logNames.white}
+          blackName={logNames.black}
+          onRoll={game.rollLottery}
+          onStart={game.startLottery}
+          rolling={false}
+          starting={false}
+        />
+      )}
 
       <DuelModal
         duel={duel}

@@ -35,18 +35,12 @@
   margin: 0;
   padding: 0;
   cursor: pointer;
-  transition: background-color 0.12s ease;
-}
-
-.cell--light {
-  background: #eef2f6;
-}
-.cell--dark {
-  background: #6f8aa6;
+  transition: background 0.12s ease;
+  background: linear-gradient(155deg, #f4f7fa 0%, #eef2f6 48%, #dfe6ee 100%);
 }
 
 .cell--selected {
-  background: #f6c945 !important;
+  background: linear-gradient(155deg, #fad95a 0%, #f6c945 48%, #e3b830 100%) !important;
 }
 
 /* neutral "clickable target" marker; move/capture intent is shown by arrows */
@@ -207,11 +201,9 @@
   gap: 1px;
 }
 
-[data-skin='engraving'] .cell--light,
-[data-skin='engraving'] .cell--dark,
-[data-skin='monochrome'] .cell--light,
-[data-skin='monochrome'] .cell--dark {
-  background: #ece3d0;
+[data-skin='engraving'] .cell,
+[data-skin='monochrome'] .cell {
+  background: linear-gradient(155deg, #f2ead8 0%, #ece3d0 48%, #e0d5bc 100%);
 }
 
 /* color-engraving: tan tiles with soft bevels/gradients (like fantasy), dark warm frame */
@@ -234,14 +226,7 @@
   box-shadow:
     inset 1px 1px 3px rgba(255, 245, 220, 0.28),
     inset -1px -1px 3px rgba(50, 35, 10, 0.16);
-}
-
-[data-skin='color-engraving'] .cell--light {
   background: linear-gradient(155deg, #dcc99a 0%, #cdb58a 48%, #bca574 100%);
-}
-
-[data-skin='color-engraving'] .cell--dark {
-  background: linear-gradient(155deg, #d4b87e 0%, #c4a57a 48%, #a89062 100%);
 }
 
 [data-skin='color-engraving'] .cell--selected {
@@ -284,14 +269,7 @@
   box-shadow:
     inset 1px 1px 3px rgba(255, 255, 255, 0.28),
     inset -1px -1px 3px rgba(0, 0, 0, 0.14);
-}
-
-[data-skin='fantasy'] .cell--light {
   background: linear-gradient(155deg, #d4dae0 0%, #bcc4cb 48%, #aab2b9 100%);
-}
-
-[data-skin='fantasy'] .cell--dark {
-  background: linear-gradient(155deg, #c5ccd3 0%, #adb5bc 48%, #9aa2a9 100%);
 }
 
 [data-skin='fantasy'] .cell--selected {
@@ -325,16 +303,14 @@
   gap: 1px;
 }
 
-[data-skin='southpark'] .cell--light,
-[data-skin='southpark'] .cell--dark,
-[data-skin='simpsons'] .cell--light,
-[data-skin='simpsons'] .cell--dark {
-  background: #f0eeea;
+[data-skin='southpark'] .cell,
+[data-skin='simpsons'] .cell {
+  background: linear-gradient(155deg, #f8f6f2 0%, #f0eeea 48%, #e6e4df 100%);
 }
 
 [data-skin='southpark'] .cell--selected,
 [data-skin='simpsons'] .cell--selected {
-  background: #fff3a8 !important;
+  background: linear-gradient(155deg, #fff8c4 0%, #fff3a8 48%, #f0e490 100%) !important;
 }
 
 [data-skin='southpark'] .cell--target,
@@ -347,15 +323,17 @@
   border-color: rgba(100, 100, 100, 0.4);
 }
 
-/* chess + 8bit + 16bit: very dark board with soft gradients and bevels */
+/* chess + 8bit + 16bit: dark blue-gray tiles in a frame matched to the page bg */
 [data-skin='chess'] .board,
 [data-skin='8bit'] .board,
 [data-skin='16bit'] .board {
   border-radius: 0;
   overflow: visible;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  border: 8px solid #060606;
-  background: #0a0a0a;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(74, 144, 217, 0.07);
+  border: 8px solid #070b10;
+  background: linear-gradient(165deg, #121820 0%, #0c1016 48%, #080b10 100%);
   gap: 2px;
   padding: 2px;
 }
@@ -364,25 +342,14 @@
 [data-skin='8bit'] .cell,
 [data-skin='16bit'] .cell {
   border-radius: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-left: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(90, 120, 160, 0.06);
+  border-left: 1px solid rgba(80, 110, 150, 0.04);
   border-bottom: 1px solid rgba(0, 0, 0, 0.55);
-  border-right: 1px solid rgba(0, 0, 0, 0.6);
+  border-right: 1px solid rgba(0, 0, 0, 0.58);
   box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset 1px 1px 2px rgba(80, 120, 160, 0.04),
     inset -1px -1px 3px rgba(0, 0, 0, 0.5);
-}
-
-[data-skin='chess'] .cell--light,
-[data-skin='8bit'] .cell--light,
-[data-skin='16bit'] .cell--light {
-  background: linear-gradient(155deg, #282828 0%, #1e1e1e 48%, #161616 100%);
-}
-
-[data-skin='chess'] .cell--dark,
-[data-skin='8bit'] .cell--dark,
-[data-skin='16bit'] .cell--dark {
-  background: linear-gradient(155deg, #181818 0%, #101010 48%, #080808 100%);
+  background: linear-gradient(155deg, #161f2a 0%, #111820 48%, #0c1016 100%);
 }
 
 [data-skin='chess'] .cell--selected,
@@ -391,24 +358,24 @@
   background: linear-gradient(155deg, #4a3e18 0%, #3a3012 48%, #2a240c 100%) !important;
   border-top-color: rgba(180, 150, 70, 0.3);
   border-left-color: rgba(160, 130, 55, 0.22);
-  border-bottom-color: rgba(0, 0, 0, 0.65);
-  border-right-color: rgba(0, 0, 0, 0.7);
+  border-bottom-color: rgba(0, 0, 0, 0.58);
+  border-right-color: rgba(0, 0, 0, 0.62);
 }
 
 [data-skin='chess'] .cell--target,
 [data-skin='8bit'] .cell--target,
 [data-skin='16bit'] .cell--target {
   box-shadow:
-    inset 0 0 0 2px rgba(140, 140, 140, 0.22),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 2px rgba(90, 120, 160, 0.16),
+    inset 1px 1px 2px rgba(100, 150, 200, 0.06),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.42);
 }
 
 [data-skin='chess'] .cell--place::after,
 [data-skin='8bit'] .cell--place::after,
 [data-skin='16bit'] .cell--place::after {
   border-radius: 4px;
-  border-color: rgba(120, 120, 120, 0.3);
+  border-color: rgba(90, 120, 160, 0.2);
 }
 
 /* 8bit: crisp square tiles */

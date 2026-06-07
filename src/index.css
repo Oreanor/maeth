@@ -1,4 +1,11 @@
-:root,
+:root {
+  --game-column: 460px;
+  --game-column-w: min(86vw, var(--game-column));
+
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
 :root[data-theme='dark'] {
   --bg: #0f141a;
   --card: #1b232d;
@@ -6,8 +13,6 @@
   --muted: #8d9aa8;
   --accent: #4a90d9;
   --accent-text: #ffffff;
-  --game-column: 460px;
-  --game-column-w: min(86vw, var(--game-column));
   --bg-gradient: linear-gradient(
     180deg,
     #0a0e14 0%,
@@ -17,8 +22,6 @@
   );
 
   color-scheme: dark;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 :root[data-theme='light'] {
@@ -28,6 +31,13 @@
   --muted: #5b6b7b;
   --accent: #3a7bd5;
   --accent-text: #ffffff;
+  --bg-gradient: linear-gradient(
+    180deg,
+    #e4eaf1 0%,
+    #eef2f7 42%,
+    #f6f8fb 58%,
+    #e4eaf1 100%
+  );
 
   color-scheme: light;
 }

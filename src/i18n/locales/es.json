@@ -13,7 +13,8 @@
     "google": "Entrar con Google",
     "guest": "Jugar como invitado",
     "googleError": "No se pudo iniciar sesión con Google",
-    "needConfig": "Para entrar con Google, completa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY."
+    "needConfig": "Para entrar con Google, completa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.",
+    "viewIllustration": "Ver ilustración"
   },
   "lobby": {
     "logout": "Salir",

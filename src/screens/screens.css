@@ -62,6 +62,80 @@
   font-weight: 800;
 }
 
+.login-hero {
+  position: relative;
+  width: min(92vw, 350px);
+  margin: 0 auto 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.login-illustration {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.login-hero__logo {
+  position: absolute;
+  inset: 50% 0 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.login-hero__logo .hero__wordmark {
+  width: 180px;
+  max-width: calc(100% - 12px);
+  margin: 0;
+  /* Always the dark-theme look (light glyph), regardless of UI theme. */
+  filter: invert(1) brightness(1.08) drop-shadow(0 2px 12px rgba(0, 0, 0, 0.55));
+}
+
+.hero__star--overlay {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
+}
+
+.login-illustration img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.login-illustration-backdrop {
+  cursor: zoom-out;
+  flex-direction: column;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.login-illustration-full {
+  max-width: min(96vw, 1600px);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  cursor: default;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+.login-illustration-close {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 1;
+}
+
 .screen-copyright {
   font-size: 11px;
   line-height: 1.4;
@@ -76,13 +150,13 @@
 
 /* Tengwar "Maeth" wordmark. The art is dark ink on transparent, so it reads on
    the light theme as-is; on dark themes we invert it to a light glyph. */
-.hero__wordmark {
+.hero__wordmark:not(.hero__wordmark--overlay) {
   display: block;
   width: min(64vw, 240px);
   height: auto;
   margin: 0 auto 6px;
 }
-:root:not([data-theme='light']) .hero__wordmark,
+:root:not([data-theme='light']) .hero__wordmark:not(.hero__wordmark--overlay),
 :root:not([data-theme='light']) .topbar__logo {
   filter: invert(1) brightness(1.08);
 }
@@ -183,19 +257,12 @@
   position: relative;
 }
 .usermenu__trigger {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Match .icon-btn in the top bar; class icon-btn supplies the card fill. */
+  padding: 0;
 }
 .usermenu__trigger:hover {
-  background: rgba(127, 127, 127, 0.15);
+  filter: brightness(1.15);
+  background: var(--card);
 }
 .usermenu__overlay {
   position: fixed;

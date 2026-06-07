@@ -249,47 +249,49 @@
   border-color: rgba(90, 65, 25, 0.45);
 }
 
-/* fantasy: stone tiles in a dark grout frame */
+/* fantasy: dark stone tiles in a frame matched to the page bg */
 [data-skin='fantasy'] .board {
   border-radius: 0;
   overflow: visible;
-  box-shadow: none;
-  border: 8px solid #5a6068;
-  background: #6b727a;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(74, 144, 217, 0.07);
+  border: 8px solid #070b10;
+  background: linear-gradient(165deg, #121820 0%, #0c1016 48%, #080b10 100%);
   gap: 3px;
   padding: 3px;
 }
 
 [data-skin='fantasy'] .cell {
   border-radius: 6px;
-  border-top: 2px solid rgba(255, 255, 255, 0.5);
-  border-left: 2px solid rgba(255, 255, 255, 0.38);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.22);
-  border-right: 2px solid rgba(0, 0, 0, 0.28);
+  border-top: 2px solid rgba(90, 120, 160, 0.08);
+  border-left: 2px solid rgba(80, 110, 150, 0.05);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.52);
+  border-right: 2px solid rgba(0, 0, 0, 0.55);
   box-shadow:
-    inset 1px 1px 3px rgba(255, 255, 255, 0.28),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.14);
-  background: linear-gradient(155deg, #d4dae0 0%, #bcc4cb 48%, #aab2b9 100%);
+    inset 1px 1px 3px rgba(80, 120, 160, 0.05),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.48);
+  background: linear-gradient(155deg, #161f2a 0%, #111820 48%, #0c1016 100%);
 }
 
 [data-skin='fantasy'] .cell--selected {
-  background: linear-gradient(155deg, #d4b84a 0%, #b89a32 48%, #9a7f22 100%) !important;
-  border-top-color: rgba(255, 245, 200, 0.55);
-  border-left-color: rgba(255, 240, 180, 0.45);
-  border-bottom-color: rgba(60, 40, 0, 0.35);
-  border-right-color: rgba(40, 25, 0, 0.45);
+  background: linear-gradient(155deg, #4a3e18 0%, #3a3012 48%, #2a240c 100%) !important;
+  border-top-color: rgba(180, 150, 70, 0.3);
+  border-left-color: rgba(160, 130, 55, 0.22);
+  border-bottom-color: rgba(0, 0, 0, 0.58);
+  border-right-color: rgba(0, 0, 0, 0.62);
 }
 
 [data-skin='fantasy'] .cell--target {
   box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.45),
-    inset 1px 1px 3px rgba(255, 255, 255, 0.18),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.22);
+    inset 0 0 0 2px rgba(90, 120, 160, 0.16),
+    inset 1px 1px 3px rgba(80, 120, 160, 0.05),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.48);
 }
 
 [data-skin='fantasy'] .cell--place::after {
   border-radius: 5px;
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(90, 120, 160, 0.2);
 }
 
 /* southpark + simpsons: off-white board, darker grey frame */

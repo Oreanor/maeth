@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import { LoginIllustration } from '@/components/LoginIllustration'
 import logoMaeth from '@/assets/logo-maeth.png'
 import './screens.css'
 
@@ -22,10 +23,18 @@ export function LoginScreen() {
   return (
     <div className="screen screen--center">
       <div className="hero">
-        <div className="hero__logo-wrap">
-          <img className="hero__wordmark" src={logoMaeth} alt="Maeth" />
-          <span className="hero__star" aria-hidden="true">*</span>
-        </div>
+        <LoginIllustration
+          overlay={
+            <div className="login-hero__logo">
+              <div className="hero__logo-wrap">
+                <img className="hero__wordmark hero__wordmark--overlay" src={logoMaeth} alt="Maeth" />
+                <span className="hero__star hero__star--overlay" aria-hidden="true">
+                  *
+                </span>
+              </div>
+            </div>
+          }
+        />
       </div>
 
       <div className="stack">

@@ -14,7 +14,7 @@ export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => vo
   return (
     <div className="usermenu">
       <button
-        className="usermenu__trigger"
+        className="icon-btn usermenu__trigger"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}

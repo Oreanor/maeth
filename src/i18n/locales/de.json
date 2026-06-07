@@ -13,7 +13,8 @@
     "google": "Mit Google anmelden",
     "guest": "Als Gast spielen",
     "googleError": "Anmeldung mit Google fehlgeschlagen",
-    "needConfig": "Für die Google-Anmeldung VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY ausfüllen."
+    "needConfig": "Für die Google-Anmeldung VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY ausfüllen.",
+    "viewIllustration": "Illustration anzeigen"
   },
   "lobby": {
     "logout": "Abmelden",

@@ -13,7 +13,8 @@
     "google": "Se connecter avec Google",
     "guest": "Jouer en invité",
     "googleError": "Échec de la connexion avec Google",
-    "needConfig": "Pour la connexion Google, renseignez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY."
+    "needConfig": "Pour la connexion Google, renseignez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.",
+    "viewIllustration": "Voir l'illustration"
   },
   "lobby": {
     "logout": "Déconnexion",

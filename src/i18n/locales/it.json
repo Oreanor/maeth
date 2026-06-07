@@ -13,7 +13,8 @@
     "google": "Accedi con Google",
     "guest": "Gioca come ospite",
     "googleError": "Accesso con Google non riuscito",
-    "needConfig": "Per l'accesso con Google, imposta VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY."
+    "needConfig": "Per l'accesso con Google, imposta VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.",
+    "viewIllustration": "Mostra illustrazione"
   },
   "lobby": {
     "logout": "Esci",

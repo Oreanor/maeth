@@ -13,7 +13,8 @@
     "google": "Sign in with Google",
     "guest": "Play as guest",
     "googleError": "Could not sign in with Google",
-    "needConfig": "To sign in with Google, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."
+    "needConfig": "To sign in with Google, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+    "viewIllustration": "View illustration"
   },
   "lobby": {
     "logout": "Sign out",

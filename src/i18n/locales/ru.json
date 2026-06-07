@@ -13,7 +13,8 @@
     "google": "Войти через Google",
     "guest": "Играть как гость",
     "googleError": "Не удалось войти через Google",
-    "needConfig": "Для входа через Google заполните VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY."
+    "needConfig": "Для входа через Google заполните VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY.",
+    "viewIllustration": "Открыть иллюстрацию"
   },
   "lobby": {
     "logout": "Выход",

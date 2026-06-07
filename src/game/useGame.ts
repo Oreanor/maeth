@@ -12,6 +12,7 @@ import { chooseBotMove, chooseBotPlacement } from './bot'
 import { PIECES, type PieceDef } from './pieces'
 import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
 import type { Color, GameState, Move } from './types'
+import { useDelayedCeremonySlot } from './useDelayedCeremonySlot'
 import { useDraftPick, type DraftPick } from './useDraftPick'
 import type { SeriesScore } from '@/lib/api'
 import type { StoredAction } from './actionLog'
@@ -126,21 +127,22 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     state.phase === 'draft' && state.pending != null
       ? state.placed.white + state.placed.black
       : -1
+  const ceremonySlot = useDelayedCeremonySlot(draftSlot)
   const {
     pick,
     pickReady,
     confirm: confirmDraftPick,
     reset: resetPick,
   } = useDraftPick({
-    slot: draftSlot,
+    slot: ceremonySlot,
     by: state.phase === 'draft' ? state.turn : null,
     pool: () => (state.pending != null ? [...state.deck, state.pending] : []),
     drawn: () => state.pending,
-    // A just-placed piece gets a beat before the human's own pick pops up; the
-    // bot's pick opens right away.
-    openDelay: draftSlot >= 1 && (!vsBot || state.turn === humanColor),
     autoConfirmMs: (by) => (vsBot && by !== humanColor ? botPickDelay() : null),
   })
+  // Ignore stale pickReady while ceremonySlot catches up to draftSlot (post-placement pause).
+  const canPlace =
+    pickReady && ceremonySlot >= 0 && ceremonySlot === draftSlot
 
   // Begin a move: precompute its outcome (rolling the duel if any). Human duels
   // open the modal at once; the bot shows an aim arrow first so you see the line.
@@ -212,7 +214,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
 
   // Only reveal the piece (and enable placement) after the pick ceremony closes.
   const pendingDef =
-    state.phase === 'draft' && isHumanTurn && pickReady && state.pending
+    state.phase === 'draft' && isHumanTurn && canPlace && state.pending
       ? PIECES[state.pending]
       : null
 
@@ -221,7 +223,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
       if (!isHumanTurn || anim || duel) return
 
       if (state.phase === 'draft') {
-        if (!pickReady || state.pending == null || state.board[cell]) return
+        if (!canPlace || state.pending == null || state.board[cell]) return
         // First tap/click previews (ghost + arrows); acting on the already
         // previewed cell confirms placement. On desktop the hover sets the
         // preview first, so a single click still places immediately.
@@ -254,15 +256,15 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
         else setSelected(null)
       }
     },
-    [isHumanTurn, anim, duel, state, selected, preview, startMove, pickReady, recordAction],
+    [isHumanTurn, anim, duel, state, selected, preview, startMove, canPlace, recordAction],
   )
 
   const onCellEnter = useCallback(
     (cell: number) => {
-      if (!isHumanTurn || state.phase !== 'draft' || !pickReady) return
+      if (!isHumanTurn || state.phase !== 'draft' || !canPlace) return
       if (state.pending != null && !state.board[cell]) setPreview(cell)
     },
-    [isHumanTurn, state, pickReady],
+    [isHumanTurn, state, canPlace],
   )
 
   const clearPreview = useCallback(() => setPreview(null), [])
@@ -351,7 +353,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     if (state.phase === 'over') return
     if (state.turn === humanColor) return
     // In the draft, the bot only places after its reveal ceremony has finished.
-    if (state.phase === 'draft' && !pickReady) return
+    if (state.phase === 'draft' && !canPlace) return
 
     setThinking(true)
     timer.current = setTimeout(
@@ -373,7 +375,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     )
 
     return () => clearTimeout(timer.current)
-  }, [state, vsBot, humanColor, anim, duel, startMove, pickReady, recordAction])
+  }, [state, vsBot, humanColor, anim, duel, startMove, canPlace, recordAction])
 
   // Tally the room score once per finished game (the count survives reset()).
   useEffect(() => {

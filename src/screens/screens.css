@@ -55,6 +55,8 @@
 .login__note {
   margin: 0;
   max-width: none;
+  white-space: nowrap;
+  font-size: 11px;
 }
 .login__note-star {
   font-weight: 800;
@@ -854,19 +856,19 @@
 .pick-portrait {
   width: 104px;
   height: 104px;
-  border-radius: 20px;
-  overflow: hidden;
-  --piece-icon-radius: 14px;
   display: grid;
   place-items: center;
-  background: #f5f5fa;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  background: transparent;
+  box-shadow: none;
 }
-.pick-portrait__icon.piece-icon--sprite {
-  width: 88px;
-  height: 88px;
+
+.pick-portrait .piece {
+  width: 100%;
+  height: 100%;
+  animation: none;
 }
-.pick-portrait--spin {
+
+.pick-portrait--spin .piece {
   animation: pick-pulse 0.5s ease-in-out infinite;
 }
 @keyframes pick-pulse {
@@ -878,8 +880,8 @@
     transform: scale(1.08);
   }
 }
-.pick-portrait--settled {
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+.pick-portrait--settled .piece {
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
 }
 .pick-modal__name {
   font-weight: 700;

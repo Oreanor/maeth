@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Color } from './types'
 import type { PieceKind } from './pieces'
-import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
+import { PICK_CLOSE_MS, PICK_REVEAL_MS } from './timing'
 
 /** The blind-draw reveal: spinning portraits that settle on the drawn piece. */
 export interface DraftPick {
@@ -24,8 +24,6 @@ export interface DraftPickConfig {
   pool: () => PieceKind[]
   /** The actually-drawn piece at confirm time — read fresh. */
   drawn: () => PieceKind | null
-  /** Delay the modal opening so a just-placed piece is seen first. */
-  openDelay: boolean
   /** Bot only: ms before auto-confirming a pick of `by`; null/absent = manual. */
   autoConfirmMs?: (by: Color) => number | null
 }
@@ -52,12 +50,8 @@ export interface DraftPickState {
 export function useDraftPick(cfg: DraftPickConfig): DraftPickState {
   const [pick, setPick] = useState<DraftPick | null>(null)
   const [pickReady, setPickReady] = useState(false)
-  const slotRef = useRef(-1)
-  const openTimer = useRef<ReturnType<typeof setTimeout>>()
   const revealTimer = useRef<ReturnType<typeof setTimeout>>()
   const autoTimer = useRef<ReturnType<typeof setTimeout>>()
-  // Latest closures so the effects can key purely on `slot`/`pick` and still read
-  // fresh state when a timer eventually fires.
   const cfgRef = useRef(cfg)
   cfgRef.current = cfg
 
@@ -67,10 +61,8 @@ export function useDraftPick(cfg: DraftPickConfig): DraftPickState {
   }, [])
 
   const reset = useCallback(() => {
-    clearTimeout(openTimer.current)
     clearTimeout(revealTimer.current)
     clearTimeout(autoTimer.current)
-    slotRef.current = -1
     setPick(null)
     setPickReady(false)
   }, [])
@@ -78,26 +70,19 @@ export function useDraftPick(cfg: DraftPickConfig): DraftPickState {
   // Start a fresh ceremony each time the slot changes.
   useEffect(() => {
     if (cfg.slot < 0) {
-      slotRef.current = -1
       setPick(null)
       setPickReady(false)
       return
     }
-    if (slotRef.current === cfg.slot) return
-    slotRef.current = cfg.slot
+
     setPickReady(false)
-    setPick(null)
-    const open = () => {
-      const c = cfgRef.current
-      if (c.by == null) return
-      setPick({ by: c.by, pool: c.pool(), settled: null })
+    const c = cfgRef.current
+    if (c.by == null) {
+      setPick(null)
+      return
     }
-    if (cfg.openDelay) {
-      openTimer.current = setTimeout(open, PICK_OPEN_DELAY_MS)
-      return () => clearTimeout(openTimer.current)
-    }
-    open()
-  }, [cfg.slot, cfg.openDelay])
+    setPick({ by: c.by, pool: c.pool(), settled: null })
+  }, [cfg.slot])
 
   // Bot only: auto-confirm a spinning pick after its "thinking" delay.
   useEffect(() => {

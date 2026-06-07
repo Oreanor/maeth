@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import type { DuelEvent } from './useGame'
+import { useDelayedCeremonySlot } from './useDelayedCeremonySlot'
 import { useDraftPick, type DraftPick } from './useDraftPick'
 import { isDuelMove, legalMovesFrom, movablePieces, placePiece, placementCells } from './engine'
 import { PIECES, type PieceDef } from './pieces'
@@ -223,24 +224,26 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     state?.phase === 'draft' && isHumanTurn && !waiting && !inLottery && state.pending != null
       ? state.placed.white + state.placed.black
       : -1
+  const ceremonySlot = useDelayedCeremonySlot(draftSlot)
   const {
     pick,
     pickReady,
     confirm: confirmDraftPick,
   } = useDraftPick({
-    slot: draftSlot,
+    slot: ceremonySlot,
     by: player?.color ?? null,
     pool: () => {
       const st = stateRef.current
       return st?.pending != null ? [...st.deck, st.pending] : []
     },
     drawn: () => stateRef.current?.pending ?? null,
-    openDelay: draftSlot >= 1,
   })
+  const canPlace =
+    pickReady && ceremonySlot >= 0 && ceremonySlot === draftSlot
 
   // Only reveal the piece (and allow placement) once the pick ceremony closes.
   const pendingDef =
-    state?.phase === 'draft' && isHumanTurn && pickReady && state.pending
+    state?.phase === 'draft' && isHumanTurn && canPlace && state.pending
       ? PIECES[state.pending]
       : null
 
@@ -249,7 +252,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
       if (!state || !isHumanTurn || submitting) return
 
       if (state.phase === 'draft') {
-        if (!pickReady || !placementTargets.includes(cell)) return
+        if (!canPlace || !placementTargets.includes(cell)) return
         if (preview !== cell) {
           setPreview(cell)
           return
@@ -307,16 +310,16 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
         else setSelected(null)
       }
     },
-    [game, gameId, isHumanTurn, pickReady, placementTargets, preview, selected, selectedMoves, state, submitting],
+    [game, gameId, isHumanTurn, canPlace, placementTargets, preview, selected, selectedMoves, state, submitting],
   )
 
   const onCellEnter = useCallback(
     (cell: number) => {
-      if (state?.phase === 'draft' && isHumanTurn && pickReady && placementTargets.includes(cell)) {
+      if (state?.phase === 'draft' && isHumanTurn && canPlace && placementTargets.includes(cell)) {
         setPreview(cell)
       }
     },
-    [isHumanTurn, pickReady, placementTargets, state?.phase],
+    [isHumanTurn, canPlace, placementTargets, state?.phase],
   )
 
   const rollLottery = useCallback(() => {

@@ -50,7 +50,8 @@
       "Bash(git push *)",
       "Bash(echo \"=== EXIT $? ===\")",
       "Bash(xargs wc -l)",
-      "Bash(grep -rn \"\\\\.or\\(\\\\`\\\\|\\\\.or\\('.*\\\\${\" api)"
+      "Bash(grep -rn \"\\\\.or\\(\\\\`\\\\|\\\\.or\\('.*\\\\${\" api)",
+      "Bash(echo \"EXIT $?\")"
     ]
   }
 }

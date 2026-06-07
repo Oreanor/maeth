@@ -6,6 +6,13 @@ export function routeParam(value: string | string[] | undefined): string | null 
   return value ?? null
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** True for a canonical UUID — guards ids before they reach raw query filters. */
+export function isUuid(value: string | null): value is string {
+  return value != null && UUID_RE.test(value)
+}
+
 /** Parse a request body into a plain object, tolerating string or parsed input. */
 export function readJsonBody(body: unknown): Record<string, unknown> | null {
   const value = typeof body === 'string' ? safeJson(body) : body

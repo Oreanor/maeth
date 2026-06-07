@@ -10,7 +10,9 @@ export function PieceIcon({ kind, className = '' }: { kind: PieceKind; className
   const def = PIECES[kind]
 
   if (skin === 'default') {
-    return <span className={`piece-icon piece-icon--emoji ${className}`.trim()}>{def.emoji}</span>
+    return (
+      <span className={`piece-icon piece-icon--emoji ${className}`.trim()}>{def.emoji}</span>
+    )
   }
 
   const { col, row } = spriteCoords(kind)

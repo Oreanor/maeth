@@ -1,5 +1,5 @@
 import { SIZE, colOf, onBoard, rowOf, type Color, type Move } from '@/game/types'
-import { PIECES, dirsFor, type PieceKind } from '@/game/pieces'
+import { PIECES, dirsFor, isArcher, type PieceKind } from '@/game/pieces'
 
 // Generic arrow overlay drawn over the board grid. Units are board cells
 // (viewBox 0 0 SIZE SIZE). Used for two things:
@@ -19,6 +19,9 @@ export interface ArrowSpec {
   dc: number
   len: number
   color: string
+  dashed?: boolean
+  /** End at this cell centre (archer shots to a specific target). */
+  to?: number
 }
 
 const sign = (n: number) => (n > 0 ? 1 : n < 0 ? -1 : 0)
@@ -28,6 +31,7 @@ export function edgeArrows(cell: number, kind: PieceKind, color: string): ArrowS
   const row = rowOf(cell)
   const col = colOf(cell)
   const def = PIECES[kind]
+  const dashed = isArcher(kind)
   const out: ArrowSpec[] = []
   for (const [dr, dc] of dirsFor(def.pattern)) {
     let len = 0
@@ -35,16 +39,27 @@ export function edgeArrows(cell: number, kind: PieceKind, color: string): ArrowS
       if (onBoard(row + dr * k, col + dc * k)) len = k
       else break
     }
-    if (len > 0) out.push({ dr, dc, len, color })
+    if (len > 0) out.push({ dr, dc, len, color, dashed })
   }
   return out
 }
 
-/** Turn a selected piece's legal moves into one arrow per direction (farthest
- *  reachable cell), red if that direction ends in a capture, green otherwise. */
-export function moveArrows(from: number, moves: Move[]): ArrowSpec[] {
+/** Turn a selected piece's legal moves into aim arrows. Archers get one line per
+ *  target; sliders get one arrow per direction (farthest reachable cell). */
+export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowSpec[] {
   const fr = rowOf(from)
   const fc = colOf(from)
+  const dashed = isArcher(kind)
+
+  if (dashed) {
+    return moves.map((m) => {
+      const dr = sign(rowOf(m.to) - fr)
+      const dc = sign(colOf(m.to) - fc)
+      const len = Math.max(Math.abs(rowOf(m.to) - fr), Math.abs(colOf(m.to) - fc))
+      return { dr, dc, len, to: m.to, color: CAPTURE_COLOR, dashed: true }
+    })
+  }
+
   const byDir = new Map<string, { dr: number; dc: number; len: number; capture: boolean }>()
   for (const m of moves) {
     const dr = sign(rowOf(m.to) - fr)
@@ -59,6 +74,7 @@ export function moveArrows(from: number, moves: Move[]): ArrowSpec[] {
     dc,
     len,
     color: capture ? CAPTURE_COLOR : MOVE_COLOR,
+    dashed,
   }))
 }
 
@@ -81,13 +97,26 @@ export function ArrowOverlay({ cell, arrows, orientation }: Props) {
       {arrows.map((a, n) => {
         const sdr = orientation === 'white' ? a.dr : -a.dr
         const sdc = orientation === 'white' ? a.dc : -a.dc
-        const mag = Math.hypot(sdc, sdr) || 1
-        const ux = sdc / mag
-        const uy = sdr / mag
+        let ex: number
+        let ey: number
+        if (a.to != null) {
+          const tr = rowOf(a.to)
+          const tc = colOf(a.to)
+          const dtr = orientation === 'white' ? tr : SIZE - 1 - tr
+          const dtc = orientation === 'white' ? tc : SIZE - 1 - tc
+          ex = dtc + 0.5
+          ey = dtr + 0.5
+        } else {
+          ex = cx + sdc * a.len
+          ey = cy + sdr * a.len
+        }
+        const dx = ex - cx
+        const dy = ey - cy
+        const mag = Math.hypot(dx, dy) || 1
+        const ux = dx / mag
+        const uy = dy / mag
         const sx = cx + ux * 0.34
         const sy = cy + uy * 0.34
-        const ex = cx + sdc * a.len
-        const ey = cy + sdr * a.len
         const head = 0.2
         const half = 0.13
         const bx = ex - ux * head
@@ -98,7 +127,15 @@ export function ArrowOverlay({ cell, arrows, orientation }: Props) {
           <g key={n} stroke={a.color} fill={a.color}>
             {/* Stop the shaft at the head's base so its rounded cap doesn't poke
                 out past the tip (which made the head look slid-back). */}
-            <line x1={sx} y1={sy} x2={bx} y2={by} strokeWidth={0.07} strokeLinecap="round" />
+            <line
+              x1={sx}
+              y1={sy}
+              x2={bx}
+              y2={by}
+              strokeWidth={0.07}
+              strokeLinecap="round"
+              strokeDasharray={a.dashed ? '0.14 0.1' : undefined}
+            />
             <polygon
               points={`${ex},${ey} ${bx + px * half},${by + py * half} ${bx - px * half},${by - py * half}`}
               stroke="none"

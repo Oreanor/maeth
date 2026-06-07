@@ -1,3 +1,5 @@
+import { useModalDismiss } from './useModalDismiss'
+
 /** Generic in-app confirmation dialog (replaces window.confirm). */
 export function ConfirmModal({
   message,
@@ -14,6 +16,7 @@ export function ConfirmModal({
   onConfirm: () => void
   onClose: () => void
 }) {
+  useModalDismiss(onClose)
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { listFriends } from '@/lib/api'
 import type { Friend } from '@/auth/types'
+import { useModalDismiss } from './useModalDismiss'
 
 export type CreateChoice =
   | { mode: 'open'; duels: boolean }
@@ -26,6 +27,7 @@ export function CreateGameModal({
   onClose: () => void
 }) {
   const { t } = useI18n()
+  useModalDismiss(onClose)
   const [mode, setMode] = useState<Mode>(online ? 'open' : 'bot')
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendId, setFriendId] = useState('')

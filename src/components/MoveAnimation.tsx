@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
-import { SIZE, colOf, rowOf, type Color } from '@/game/types'
-import type { PieceKind } from '@/game/pieces'
+import { SIZE, colOf, opposite, rowOf, type Color } from '@/game/types'
+import { isArcher, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
 import { PieceIcon } from './PieceIcon'
 import './MoveAnimation.css'
 
@@ -20,9 +20,9 @@ const OWNER_COLOR: Record<Color, string> = { white: '#4a90d9', black: '#d64545' 
 
 /**
  * Plays the move: an arrow is drawn toward the target, then (for a normal move
- * or capture) the attacker slides across, the victim shrinking as it lands. For
- * a duel only the arrow is drawn — the modal then rolls the dice, and the slide
- * happens afterwards if the strike succeeds.
+ * or capture) the attacker slides across, the victim shrinking as it lands. A
+ * contested strike shows an aim arrow first when the opponent attacks, then the
+ * duel modal; your own duels skip the pre-roll arrow.
  */
 export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientation: Color }) {
   const disp = (i: number) => {
@@ -40,8 +40,10 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
   const fcy = f.r + 0.5
   const tcx = t.c + 0.5
   const tcy = t.r + 0.5
-  const len = Math.hypot(tcx - fcx, tcy - fcy)
+  const lineLen = Math.hypot(tcx - fcx, tcy - fcy)
   const color = OWNER_COLOR[anim.owner]
+  const archer = isArcher(anim.attacker)
+  const slide = anim.kind !== 'duel' && !archer
 
   const box = (r: number, c: number): CSSProperties => ({
     left: `${c * cell}%`,
@@ -50,11 +52,18 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
     height: `${cell}%`,
   })
 
+  const animPiece = (kind: PieceKind, color: Color) => (
+    <span className={`piece piece--${color}`}>
+      <PieceIcon kind={kind} className="piece__icon" />
+      <span className="piece__badge">{pieceBadgeLabel(kind)}</span>
+    </span>
+  )
+
   return (
     <div className="move-anim">
       <svg className="move-anim__arrow" viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <line
-          className="move-anim__line"
+          className={`move-anim__line ${archer ? 'move-anim__line--archer' : ''}`.trim()}
           x1={fcx}
           y1={fcy}
           x2={tcx}
@@ -62,25 +71,28 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
           stroke={color}
           strokeWidth={0.09}
           strokeLinecap="round"
-          strokeDasharray={len}
-          style={{ ['--len' as string]: len } as CSSProperties}
+          strokeDasharray={lineLen}
+          style={{ ['--len' as string]: lineLen } as CSSProperties}
         />
       </svg>
 
-      {anim.kind !== 'duel' && (
+      {slide && (
         <div
           className="anim-attacker anim-attacker--move"
           style={
             { ...box(f.r, f.c), ['--dx' as string]: dx, ['--dy' as string]: dy } as CSSProperties
           }
         >
-          <PieceIcon kind={anim.attacker} className="anim-piece__icon" />
+          {animPiece(anim.attacker, anim.owner)}
         </div>
       )}
 
       {anim.kind === 'capture' && anim.victim && (
-        <div className="anim-victim" style={box(t.r, t.c)}>
-          <PieceIcon kind={anim.victim} className="anim-piece__icon" />
+        <div
+          className={`anim-victim ${archer ? 'anim-victim--archer' : ''}`.trim()}
+          style={box(t.r, t.c)}
+        >
+          {animPiece(anim.victim, opposite(anim.owner))}
         </div>
       )}
     </div>

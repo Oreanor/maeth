@@ -9,11 +9,11 @@ import {
   type SeriesScore,
 } from '@/lib/api'
 import { useI18n } from '@/i18n'
-import type { DraftPick, DuelEvent } from './useGame'
-import { isDuelMove, legalMovesFrom, placePiece, placementCells } from './engine'
+import type { DuelEvent } from './useGame'
+import { useDraftPick, type DraftPick } from './useDraftPick'
+import { isDuelMove, legalMovesFrom, movablePieces, placePiece, placementCells } from './engine'
 import { PIECES, type PieceDef } from './pieces'
 import type { Color, GameState, Move } from './types'
-import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
 
 export interface RemoteGamePlayer {
   color: Color
@@ -78,13 +78,6 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   submittingRef.current = submitting
   const [duel, setDuel] = useState<DuelEvent | null>(null)
   const [duelPending, setDuelPending] = useState(false)
-  // Blind-draw ceremony for your own picks (the opponent's draw stays hidden):
-  // `pick` drives the spinning modal, `pickReady` gates placement until it ends.
-  const [pick, setPick] = useState<DraftPick | null>(null)
-  const [pickReady, setPickReady] = useState(false)
-  const pickSlotRef = useRef(-1)
-  const revealTimer = useRef<ReturnType<typeof setTimeout>>()
-  const openTimer = useRef<ReturnType<typeof setTimeout>>()
   // The last action whose duel we've already shown (or chosen to skip). A ref so
   // applySnapshot stays stable and reads the current value without re-closing.
   const seenActionIdRef = useRef<number | null>(null)
@@ -170,12 +163,14 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
 
   useEffect(() => {
     // Keep polling finished games too, so the loser/opponent picks up a rematch
-    // pointer and follows it. Only a cancelled game truly stops.
+    // pointer and follows it — but slowly, since only a rematch can change them.
+    // Only a cancelled game truly stops.
     if (!game || game.status === 'cancelled') return
+    const interval = game.status === 'over' ? 3000 : 700
     const timer = window.setInterval(() => {
       if (submittingRef.current) return // don't overwrite an optimistic update mid-flight
       refresh().catch((e) => setError(e instanceof Error ? e.message : tRef.current('game.errRefresh')))
-    }, 700)
+    }, interval)
     return () => window.clearInterval(timer)
   }, [game?.status, refresh])
 
@@ -199,78 +194,39 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   )
   const legalTargets = useMemo(() => selectedMoves.map((m) => m.to), [selectedMoves])
 
-  const movableCells = useMemo(() => {
-    if (!state || state.phase !== 'play' || !isHumanTurn) return []
-    const out: number[] = []
-    for (let i = 0; i < state.board.length; i++) {
-      const p = state.board[i]
-      if (p && p.color === state.turn && !p.moved && legalMovesFrom(state, i).length > 0) out.push(i)
-    }
-    return out
-  }, [state, isHumanTurn])
+  const movableCells = useMemo(
+    () => (state && isHumanTurn ? movablePieces(state) : []),
+    [state, isHumanTurn],
+  )
+
+  // Blind-draw "roulette" for your own picks only — the opponent's draw stays
+  // hidden, so it never opens on their turn. Hold it while the room still waits
+  // for the second player (no point drawing a piece you can't place yet).
+  const waiting = game?.status === 'waiting'
+  const draftSlot =
+    state?.phase === 'draft' && isHumanTurn && !waiting && state.pending != null
+      ? state.placed.white + state.placed.black
+      : -1
+  const {
+    pick,
+    pickReady,
+    confirm: confirmDraftPick,
+  } = useDraftPick({
+    slot: draftSlot,
+    by: player?.color ?? null,
+    pool: () => {
+      const st = stateRef.current
+      return st?.pending != null ? [...st.deck, st.pending] : []
+    },
+    drawn: () => stateRef.current?.pending ?? null,
+    openDelay: draftSlot >= 1,
+  })
 
   // Only reveal the piece (and allow placement) once the pick ceremony closes.
   const pendingDef =
     state?.phase === 'draft' && isHumanTurn && pickReady && state.pending
       ? PIECES[state.pending]
       : null
-
-  // Settle the spinning portrait on your actually-drawn piece (the tap).
-  const confirmDraftPick = useCallback(() => {
-    setPick((p) =>
-      p && p.settled == null && state?.pending != null ? { ...p, settled: state.pending } : p,
-    )
-  }, [state?.pending])
-
-  // Start a fresh pick ceremony each time it becomes your turn to draw, after a
-  // short beat so the opponent's just-placed piece registers first. While the
-  // game is still waiting for the second player, hold the roulette — there's no
-  // point drawing a piece you can't place yet.
-  const waiting = game?.status === 'waiting'
-  const draftSlot =
-    state?.phase === 'draft' && isHumanTurn && !waiting && state.pending != null
-      ? state.placed.white + state.placed.black
-      : -1
-  useEffect(() => {
-    if (draftSlot < 0) {
-      pickSlotRef.current = -1
-      setPick(null)
-      setPickReady(false)
-      return
-    }
-    if (pickSlotRef.current === draftSlot) return
-    pickSlotRef.current = draftSlot
-    setPickReady(false)
-    setPick(null)
-    const open = () => {
-      const st = stateRef.current
-      const pl = playerRef.current
-      if (!st || !pl || st.pending == null) return
-      setPick({ by: pl.color, pool: [...st.deck, st.pending], settled: null })
-    }
-    if (draftSlot >= 1) {
-      openTimer.current = setTimeout(open, PICK_OPEN_DELAY_MS)
-      return () => clearTimeout(openTimer.current)
-    }
-    open()
-  }, [draftSlot])
-
-  // Once settled, linger on the portrait, then the shrink close, then allow
-  // placement.
-  useEffect(() => {
-    if (!pick || pick.settled == null) return
-    if (pick.closing) {
-      revealTimer.current = setTimeout(() => {
-        setPick(null)
-        setPickReady(true)
-      }, PICK_CLOSE_MS)
-    } else {
-      revealTimer.current = setTimeout(() => {
-        setPick((p) => (p ? { ...p, closing: true } : p))
-      }, PICK_REVEAL_MS)
-    }
-    return () => clearTimeout(revealTimer.current)
-  }, [pick])
 
   const onCell = useCallback(
     (cell: number) => {

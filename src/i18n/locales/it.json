@@ -51,7 +51,8 @@
     "styleSimpsons": "I Simpson",
     "styleChess": "Scacchi",
     "style8bit": "8-bit",
-    "style16bit": "16-bit"
+    "style16bit": "16-bit",
+    "styleLoading": "Caricamento tema…"
   },
   "create": {
     "optOpen": "Partita aperta",
@@ -81,7 +82,12 @@
   },
   "rules": {
     "title": "Come si gioca",
-    "body": "L'obiettivo è **catturare più pedine avversarie** di quante l'avversario ne catturi delle tue.\n**Fase 1 — draft**: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato.\n**Fase 2 — mosse**: ogni pedina si muove **una sola volta** in tutta la partita, scivolando nelle sue direzioni fino alla sua **portata** (seleziona una pedina per vedere le frecce).\n**Etichette sulle pedine** (es. 1+, 2*, 3x): il numero è la **portata** in caselle, il simbolo le **direzioni**:\n• **+** — solo dritto (orizzontale e verticale)\n• **x** — solo diagonale\n• **\u002a** — tutte e otto le direzioni\nCatturi muovendoti su una pedina nemica. Ci sono due casi:\n• **Cattura netta** — se quella pedina non può colpire a sua volta la tua attaccante, la prendi automaticamente.\n• **Duello** — se minaccia anche la tua attaccante (minaccia reciproca), il colpo è conteso: entrambi tirano un dado e l'attaccante vince con un tiro pari o superiore. Se perdi il duello, la cattura fallisce: la tua pedina resta dov'è e la sua mossa è spesa.\nQuando non restano mosse, vince chi ha **catturato più pedine**; **pareggio** se sono pari."
+    "body": "L'obiettivo è **catturare più pedine avversarie** di quante l'avversario ne catturi delle tue.\n**Fase 1 — draft**: a turno, pesca una pedina alla cieca e mettila su una casella libera, 4 per lato.\n**Fase 2 — mosse**: ogni pedina si muove **una sola volta** in tutta la partita, scivolando nelle sue direzioni fino alla sua **portata** (seleziona una pedina per vedere le frecce).\n**Etichette sulle pedine** (es. 1+, 2Ж, 3*): il numero è la **portata** in caselle, il simbolo le **direzioni**:\n• **+** — solo dritto (orizzontale e verticale)\n• **x** — solo diagonale\n• **Ж** — verticale e diagonali, senza est e ovest\n• **\u002a** — tutte e otto le direzioni\n**Arcieri** (orco arciere, Shelob, mago, guerriero elfico) **non lasciano la casella**: colpiscono solo pedine **nemiche** alla loro portata nelle loro direzioni. Sulla scacchiera, frecce **tratteggiate** e ↗ sul ritratto; nella tabella, • nella colonna **Arciere**.\nCatturi muovendoti su una pedina nemica. Ci sono due casi:\n• **Cattura netta** — se quella pedina non può colpire a sua volta la tua attaccante, la prendi automaticamente.\n• **Duello** — se minaccia anche la tua attaccante (minaccia reciproca), il colpo è conteso: entrambi tirano un dado e l'attaccante vince con un tiro pari o superiore. Se perdi il duello, la cattura fallisce: la tua pedina resta dov'è e la sua mossa è spesa.\nQuando non restano mosse, vince chi ha **catturato più pedine**; **pareggio** se sono pari.",
+    "piecesTitle": "Tutte le 16 pedine",
+    "colPiece": "Pedina",
+    "colRange": "Portata",
+    "colDirections": "Direzioni",
+    "colArcher": "Arciere"
   },
   "log": {
     "gameStarted": "Partita iniziata.",
@@ -173,6 +179,24 @@
     "inviting": "Creazione…",
     "errLoad": "Impossibile caricare gli amici",
     "errCreate": "Impossibile creare l'invito"
+  },
+  "pieces": {
+    "nazgul": "Nazgul",
+    "tomBombadil": "Tom Bombadil",
+    "orcArcher": "Orco arciere",
+    "gondorWarrior": "Guerriero di Gondor",
+    "balrog": "Balrog",
+    "wizard": "Mago",
+    "elvenWarrior": "Guerriero elfico",
+    "king": "Re",
+    "shelob": "Shelob",
+    "ent": "Ent",
+    "dwarf": "Nano",
+    "farmer": "Contadino",
+    "orcChief": "Capo orco",
+    "elvenQueen": "Regina elfica",
+    "hobbit": "Hobbit",
+    "rohanWarrior": "Guerriero di Rohan"
   },
   "languages": {
     "ru": "Русский",

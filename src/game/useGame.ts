@@ -2,42 +2,38 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createInitialState,
   legalMovesFrom,
+  movablePieces,
   placePiece,
   placementCells,
   resolveMove,
   type DuelRoll,
 } from './engine'
 import { chooseBotMove, chooseBotPlacement } from './bot'
-import { PIECES, type PieceDef, type PieceKind } from './pieces'
+import { PIECES, type PieceDef } from './pieces'
 import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
 import type { Color, GameState, Move } from './types'
-import { PICK_CLOSE_MS, PICK_OPEN_DELAY_MS, PICK_REVEAL_MS } from './timing'
+import { useDraftPick, type DraftPick } from './useDraftPick'
 import type { SeriesScore } from '@/lib/api'
 import type { StoredAction } from './actionLog'
+
+export type { DraftPick }
 
 /** A resolved duel plus who attacked, for the UI banner. */
 export type DuelEvent = DuelRoll & { by: Color }
 
-/** The blind draw shown as a spinning-portrait modal before a piece is placed. */
-export interface DraftPick {
-  /** Whose pick this is. */
-  by: Color
-  /** Pieces still in the bag (incl. the drawn one) — cycled while spinning. */
-  pool: PieceKind[]
-  /** The drawn piece once the pick settles; null while still spinning. */
-  settled: PieceKind | null
-  /** True while the modal plays its shrink-to-a-point close animation. */
-  closing?: boolean
-}
-
 /** The visual animation plus the not-yet-committed result it will apply. */
-type ActiveAnim = AnimInfo & { next: GameState; duelEvent: DuelEvent | null }
+type ActiveAnim = AnimInfo & {
+  next: GameState
+  replay?: boolean
+  /** Opponent's pre-duel aim arrow — opens the duel modal when the anim ends. */
+  duelEvent?: DuelEvent | null
+}
 
 /** Enough of a move to replay its slide after a won duel. */
 type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner'>
 
 const ANIM_MOVE_MS = 1100
-const ANIM_DUEL_MS = 650 // just the arrow; the dice then roll in the modal
+const ANIM_DUEL_AIM_MS = 650
 
 // The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
 // (~2× the old delay) placement, and a 2–3s idle "think" before each move.
@@ -106,10 +102,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   const [pendingNext, setPendingNext] = useState<GameState | null>(null)
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null)
   const [thinking, setThinking] = useState(false)
-  // The blind-draw ceremony: `pick` drives the modal; `pickReady` flips true
-  // once the reveal closes, which is when placement is actually allowed.
-  const [pick, setPick] = useState<DraftPick | null>(null)
-  const [pickReady, setPickReady] = useState(false)
   const [lastPlaced, setLastPlaced] = useState<number | null>(null)
   // Per-session room score. Persists across `reset()` (a local rematch) and only
   // clears when the screen unmounts (i.e. you leave the room).
@@ -125,22 +117,67 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     },
     [],
   )
-  const pickSlotRef = useRef(-1)
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const animTimer = useRef<ReturnType<typeof setTimeout>>()
-  const pickTimer = useRef<ReturnType<typeof setTimeout>>()
-  const revealTimer = useRef<ReturnType<typeof setTimeout>>()
-  const openTimer = useRef<ReturnType<typeof setTimeout>>()
 
-  // Begin a move: precompute its outcome (rolling the duel if any) and start the
-  // animation. The resulting state is committed only when the animation ends.
+  // The blind-draw "roulette" — opens when a piece is drawn, the bot auto-picks,
+  // and `pickReady` flips true once the reveal closes (placement allowed then).
+  const draftSlot =
+    state.phase === 'draft' && state.pending != null
+      ? state.placed.white + state.placed.black
+      : -1
+  const {
+    pick,
+    pickReady,
+    confirm: confirmDraftPick,
+    reset: resetPick,
+  } = useDraftPick({
+    slot: draftSlot,
+    by: state.phase === 'draft' ? state.turn : null,
+    pool: () => (state.pending != null ? [...state.deck, state.pending] : []),
+    drawn: () => state.pending,
+    // A just-placed piece gets a beat before the human's own pick pops up; the
+    // bot's pick opens right away.
+    openDelay: draftSlot >= 1 && (!vsBot || state.turn === humanColor),
+    autoConfirmMs: (by) => (vsBot && by !== humanColor ? botPickDelay() : null),
+  })
+
+  // Begin a move: precompute its outcome (rolling the duel if any). Human duels
+  // open the modal at once; the bot shows an aim arrow first so you see the line.
   const startMove = useCallback(
     (move: Move) => {
       const attacker = state.board[move.from]
       if (!attacker) return
       const { next, duel: roll } = resolveMove(state, move, { duels })
-      const kind: AnimKind = roll ? 'duel' : move.capture ? 'capture' : 'move'
+      const opponentTurn = vsBot && state.turn !== humanColor
       setSelected(null)
+      if (roll) {
+        const duelEvent = { ...roll, by: state.turn }
+        if (opponentTurn) {
+          setAnim({
+            from: move.from,
+            to: move.to,
+            kind: 'duel',
+            attacker: attacker.kind,
+            victim: move.capture ? (state.board[move.to]?.kind ?? null) : null,
+            owner: state.turn,
+            next,
+            duelEvent,
+          })
+          return
+        }
+        setPendingNext(next)
+        setPendingMove({
+          from: move.from,
+          to: move.to,
+          attacker: attacker.kind,
+          victim: move.capture ? (state.board[move.to]?.kind ?? null) : null,
+          owner: state.turn,
+        })
+        setDuel(duelEvent)
+        return
+      }
+      const kind: AnimKind = move.capture ? 'capture' : 'move'
       setAnim({
         from: move.from,
         to: move.to,
@@ -149,10 +186,9 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
         victim: move.capture ? (state.board[move.to]?.kind ?? null) : null,
         owner: state.turn,
         next,
-        duelEvent: roll ? { ...roll, by: state.turn } : null,
       })
     },
-    [state, duels],
+    [state, duels, vsBot, humanColor],
   )
 
   const isHumanTurn = state.phase !== 'over' && (!vsBot || state.turn === humanColor)
@@ -168,17 +204,11 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   )
   const legalTargets = useMemo(() => selectedMoves.map((m) => m.to), [selectedMoves])
 
-  // Own un-moved pieces that have at least one legal move right now — the ones
-  // the player can pick up. Used to give them a hover "shiver".
-  const movableCells = useMemo(() => {
-    if (state.phase !== 'play' || !isHumanTurn) return []
-    const out: number[] = []
-    for (let i = 0; i < state.board.length; i++) {
-      const p = state.board[i]
-      if (p && p.color === state.turn && !p.moved && legalMovesFrom(state, i).length > 0) out.push(i)
-    }
-    return out
-  }, [state, isHumanTurn])
+  // Own pieces the player can pick up right now — used for the hover "shiver".
+  const movableCells = useMemo(
+    () => (isHumanTurn ? movablePieces(state) : []),
+    [state, isHumanTurn],
+  )
 
   // Only reveal the piece (and enable placement) after the pick ceremony closes.
   const pendingDef =
@@ -239,12 +269,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
 
   // Settle the spinning portrait on the actually-drawn piece (human's button, or
   // the bot's auto-pick). The reveal effect then closes the modal after a beat.
-  const confirmDraftPick = useCallback(() => {
-    setPick((p) =>
-      p && p.settled == null && state.pending != null ? { ...p, settled: state.pending } : p,
-    )
-  }, [state.pending])
-
   // Closing the duel modal: on a win, replay the attacker sliding onto the
   // captured cell (then commit); on a miss, just commit (the attacker stays).
   const dismissDuel = useCallback(() => {
@@ -264,7 +288,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
       })
     }
     if (won && move) {
-      setAnim({ ...move, kind: 'capture', next, duelEvent: null })
+      setAnim({ ...move, kind: 'capture', next, replay: true })
     } else {
       setState(next)
     }
@@ -273,10 +297,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   const reset = useCallback(() => {
     clearTimeout(timer.current)
     clearTimeout(animTimer.current)
-    clearTimeout(pickTimer.current)
-    clearTimeout(revealTimer.current)
-    clearTimeout(openTimer.current)
-    pickSlotRef.current = -1
+    resetPick()
     setState(createInitialState())
     setSelected(null)
     setPreview(null)
@@ -285,96 +306,40 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     setPendingNext(null)
     setPendingMove(null)
     setThinking(false)
-    setPick(null)
-    setPickReady(false)
     setLastPlaced(null)
     setLocalActions([])
     actionIdRef.current = 0
-  }, [])
+  }, [resetPick])
 
-  // Start a fresh pick ceremony whenever a new piece is drawn (a new draft
-  // "slot" — the count of pieces placed so far uniquely identifies each draw).
-  const draftSlot =
-    state.phase === 'draft' && state.pending != null
-      ? state.placed.white + state.placed.black
-      : -1
-  useEffect(() => {
-    if (draftSlot < 0) {
-      pickSlotRef.current = -1
-      setPick(null)
-      setPickReady(false)
-      return
-    }
-    if (pickSlotRef.current === draftSlot) return
-    pickSlotRef.current = draftSlot
-    setPickReady(false)
-    setPick(null)
-    const turn = state.turn
-    const pool = [...state.deck, state.pending as PieceKind]
-    const open = () => setPick({ by: turn, pool, settled: null })
-    // After a piece lands, give the human a beat to see where it went before
-    // their own pick modal pops up (the bot's pick opens right away).
-    const pickIsHuman = !vsBot || turn === humanColor
-    if (draftSlot >= 1 && pickIsHuman) {
-      openTimer.current = setTimeout(open, PICK_OPEN_DELAY_MS)
-      return () => clearTimeout(openTimer.current)
-    }
-    open()
-  }, [draftSlot, state.turn, state.deck, state.pending, vsBot, humanColor])
-
-  // The bot fakes choosing: after a random 2–4s, it "clicks" Choose.
-  useEffect(() => {
-    if (!vsBot || !pick || pick.settled != null || pick.by === humanColor) return
-    pickTimer.current = setTimeout(confirmDraftPick, botPickDelay())
-    return () => clearTimeout(pickTimer.current)
-  }, [vsBot, pick, humanColor, confirmDraftPick])
-
-  // Once settled, linger on the portrait, then play the shrink-to-a-point close
-  // animation, and only then unmount the modal and allow placement.
-  useEffect(() => {
-    if (!pick || pick.settled == null) return
-    if (pick.closing) {
-      revealTimer.current = setTimeout(() => {
-        setPick(null)
-        setPickReady(true)
-      }, PICK_CLOSE_MS)
-    } else {
-      revealTimer.current = setTimeout(() => {
-        setPick((p) => (p ? { ...p, closing: true } : p))
-      }, PICK_REVEAL_MS)
-    }
-    return () => clearTimeout(revealTimer.current)
-  }, [pick])
-
-  // When a move animation finishes: commit the result, or (for a duel) reveal
-  // the modal and defer committing until it's dismissed.
+  // When a move animation finishes: commit, or (bot pre-duel aim) open the modal.
   useEffect(() => {
     if (!anim) return
-    animTimer.current = setTimeout(
-      () => {
-        if (anim.duelEvent) {
-          setPendingNext(anim.next)
-          setPendingMove({
-            from: anim.from,
-            to: anim.to,
-            attacker: anim.attacker,
-            victim: anim.victim,
-            owner: anim.owner,
-          })
-          setDuel(anim.duelEvent)
-        } else {
-          recordAction('move', {
-            by: anim.owner,
-            from: anim.from,
-            to: anim.to,
-            duel: null,
-          })
-          setState(anim.next)
-        }
+    const ms = anim.duelEvent ? ANIM_DUEL_AIM_MS : ANIM_MOVE_MS
+    animTimer.current = setTimeout(() => {
+      if (anim.duelEvent) {
+        setPendingNext(anim.next)
+        setPendingMove({
+          from: anim.from,
+          to: anim.to,
+          attacker: anim.attacker,
+          victim: anim.victim,
+          owner: anim.owner,
+        })
+        setDuel(anim.duelEvent)
         setAnim(null)
-      },
-      anim.kind === 'duel' ? ANIM_DUEL_MS : ANIM_MOVE_MS,
-    )
+        return
+      }
+      if (!anim.replay) {
+        recordAction('move', {
+          by: anim.owner,
+          from: anim.from,
+          to: anim.to,
+          duel: null,
+        })
+      }
+      setState(anim.next)
+      setAnim(null)
+    }, ms)
     return () => clearTimeout(animTimer.current)
   }, [anim, recordAction])
 

@@ -1,5 +1,6 @@
 import { useI18n } from '@/i18n'
 import type { ApiIncomingInvite } from '@/lib/api'
+import { useModalDismiss } from './useModalDismiss'
 
 /** Popup shown when an invited player opens the lobby and has a pending invite. */
 export function InvitePopup({
@@ -14,6 +15,7 @@ export function InvitePopup({
   onClose: () => void
 }) {
   const { t } = useI18n()
+  useModalDismiss(onClose)
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal invite-popup" onClick={(e) => e.stopPropagation()}>

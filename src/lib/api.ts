@@ -66,9 +66,6 @@ export interface ApiGameAction {
   created_at: string
 }
 
-/** @deprecated alias */
-export type ApiLatestAction = ApiGameAction
-
 export type GameAction =
   | { type: 'place'; cell: number }
   | { type: 'move'; from: number; to: number }

@@ -51,7 +51,8 @@
     "styleSimpsons": "Os Simpsons",
     "styleChess": "Xadrez",
     "style8bit": "8-bit",
-    "style16bit": "16-bit"
+    "style16bit": "16-bit",
+    "styleLoading": "Carregando tema…"
   },
   "create": {
     "optOpen": "Jogo aberto",
@@ -81,7 +82,12 @@
   },
   "rules": {
     "title": "Como jogar",
-    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças** (ex.: 1+, 2*, 3x): o número é o **alcance** em casas; o símbolo, as **direções**:\n• **+** — só retas (horizontal e vertical)\n• **x** — só diagonal\n• **\u002a** — todas as oito direções\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se ela também ameaça a sua atacante (ameaça mútua), o golpe é disputado: ambos rolam um dado e o atacante vence com rolagem igual ou maior. Perdeu o duelo, a captura falha: sua peça fica no lugar e seu movimento é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual."
+    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças** (ex.: 1+, 2Ж, 3*): o número é o **alcance** em casas; o símbolo, as **direções**:\n• **+** — só retas (horizontal e vertical)\n• **x** — só diagonal\n• **Ж** — vertical e diagonais, sem leste e oeste\n• **\u002a** — todas as oito direções\n**Arqueiros** (orc arqueiro, Shelob, mago, guerreiro élfico) **não saem da casa**: só atingem peças **inimigas** ao alcance nas suas direções. No tabuleiro, setas **tracejadas** e ↗ no retrato; na tabela, • na coluna **Arqueiro**.\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se ela também ameaça a sua atacante (ameaça mútua), o golpe é disputado: ambos rolam um dado e o atacante vence com rolagem igual ou maior. Perdeu o duelo, a captura falha: sua peça fica no lugar e seu movimento é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual.",
+    "piecesTitle": "Todas as 16 peças",
+    "colPiece": "Peça",
+    "colRange": "Alcance",
+    "colDirections": "Direções",
+    "colArcher": "Arqueiro"
   },
   "log": {
     "gameStarted": "Partida iniciada.",
@@ -173,6 +179,24 @@
     "inviting": "Criando…",
     "errLoad": "Não foi possível carregar os amigos",
     "errCreate": "Não foi possível criar o convite"
+  },
+  "pieces": {
+    "nazgul": "Nazgul",
+    "tomBombadil": "Tom Bombadil",
+    "orcArcher": "Orc arqueiro",
+    "gondorWarrior": "Guerreiro de Gondor",
+    "balrog": "Balrog",
+    "wizard": "Mago",
+    "elvenWarrior": "Guerreiro elfo",
+    "king": "Rei",
+    "shelob": "Shelob",
+    "ent": "Ent",
+    "dwarf": "Anão",
+    "farmer": "Fazendeiro",
+    "orcChief": "Chefe orc",
+    "elvenQueen": "Rainha elfa",
+    "hobbit": "Hobbit",
+    "rohanWarrior": "Guerreiro de Rohan"
   },
   "languages": {
     "ru": "Русский",

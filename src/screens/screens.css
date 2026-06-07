@@ -307,6 +307,109 @@
 .rules-modal__body p:last-child {
   margin-bottom: 0;
 }
+.rules-modal__pieces {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(127, 127, 127, 0.18);
+}
+.rules-modal__pieces-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.rules-pieces {
+  display: grid;
+  grid-template-columns: max-content max-content max-content max-content;
+  column-gap: 10px;
+  row-gap: 0;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 12px;
+}
+.rules-pieces__head,
+.rules-pieces__row {
+  display: contents;
+}
+.rules-pieces__head > span {
+  padding: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(127, 127, 127, 0.16);
+}
+.rules-pieces__head > span:nth-child(2),
+.rules-pieces__head > span:nth-child(3),
+.rules-pieces__head > span:nth-child(4),
+.rules-pieces__range,
+.rules-pieces__dirs,
+.rules-pieces__archer {
+  text-align: center;
+}
+.rules-pieces__row > span {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.16);
+  vertical-align: middle;
+}
+.rules-pieces__row:last-child > span {
+  border-bottom: none;
+}
+.rules-pieces__range {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.rules-pieces__dirs {
+  line-height: 0;
+}
+.rules-pieces__archer {
+  width: 1.6em;
+  font-weight: 800;
+  color: var(--accent);
+}
+.move-compass--archer .move-compass__cell--off {
+  opacity: 0;
+}
+.move-compass__dash {
+  display: block;
+  width: 6px;
+  height: 8px;
+  color: var(--accent);
+}
+.move-compass {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 6px);
+  grid-template-rows: repeat(3, 8px);
+  width: 18px;
+  height: 24px;
+  gap: 0;
+  margin: 0;
+  line-height: 8px;
+  font-size: 7px;
+  vertical-align: middle;
+}
+.move-compass__cell {
+  display: block;
+  text-align: center;
+  line-height: 8px;
+  user-select: none;
+}
+.move-compass__cell--hub {
+  color: var(--muted);
+  font-size: 6px;
+  opacity: 0.45;
+}
+.move-compass__cell--off {
+  color: var(--muted);
+  opacity: 0.14;
+}
+.move-compass__cell--on {
+  color: var(--accent);
+  font-weight: 800;
+  opacity: 1;
+}
 
 /* full-width primary action (e.g. "Create game") */
 .btn--block {
@@ -612,7 +715,7 @@
   gap: 16px;
 }
 .modal.rules-modal {
-  width: min(92vw, 540px);
+  width: min(92vw, 480px);
 }
 .duel-modal {
   border-top: 5px solid transparent;

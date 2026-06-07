@@ -1,5 +1,5 @@
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
-import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
+import { PIECES, isArcher, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
 import { MoveAnimation, type AnimInfo } from './MoveAnimation'
 import { PieceIcon } from './PieceIcon'
@@ -53,12 +53,11 @@ export function Board({
   const order = [...board.keys()]
   const cells = orientation === 'white' ? order : order.slice().reverse()
 
-  // While animating, the moving attacker (and a captured victim) are drawn by
-  // the overlay, so hide them on the grid to avoid a doubled image. A duel only
-  // draws the arrow, so nothing is hidden for it.
+  // While animating, hide pieces drawn by the overlay. Pre-duel aim keeps both
+  // combatants visible on the grid.
   const hidden = new Set<number>()
   if (anim && anim.kind !== 'duel') {
-    hidden.add(anim.from)
+    if (!isArcher(anim.attacker)) hidden.add(anim.from)
     if (anim.kind === 'capture') hidden.add(anim.to)
   }
 
@@ -99,6 +98,7 @@ export function Board({
             {isPreview && (
               <span className={`piece piece--ghost piece--${previewOwner}`}>
                 <PieceIcon kind={previewKind} className="piece__icon" />
+                <span className="piece__badge">{pieceBadgeLabel(previewKind)}</span>
               </span>
             )}
             {piece && (
@@ -110,10 +110,10 @@ export function Board({
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                title={`${PIECES[piece.kind].name} (${pieceBadge(piece.kind)})`}
+                title={`${PIECES[piece.kind].name} (${pieceBadgeLabel(piece.kind)})`}
               >
                 <PieceIcon kind={piece.kind} className="piece__icon" />
-                <span className="piece__badge">{pieceBadge(piece.kind)}</span>
+                <span className="piece__badge">{pieceBadgeLabel(piece.kind)}</span>
               </span>
             )}
           </button>
@@ -133,7 +133,7 @@ export function Board({
         selectedMoves.length > 0 && (
           <ArrowOverlay
             cell={selected}
-            arrows={moveArrows(selected, selectedMoves)}
+            arrows={moveArrows(selected, selectedMoves, board[selected]!.kind)}
             orientation={orientation}
           />
         )

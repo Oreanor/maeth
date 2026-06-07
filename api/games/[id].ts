@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { json, method, requireAuth, unwrap, withApiError } from '../_lib/http.js'
-import { routeParam } from '../_lib/request.js'
+import { isUuid, routeParam } from '../_lib/request.js'
 
 // A player is "in this game" if they fetched it within this window (polls run
 // ~every 0.7s), or "online" if active anywhere within the larger window.
@@ -32,8 +32,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   if (!auth) return
 
   const id = routeParam(req.query.id)
-  if (!id) {
-    json(res, 400, { error: 'Missing game id' })
+  if (!isUuid(id)) {
+    json(res, 400, { error: 'Invalid game id' })
     return
   }
 
@@ -103,8 +103,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const latestAction = actions.length > 0 ? actions[actions.length - 1] : null
 
   // Score for this room only — the chain of rematches sharing a root game.
-  const roomKey = (game as { root_id?: string | null } | null)?.root_id ?? id
-  const series = await roomSeries(auth.db, roomKey)
+  const meta = game as { status: string; state: GameStateLike; root_id?: string | null; rematch_id?: string | null }
+  const series = await roomSeries(auth.db, id, meta)
 
   json(res, 200, { game, player: membership, players: playersWithPresence, actions, latestAction, series })
 }
@@ -114,28 +114,38 @@ interface SeriesScore {
   black: number
   draws: number
 }
+type GameStateLike = { status?: { kind: string; winner?: string } } | null
+
+function tally(score: SeriesScore, state: GameStateLike) {
+  const result = state?.status
+  if (!result) return
+  if (result.kind === 'draw') score.draws++
+  else if (result.kind === 'win') {
+    if (result.winner === 'white') score.white++
+    else if (result.winner === 'black') score.black++
+  }
+}
 
 // Win tally for the room: every finished game in the rematch chain (the games
-// sharing this root), read straight from each game's final state and keyed by
-// colour. Colours stay fixed across rematches, so this reads as the running
-// score for the room and lives and dies with the room's games (no separate
-// per-opponent record is kept — the leaderboard handles all-time totals).
-async function roomSeries(db: SupabaseClient, roomKey: string): Promise<SeriesScore> {
+// sharing this root), keyed by colour (colours stay fixed across rematches).
+// A game that was never rematched is its own room, so we read it straight from
+// the state we already have and skip the extra query for the common case.
+async function roomSeries(
+  db: SupabaseClient,
+  id: string,
+  game: { status: string; state: GameStateLike; root_id?: string | null; rematch_id?: string | null },
+): Promise<SeriesScore> {
   const score: SeriesScore = { white: 0, black: 0, draws: 0 }
+  const inChain = game.root_id != null || game.rematch_id != null
+  if (!inChain) {
+    if (game.status === 'over') tally(score, game.state)
+    return score
+  }
+  const roomKey = game.root_id ?? id
   const roomGames = (unwrap(
     await db.from('games').select('status, state').or(`id.eq.${roomKey},root_id.eq.${roomKey}`),
-  ) ?? []) as { status: string; state: { status?: { kind: string; winner?: string } } | null }[]
-
-  for (const g of roomGames) {
-    if (g.status !== 'over') continue
-    const result = g.state?.status
-    if (!result) continue
-    if (result.kind === 'draw') score.draws++
-    else if (result.kind === 'win') {
-      if (result.winner === 'white') score.white++
-      else if (result.winner === 'black') score.black++
-    }
-  }
+  ) ?? []) as { status: string; state: GameStateLike }[]
+  for (const g of roomGames) if (g.status === 'over') tally(score, g.state)
   return score
 }
 

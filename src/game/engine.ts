@@ -139,7 +139,7 @@ export function pieceMoves(board: Board, from: number): Move[] {
       const to = idx(r, c)
       const occupant = board[to]
       if (!occupant) {
-        moves.push({ from, to, capture: false })
+        if (!def.archer) moves.push({ from, to, capture: false })
         continue
       }
       if (occupant.color !== piece.color) moves.push({ from, to, capture: true })
@@ -230,8 +230,14 @@ export function applyMove(state: GameState, move: Move): GameState {
   if (!piece) return state
 
   const board = state.board.slice()
-  board[move.from] = null
-  board[move.to] = { ...piece, moved: true }
+  const archer = PIECES[piece.kind].archer === true
+  if (archer) {
+    board[move.from] = { ...piece, moved: true }
+    if (move.capture) board[move.to] = null
+  } else {
+    board[move.from] = null
+    board[move.to] = { ...piece, moved: true }
+  }
 
   const captures = move.capture
     ? { ...state.captures, [state.turn]: state.captures[state.turn] + 1 }
@@ -312,6 +318,11 @@ export function allLegalMoves(state: GameState): Move[] {
     if (state.board[i]?.color === state.turn) out.push(...legalMovesFrom(state, i))
   }
   return out
+}
+
+/** Cells of the side-to-move that have at least one legal move (pickable). */
+export function movablePieces(state: GameState): number[] {
+  return [...new Set(allLegalMoves(state).map((m) => m.from))]
 }
 
 export { PIECES, type PieceKind }

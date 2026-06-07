@@ -1,5 +1,6 @@
 import { useI18n } from '@/i18n'
 import type { Color, GameState } from '@/game/types'
+import { useModalDismiss } from './useModalDismiss'
 
 /** End-of-game win/loss/draw modal. Can be dismissed to inspect the board. */
 export function ResultModal({
@@ -18,6 +19,7 @@ export function ResultModal({
   againBusy?: boolean
 }) {
   const { t } = useI18n()
+  useModalDismiss(onClose)
   const draw = status.kind === 'draw'
   const won = status.kind === 'win' && status.winner === human
   const title = draw ? t('result.draw') : won ? t('result.win') : t('result.loss')

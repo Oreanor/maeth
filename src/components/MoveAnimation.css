@@ -29,14 +29,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(26px, 9vw, 44px);
-  line-height: 1;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
 }
 
-.anim-piece__icon.piece-icon--sprite {
-  width: 84%;
-  height: 84%;
+.anim-attacker .piece,
+.anim-victim .piece {
+  animation: none;
 }
 
 /* attacker slides after the arrow draws, and holds its end position until the
@@ -46,11 +44,16 @@
   /* Slide on top of the piece being captured, not under it. */
   z-index: 2;
 }
+.move-anim__line--archer {
+  animation: anim-arrow-draw 0.45s ease-out forwards;
+}
 .anim-victim {
   animation: anim-shrink 0.3s ease-in 0.8s both;
   z-index: 1;
 }
-
+.anim-victim--archer {
+  animation: anim-shrink 0.3s ease-in 0.35s both;
+}
 @keyframes anim-move {
   from {
     transform: translate(0, 0);

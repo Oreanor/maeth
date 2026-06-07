@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
-import { PIECES, pieceBadge, type PieceKind } from '@/game/pieces'
+import { PIECES, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import type { DraftPick } from '@/game/useGame'
 import { PieceIcon } from './PieceIcon'
@@ -49,7 +49,19 @@ export function DraftPickModal({
           tappable ? 'pick-modal--tappable' : ''
         }`}
         onClick={tappable ? onConfirm : (e) => e.stopPropagation()}
+        onKeyDown={
+          tappable
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onConfirm()
+                }
+              }
+            : undefined
+        }
         role={tappable ? 'button' : undefined}
+        tabIndex={tappable ? 0 : undefined}
+        aria-label={tappable ? t('draft.tapToChoose') : undefined}
       >
         <div className="pick-modal__title">
           {settled
@@ -66,7 +78,7 @@ export function DraftPickModal({
           )}
         </div>
         <div className="pick-modal__name">
-          {settled && def ? `${def.name} · ${pieceBadge(def.kind)}` : ' '}
+          {settled && def ? `${def.name} · ${pieceBadgeLabel(def.kind)}` : ' '}
         </div>
         <div className="pick-modal__footer">
           {settled ? null : isYou ? (

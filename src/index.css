@@ -43,3 +43,43 @@ body {
   display: flex;
   justify-content: center;
 }
+
+.skin-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 12, 18, 0.45);
+  backdrop-filter: blur(2px);
+  pointer-events: all;
+}
+
+.skin-loading__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.skin-loading__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(127, 127, 127, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: skin-loading-spin 0.7s linear infinite;
+}
+
+@keyframes skin-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

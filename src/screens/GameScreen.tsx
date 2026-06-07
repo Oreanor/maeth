@@ -13,7 +13,7 @@ import { DuelModal } from '@/components/DuelModal'
 import { SeriesBar } from '@/components/SeriesBar'
 import { useGame } from '@/game/useGame'
 import type { Color } from '@/game/types'
-import { pieceBadge } from '@/game/pieces'
+import { pieceBadgeLabel } from '@/game/pieces'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { useRemoteGame } from '@/game/useRemoteGame'
@@ -111,7 +111,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     state.phase,
     false,
     isHumanTurn,
-    pendingDef ? `${pendingDef.name} · ${pieceBadge(pendingDef.kind)}` : null,
+    pendingDef ? `${pendingDef.name} · ${pieceBadgeLabel(pendingDef.kind)}` : null,
     t,
   )
   const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
@@ -247,7 +247,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         waiting,
         remote.isHumanTurn && !waiting,
         remote.pendingDef
-          ? `${remote.pendingDef.name} · ${pieceBadge(remote.pendingDef.kind)}`
+          ? `${remote.pendingDef.name} · ${pieceBadgeLabel(remote.pendingDef.kind)}`
           : null,
         t,
       )

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useI18n } from '@/i18n'
+import { useModalDismiss } from './useModalDismiss'
 
 /** Shown after creating an open (link) game: the shareable URL with copy +
  *  close, plus a hint to send it to a friend. */
 export function ShareLinkModal({ url, onClose }: { url: string; onClose: () => void }) {
   const { t } = useI18n()
+  useModalDismiss(onClose)
   const [copied, setCopied] = useState(false)
 
   const copy = async () => {

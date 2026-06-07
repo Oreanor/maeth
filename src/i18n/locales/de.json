@@ -51,7 +51,8 @@
     "styleSimpsons": "Die Simpsons",
     "styleChess": "Schach",
     "style8bit": "8-Bit",
-    "style16bit": "16-Bit"
+    "style16bit": "16-Bit",
+    "styleLoading": "Design wird geladen…"
   },
   "create": {
     "optOpen": "Offenes Spiel",
@@ -81,7 +82,12 @@
   },
   "rules": {
     "title": "Spielanleitung",
-    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen** (z. B. 1+, 2*, 3x): Die Zahl ist die **Reichweite** in Feldern, das Symbol die **Richtung**:\n• **+** — nur gerade (horizontal und vertikal)\n• **x** — nur diagonal\n• **\u002a** — alle acht Richtungen\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht sie auch deine Angreiferin (gegenseitige Bedrohung), ist der Schlag umkämpft: beide würfeln, und die Angreiferin gewinnt bei gleich hohem oder höherem Wurf. Verlierst du das Duell, misslingt der Schlag: deine Figur bleibt stehen und ihr Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**."
+    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen** (z. B. 1+, 2Ж, 3*): Die Zahl ist die **Reichweite** in Feldern, das Symbol die **Richtung**:\n• **+** — nur gerade (horizontal und vertikal)\n• **x** — nur diagonal\n• **Ж** — vertikal und diagonal, ohne Ost und West\n• **\u002a** — alle acht Richtungen\n**Schützen** (Ork-Bogenschütze, Shelob, Zauberer, Elfenkrieger) **verlassen ihr Feld nicht**: sie treffen nur **gegnerische** Figuren in Reichweite entlang ihrer Richtungen. Auf dem Brett **gestrichelte** Pfeile und ↗ auf dem Porträt; in der Tabelle • in der Spalte **Schütze**.\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht sie auch deine Angreiferin (gegenseitige Bedrohung), ist der Schlag umkämpft: beide würfeln, und die Angreiferin gewinnt bei gleich hohem oder höherem Wurf. Verlierst du das Duell, misslingt der Schlag: deine Figur bleibt stehen und ihr Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**.",
+    "piecesTitle": "Alle 16 Figuren",
+    "colPiece": "Figur",
+    "colRange": "Reichweite",
+    "colDirections": "Richtungen",
+    "colArcher": "Schütze"
   },
   "log": {
     "gameStarted": "Partie gestartet.",
@@ -173,6 +179,24 @@
     "inviting": "Wird erstellt…",
     "errLoad": "Freunde konnten nicht geladen werden",
     "errCreate": "Einladung konnte nicht erstellt werden"
+  },
+  "pieces": {
+    "nazgul": "Nazgûl",
+    "tomBombadil": "Tom Bombadil",
+    "orcArcher": "Ork-Bogenschütze",
+    "gondorWarrior": "Krieger von Gondor",
+    "balrog": "Balrog",
+    "wizard": "Zauberer",
+    "elvenWarrior": "Elbenkrieger",
+    "king": "König",
+    "shelob": "Shelob",
+    "ent": "Ent",
+    "dwarf": "Zwerg",
+    "farmer": "Bauer",
+    "orcChief": "Ork-Häuptling",
+    "elvenQueen": "Elbenkönigin",
+    "hobbit": "Hobbit",
+    "rohanWarrior": "Reiter von Rohan"
   },
   "languages": {
     "ru": "Русский",

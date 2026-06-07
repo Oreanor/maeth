@@ -4,9 +4,10 @@
 //
 //   pattern 'ortho' (+) — 4 straight directions
 //   pattern 'diag'  (x) — 4 diagonal directions
+//   pattern 'zh'    (Ж) — vertical + diagonals (no east/west)
 //   pattern 'all'   (*) — all 8 directions
 
-export type Pattern = 'ortho' | 'diag' | 'all'
+export type Pattern = 'ortho' | 'diag' | 'zh' | 'all'
 export type Range = 1 | 2 | 3
 
 export type PieceKind =
@@ -33,20 +34,22 @@ export interface PieceDef {
   pattern: Pattern
   range: Range
   emoji: string
+  /** Ranged striker: captures at distance without leaving its square. */
+  archer?: boolean
 }
 
 export const PIECES: Record<PieceKind, PieceDef> = {
-  nazgul: { kind: 'nazgul', name: 'Nazgul', pattern: 'all', range: 2, emoji: '🦇' },
+  nazgul: { kind: 'nazgul', name: 'Nazgul', pattern: 'zh', range: 2, emoji: '🦇' },
   tomBombadil: { kind: 'tomBombadil', name: 'Tom Bombadil', pattern: 'all', range: 2, emoji: '🎩' },
-  orcArcher: { kind: 'orcArcher', name: 'Orc Archer', pattern: 'ortho', range: 1, emoji: '🏹' },
+  orcArcher: { kind: 'orcArcher', name: 'Orc Archer', pattern: 'ortho', range: 1, emoji: '🏹', archer: true },
   gondorWarrior: { kind: 'gondorWarrior', name: 'Gondor Warrior', pattern: 'diag', range: 2, emoji: '🛡️' },
-  balrog: { kind: 'balrog', name: 'Balrog', pattern: 'all', range: 3, emoji: '🔥' },
-  wizard: { kind: 'wizard', name: 'Wizard', pattern: 'all', range: 2, emoji: '🧙' },
-  elvenWarrior: { kind: 'elvenWarrior', name: 'Elven Warrior', pattern: 'all', range: 1, emoji: '🗡️' },
+  balrog: { kind: 'balrog', name: 'Balrog', pattern: 'zh', range: 3, emoji: '🔥' },
+  wizard: { kind: 'wizard', name: 'Wizard', pattern: 'all', range: 2, emoji: '🧙', archer: true },
+  elvenWarrior: { kind: 'elvenWarrior', name: 'Elven Warrior', pattern: 'all', range: 1, emoji: '🗡️', archer: true },
   king: { kind: 'king', name: 'King', pattern: 'diag', range: 3, emoji: '👑' },
-  shelob: { kind: 'shelob', name: 'Shelob', pattern: 'diag', range: 2, emoji: '🕷️' },
+  shelob: { kind: 'shelob', name: 'Shelob', pattern: 'diag', range: 2, emoji: '🕷️', archer: true },
   ent: { kind: 'ent', name: 'Ent', pattern: 'ortho', range: 3, emoji: '🌳' },
-  dwarf: { kind: 'dwarf', name: 'Dwarf', pattern: 'all', range: 1, emoji: '⛏️' },
+  dwarf: { kind: 'dwarf', name: 'Dwarf', pattern: 'zh', range: 1, emoji: '⛏️' },
   farmer: { kind: 'farmer', name: 'Farmer', pattern: 'diag', range: 1, emoji: '🌾' },
   orcChief: { kind: 'orcChief', name: 'Orc Chief', pattern: 'all', range: 1, emoji: '👹' },
   elvenQueen: { kind: 'elvenQueen', name: 'Elven Queen', pattern: 'all', range: 3, emoji: '👸' },
@@ -69,23 +72,53 @@ const DIAG: Array<[number, number]> = [
   [1, 1],
 ]
 
+const ZH: Array<[number, number]> = [
+  [-1, 0],
+  [1, 0],
+  [-1, -1],
+  [-1, 1],
+  [1, -1],
+  [1, 1],
+]
+
 export function dirsFor(pattern: Pattern): Array<[number, number]> {
   switch (pattern) {
     case 'ortho':
       return ORTHO
     case 'diag':
       return DIAG
+    case 'zh':
+      return ZH
     case 'all':
       return [...ORTHO, ...DIAG]
   }
 }
 
-export function patternSymbol(pattern: Pattern): '+' | 'x' | '*' {
-  return pattern === 'ortho' ? '+' : pattern === 'diag' ? 'x' : '*'
+export function patternSymbol(pattern: Pattern): '+' | 'x' | 'Ж' | '*' {
+  switch (pattern) {
+    case 'ortho':
+      return '+'
+    case 'diag':
+      return 'x'
+    case 'zh':
+      return 'Ж'
+    case 'all':
+      return '*'
+  }
 }
 
 /** Compact label like "3*" used on the board and in the draft tray. */
 export function pieceBadge(kind: PieceKind): string {
   const def = PIECES[kind]
   return `${def.range}${patternSymbol(def.pattern)}`
+}
+
+/** Badge as shown on the board — archers get a leading ↗ in the same pill. */
+export function pieceBadgeLabel(kind: PieceKind): string {
+  const badge = pieceBadge(kind)
+  return isArcher(kind) ? `↗${badge}` : badge
+}
+
+export function isArcher(kind: PieceKind): boolean {
+  return PIECES[kind].archer === true
 }

@@ -57,6 +57,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  const placedKind = action.type === 'place' ? state.pending : null
+
   const result = applyAction(state, action, game.duels_enabled !== false)
   if (!result) {
     json(res, 400, { error: 'Illegal action' })
@@ -84,7 +86,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         game_id: id,
         user_id: auth.user.id,
         action_type: action.type,
-        payload: { ...action, duel: result.duel, by: color },
+        payload: {
+          ...action,
+          ...(placedKind != null ? { kind: placedKind } : {}),
+          duel: result.duel,
+          by: color,
+        },
         resulting_state: result.state,
       })
       .select('id, user_id, action_type, payload, created_at')

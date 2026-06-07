@@ -19,6 +19,7 @@ export const SPRITE_SKINS: Exclude<Skin, 'default'>[] = [
   'fantasy',
   'southpark',
   'simpsons',
+  'chess',
 ]
 
 export function isSpriteSkin(skin: Skin): boolean {

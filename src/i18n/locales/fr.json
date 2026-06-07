@@ -47,7 +47,8 @@
     "styleMonochrome": "Monochrome",
     "styleFantasy": "Fantaisie",
     "styleSouthPark": "South Park",
-    "styleSimpsons": "Les Simpson"
+    "styleSimpsons": "Les Simpson",
+    "styleChess": "Échecs"
   },
   "create": {
     "optOpen": "Partie ouverte",

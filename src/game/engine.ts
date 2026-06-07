@@ -87,6 +87,36 @@ export function placePiece(state: GameState, cell: number): GameState {
   }
 }
 
+/** Replay a recorded draft placement by explicit kind (log rebuild; deck is ignored). */
+export function replayPlace(state: GameState, cell: number, kind: PieceKind): GameState {
+  if (state.phase !== 'draft' || state.board[cell]) return state
+
+  const board = state.board.slice()
+  board[cell] = { kind, color: state.turn, moved: false }
+  const placed = { ...state.placed, [state.turn]: state.placed[state.turn] + 1 }
+
+  const totalPlaced = placed.white + placed.black
+  if (totalPlaced >= PIECES_PER_SIDE * 2) {
+    const turn: Color = 'white'
+    return normalizePlay({
+      ...state,
+      board,
+      placed,
+      pending: null,
+      phase: 'play',
+      turn,
+      status: { kind: 'playing' },
+    })
+  }
+
+  return {
+    ...state,
+    board,
+    placed,
+    turn: opposite(state.turn),
+  }
+}
+
 // ── move phase ───────────────────────────────────────────────────────────────
 
 /**

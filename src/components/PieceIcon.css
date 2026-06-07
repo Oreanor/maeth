@@ -42,3 +42,6 @@
 [data-skin='simpsons'] .piece-icon--sprite::before {
   background-image: url('/pieces-simpsons.png');
 }
+[data-skin='chess'] .piece-icon--sprite::before {
+  background-image: url('/pieces-chess.png');
+}

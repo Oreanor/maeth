@@ -196,7 +196,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
         // previewed cell confirms placement. On desktop the hover sets the
         // preview first, so a single click still places immediately.
         if (preview === cell) {
-          recordAction('place', { by: state.turn, cell })
+          recordAction('place', { by: state.turn, cell, kind: state.pending })
           setState((prev) => placePiece(prev, cell))
           setPreview(null)
           setLastPlaced(cell)
@@ -394,7 +394,7 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
         if (state.phase === 'draft') {
           const cell = chooseBotPlacement(state)
           if (cell != null) {
-            recordAction('place', { by: state.turn, cell })
+            recordAction('place', { by: state.turn, cell, kind: state.pending! })
             setState(placePiece(state, cell))
             setLastPlaced(cell)
           }

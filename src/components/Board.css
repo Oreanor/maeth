@@ -336,6 +336,56 @@
   border-color: rgba(100, 100, 100, 0.4);
 }
 
+/* chess: very dark board with soft gradients and bevels */
+[data-skin='chess'] .board {
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 8px solid #060606;
+  background: #0a0a0a;
+  gap: 2px;
+  padding: 2px;
+}
+
+[data-skin='chess'] .cell {
+  border-radius: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+  border-right: 1px solid rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-skin='chess'] .cell--light {
+  background: linear-gradient(155deg, #282828 0%, #1e1e1e 48%, #161616 100%);
+}
+
+[data-skin='chess'] .cell--dark {
+  background: linear-gradient(155deg, #181818 0%, #101010 48%, #080808 100%);
+}
+
+[data-skin='chess'] .cell--selected {
+  background: linear-gradient(155deg, #4a3e18 0%, #3a3012 48%, #2a240c 100%) !important;
+  border-top-color: rgba(180, 150, 70, 0.3);
+  border-left-color: rgba(160, 130, 55, 0.22);
+  border-bottom-color: rgba(0, 0, 0, 0.65);
+  border-right-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-skin='chess'] .cell--target {
+  box-shadow:
+    inset 0 0 0 2px rgba(140, 140, 140, 0.22),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-skin='chess'] .cell--place::after {
+  border-radius: 4px;
+  border-color: rgba(120, 120, 120, 0.3);
+}
+
 [data-skin='engraving'] .piece,
 [data-skin='monochrome'] .piece {
   border-radius: 0;
@@ -345,7 +395,8 @@
 [data-skin='color-engraving'] .piece,
 [data-skin='fantasy'] .piece,
 [data-skin='southpark'] .piece,
-[data-skin='simpsons'] .piece {
+[data-skin='simpsons'] .piece,
+[data-skin='chess'] .piece {
   border-radius: 5px;
   background: transparent;
 }
@@ -355,7 +406,8 @@
 [data-skin='monochrome'] .piece--white,
 [data-skin='fantasy'] .piece--white,
 [data-skin='southpark'] .piece--white,
-[data-skin='simpsons'] .piece--white {
+[data-skin='simpsons'] .piece--white,
+[data-skin='chess'] .piece--white {
   box-shadow: inset 0 0 0 4px #3a7fd4;
 }
 
@@ -364,6 +416,7 @@
 [data-skin='monochrome'] .piece--black,
 [data-skin='fantasy'] .piece--black,
 [data-skin='southpark'] .piece--black,
-[data-skin='simpsons'] .piece--black {
+[data-skin='simpsons'] .piece--black,
+[data-skin='chess'] .piece--black {
   box-shadow: inset 0 0 0 4px #d63030;
 }

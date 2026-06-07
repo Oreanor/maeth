@@ -2,7 +2,7 @@ import {
   applyFailedStrike,
   applyMove,
   createInitialState,
-  placePiece,
+  replayPlace,
   type DuelRoll,
 } from './engine'
 import { PIECES, type PieceKind } from './pieces'
@@ -19,6 +19,7 @@ export interface StoredAction {
   action_type: 'place' | 'move'
   payload: {
     cell?: number
+    kind?: PieceKind
     from?: number
     to?: number
     by?: Color
@@ -64,7 +65,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
     const by = action.payload.by ?? state.turn
 
     if (action.action_type === 'place' && typeof action.payload.cell === 'number') {
-      const kind = state.pending
+      const kind = action.payload.kind ?? state.pending
       if (!kind) continue
       lines.push({
         color: by,
@@ -74,7 +75,7 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
           square: cellSquare(action.payload.cell),
         }),
       })
-      state = placePiece(state, action.payload.cell)
+      state = replayPlace(state, action.payload.cell, kind)
       continue
     }
 

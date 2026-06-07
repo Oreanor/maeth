@@ -47,7 +47,8 @@
     "styleMonochrome": "Монохром",
     "styleFantasy": "Фэнтези",
     "styleSouthPark": "Саут Парк",
-    "styleSimpsons": "Симпсоны"
+    "styleSimpsons": "Симпсоны",
+    "styleChess": "Шахматы"
   },
   "create": {
     "optOpen": "Открытая игра",

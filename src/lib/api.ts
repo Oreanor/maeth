@@ -1,6 +1,7 @@
 import type { Color, GameState } from '@/game/types'
 import type { Friend } from '@/auth/types'
 import type { DuelRoll } from '@/game/engine'
+import type { PieceKind } from '@/game/pieces'
 import { supabase } from './supabase'
 
 export interface ApiGame {
@@ -57,6 +58,7 @@ export interface ApiGameAction {
     duel?: DuelRoll | null
     by?: Color
     cell?: number
+    kind?: PieceKind
     from?: number
     to?: number
     [key: string]: unknown

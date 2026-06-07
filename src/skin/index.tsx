@@ -10,6 +10,7 @@ export type Skin =
   | 'fantasy'
   | 'southpark'
   | 'simpsons'
+  | 'chess'
 
 export const SKINS: Skin[] = [
   'default',
@@ -19,6 +20,7 @@ export const SKINS: Skin[] = [
   'fantasy',
   'southpark',
   'simpsons',
+  'chess',
 ]
 
 export const SKIN_I18N: Record<Skin, string> = {
@@ -29,6 +31,7 @@ export const SKIN_I18N: Record<Skin, string> = {
   fantasy: 'lobby.styleFantasy',
   southpark: 'lobby.styleSouthPark',
   simpsons: 'lobby.styleSimpsons',
+  chess: 'lobby.styleChess',
 }
 
 const STORAGE_KEY = 'maeth.skin'

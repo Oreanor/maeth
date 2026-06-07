@@ -8,8 +8,15 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useI18n } from '@/i18n'
-import { preloadSkinSprites } from './sprites'
+import { preloadSkinSprites, isSkinSpritesLoaded } from './sprites'
+
+function waitNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  })
+}
 
 // Visual skin: board colours and piece art. 'default' keeps emoji + the blue/grey
 // board; the others use sprite sheets from /public.
@@ -73,18 +80,9 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   const loadIdRef = useRef(0)
 
   useEffect(() => {
-    if (skin !== 'default') return
-    setSkinLoading(false)
-  }, [skin])
-
-  useEffect(() => {
     const initial = detectSkin()
     if (initial === 'default') return
-    const loadId = ++loadIdRef.current
-    setSkinLoading(true)
-    preloadSkinSprites(initial).finally(() => {
-      if (loadIdRef.current === loadId) setSkinLoading(false)
-    })
+    void preloadSkinSprites(initial)
   }, [])
 
   useEffect(() => {
@@ -99,18 +97,23 @@ export function SkinProvider({ children }: { children: ReactNode }) {
         setSkinState('default')
         return
       }
+      if (isSkinSpritesLoaded(next)) {
+        setSkinState(next)
+        return
+      }
       const loadId = ++loadIdRef.current
       setSkinLoading(true)
-      preloadSkinSprites(next)
-        .then(() => {
+      void (async () => {
+        await waitNextPaint()
+        try {
+          await preloadSkinSprites(next)
           if (loadIdRef.current === loadId) setSkinState(next)
-        })
-        .catch(() => {
+        } catch {
           if (loadIdRef.current === loadId) setSkinState(next)
-        })
-        .finally(() => {
+        } finally {
           if (loadIdRef.current === loadId) setSkinLoading(false)
-        })
+        }
+      })()
     },
     [skin],
   )
@@ -127,14 +130,16 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   return (
     <SkinContext.Provider value={value}>
       {children}
-      {skinLoading && (
-        <div className="skin-loading" role="status" aria-live="polite">
-          <div className="skin-loading__card">
-            <div className="skin-loading__spinner" aria-hidden />
-            <span>{t('lobby.styleLoading')}</span>
-          </div>
-        </div>
-      )}
+      {skinLoading &&
+        createPortal(
+          <div className="skin-loading" role="status" aria-live="polite" aria-busy="true">
+            <div className="skin-loading__card">
+              <div className="skin-loading__spinner" aria-hidden />
+              <span>{t('lobby.styleLoading')}</span>
+            </div>
+          </div>,
+          document.body,
+        )}
     </SkinContext.Provider>
   )
 }

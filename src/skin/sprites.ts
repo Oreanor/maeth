@@ -36,15 +36,37 @@ export const SKIN_SPRITE_URL: Record<Exclude<Skin, 'default'>, string> = {
   '16bit': '/pieces-16bit.png',
 }
 
+const loadedSpriteSkins = new Set<Exclude<Skin, 'default'>>()
+
+export function isSkinSpritesLoaded(skin: Skin): boolean {
+  return skin === 'default' || loadedSpriteSkins.has(skin)
+}
+
 /** Preload a skin's piece sprite sheet before switching `data-skin`. */
 export function preloadSkinSprites(skin: Skin): Promise<void> {
   if (skin === 'default') return Promise.resolve()
+  if (loadedSpriteSkins.has(skin)) return Promise.resolve()
   const url = SKIN_SPRITE_URL[skin]
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.onload = () => resolve()
+    let settled = false
+    const finish = () => {
+      if (settled) return
+      settled = true
+      setTimeout(() => {
+        void img.decode?.().then(() => {
+          loadedSpriteSkins.add(skin)
+          resolve()
+        }).catch(() => {
+          loadedSpriteSkins.add(skin)
+          resolve()
+        })
+      }, 0)
+    }
+    img.onload = finish
     img.onerror = () => reject(new Error(`Failed to load ${url}`))
     img.src = url
+    if (img.complete) finish()
   })
 }
 

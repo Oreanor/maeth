@@ -33,28 +33,27 @@ export interface PieceDef {
   name: string
   pattern: Pattern
   range: Range
-  emoji: string
   /** Ranged striker: slides to empty squares; shoots an enemy first on a ray from place. */
   archer?: boolean
 }
 
 export const PIECES: Record<PieceKind, PieceDef> = {
-  nazgul: { kind: 'nazgul', name: 'Nazgul', pattern: 'zh', range: 2, emoji: '🦇' },
-  tomBombadil: { kind: 'tomBombadil', name: 'Tom Bombadil', pattern: 'all', range: 2, emoji: '🎩' },
-  orcArcher: { kind: 'orcArcher', name: 'Orc Archer', pattern: 'ortho', range: 2, emoji: '🏹', archer: true },
-  gondorWarrior: { kind: 'gondorWarrior', name: 'Gondor Warrior', pattern: 'diag', range: 2, emoji: '🛡️' },
-  balrog: { kind: 'balrog', name: 'Balrog', pattern: 'zh', range: 3, emoji: '🔥' },
-  wizard: { kind: 'wizard', name: 'Wizard', pattern: 'all', range: 3, emoji: '🧙', archer: true },
-  elvenWarrior: { kind: 'elvenWarrior', name: 'Elven Warrior', pattern: 'diag', range: 2, emoji: '🗡️', archer: true },
-  king: { kind: 'king', name: 'King', pattern: 'diag', range: 3, emoji: '👑' },
-  shelob: { kind: 'shelob', name: 'Shelob', pattern: 'all', range: 2, emoji: '🕷️', archer: true },
-  ent: { kind: 'ent', name: 'Ent', pattern: 'ortho', range: 3, emoji: '🌳' },
-  dwarf: { kind: 'dwarf', name: 'Dwarf', pattern: 'zh', range: 1, emoji: '⛏️' },
-  farmer: { kind: 'farmer', name: 'Farmer', pattern: 'diag', range: 1, emoji: '🌾' },
-  orcChief: { kind: 'orcChief', name: 'Orc Chief', pattern: 'all', range: 1, emoji: '👹' },
-  elvenQueen: { kind: 'elvenQueen', name: 'Elven Queen', pattern: 'all', range: 3, emoji: '👸' },
-  hobbit: { kind: 'hobbit', name: 'Hobbit', pattern: 'ortho', range: 1, emoji: '🧒' },
-  rohanWarrior: { kind: 'rohanWarrior', name: 'Rohan Warrior', pattern: 'ortho', range: 2, emoji: '🐴' },
+  nazgul: { kind: 'nazgul', name: 'Nazgul', pattern: 'zh', range: 2 },
+  tomBombadil: { kind: 'tomBombadil', name: 'Tom Bombadil', pattern: 'all', range: 2 },
+  orcArcher: { kind: 'orcArcher', name: 'Orc Archer', pattern: 'ortho', range: 2, archer: true },
+  gondorWarrior: { kind: 'gondorWarrior', name: 'Gondor Warrior', pattern: 'diag', range: 2 },
+  balrog: { kind: 'balrog', name: 'Balrog', pattern: 'zh', range: 3 },
+  wizard: { kind: 'wizard', name: 'Wizard', pattern: 'all', range: 3, archer: true },
+  elvenWarrior: { kind: 'elvenWarrior', name: 'Elven Warrior', pattern: 'diag', range: 2, archer: true },
+  king: { kind: 'king', name: 'King', pattern: 'diag', range: 3 },
+  shelob: { kind: 'shelob', name: 'Shelob', pattern: 'all', range: 2, archer: true },
+  ent: { kind: 'ent', name: 'Ent', pattern: 'ortho', range: 3 },
+  dwarf: { kind: 'dwarf', name: 'Dwarf', pattern: 'zh', range: 1 },
+  farmer: { kind: 'farmer', name: 'Farmer', pattern: 'diag', range: 1 },
+  orcChief: { kind: 'orcChief', name: 'Orc Chief', pattern: 'all', range: 1 },
+  elvenQueen: { kind: 'elvenQueen', name: 'Elven Queen', pattern: 'all', range: 3 },
+  hobbit: { kind: 'hobbit', name: 'Hobbit', pattern: 'ortho', range: 1 },
+  rohanWarrior: { kind: 'rohanWarrior', name: 'Rohan Warrior', pattern: 'ortho', range: 2 },
 }
 
 export const ALL_KINDS: PieceKind[] = Object.keys(PIECES) as PieceKind[]

@@ -68,7 +68,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .from('games')
       .insert({
         created_by: game.created_by,
-        status: 'active',
+        status: 'waiting',
         state: createLotteryState(),
         root_id: game.root_id ?? game.id,
         duels_enabled: game.duels_enabled !== false,

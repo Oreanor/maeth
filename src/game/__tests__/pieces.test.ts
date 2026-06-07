@@ -9,7 +9,6 @@ describe('PIECES table', () => {
       expect(def.kind).toBe(kind)
       expect([1, 2, 3]).toContain(def.range)
       expect(def.name.length).toBeGreaterThan(0)
-      expect(def.emoji.length).toBeGreaterThan(0)
     }
   })
 })

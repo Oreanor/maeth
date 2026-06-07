@@ -10,59 +10,15 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useI18n } from '@/i18n'
+import { applySkinToDocument, readStoredSkin, type Skin } from './config'
 import { preloadSkinSprites, isSkinSpritesLoaded } from './sprites'
+
+export { DEFAULT_SKIN, SKINS, SKIN_I18N, SKIN_SPRITE_URL, type Skin } from './config'
 
 function waitNextPaint(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
   })
-}
-
-// Visual skin: board colours and piece art. 'default' keeps emoji + the blue/grey
-// board; the others use sprite sheets from /public.
-export type Skin =
-  | 'default'
-  | 'engraving'
-  | 'color-engraving'
-  | 'monochrome'
-  | 'fantasy'
-  | 'southpark'
-  | 'simpsons'
-  | 'chess'
-  | '8bit'
-  | '16bit'
-
-export const SKINS: Skin[] = [
-  'default',
-  'engraving',
-  'color-engraving',
-  'monochrome',
-  'fantasy',
-  'southpark',
-  'simpsons',
-  'chess',
-  '8bit',
-  '16bit',
-]
-
-export const SKIN_I18N: Record<Skin, string> = {
-  default: 'lobby.styleDefault',
-  engraving: 'lobby.styleEngraving',
-  'color-engraving': 'lobby.styleColorEngraving',
-  monochrome: 'lobby.styleMonochrome',
-  fantasy: 'lobby.styleFantasy',
-  southpark: 'lobby.styleSouthPark',
-  simpsons: 'lobby.styleSimpsons',
-  chess: 'lobby.styleChess',
-  '8bit': 'lobby.style8bit',
-  '16bit': 'lobby.style16bit',
-}
-
-const STORAGE_KEY = 'maeth.skin'
-
-function detectSkin(): Skin {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return SKINS.includes(stored as Skin) ? (stored as Skin) : 'default'
 }
 
 interface SkinContextValue {
@@ -75,28 +31,18 @@ const SkinContext = createContext<SkinContextValue | null>(null)
 
 export function SkinProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n()
-  const [skin, setSkinState] = useState<Skin>(detectSkin)
+  const [skin, setSkinState] = useState<Skin>(readStoredSkin)
   const [skinLoading, setSkinLoading] = useState(false)
   const loadIdRef = useRef(0)
 
   useEffect(() => {
-    const initial = detectSkin()
-    if (initial === 'default') return
-    void preloadSkinSprites(initial)
-  }, [])
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-skin', skin)
-    localStorage.setItem(STORAGE_KEY, skin)
+    applySkinToDocument(skin)
+    void preloadSkinSprites(skin)
   }, [skin])
 
   const setSkin = useCallback(
     (next: Skin) => {
       if (next === skin) return
-      if (next === 'default') {
-        setSkinState('default')
-        return
-      }
       if (isSkinSpritesLoaded(next)) {
         setSkinState(next)
         return

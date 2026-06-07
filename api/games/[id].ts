@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { json, method, requireAuth, unwrap, withApiError } from '../_lib/http.js'
+import { json, method, requireAuth, unwrap, unwrapOne, withApiError } from '../_lib/http.js'
 import { isUuid, routeParam } from '../_lib/request.js'
 
 // A player is "in this game" if they fetched it within this window (polls run
@@ -67,13 +67,23 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('user_id', auth.user.id),
   )
 
-  const game = unwrap(
+  const game = unwrapOne(
     await auth.db
       .from('games')
       .select('id, status, state, duels_enabled, created_at, updated_at, rematch_id, root_id, created_by')
       .eq('id', id)
       .single(),
-  )
+  ) as {
+    id: string
+    status: string
+    state: unknown
+    duels_enabled: boolean
+    created_at: string
+    updated_at: string
+    rematch_id: string | null
+    root_id: string | null
+    created_by: string
+  }
 
   const players = (unwrap(
     await auth.db
@@ -91,6 +101,25 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     presence: presenceOf(p, now),
   }))
 
+  // Rematch: both players are seated immediately but the room stays waiting until
+  // they have both opened the new game (in-game presence).
+  let gameStatus = game.status
+  const state = game.state as { phase?: string } | null
+  if (
+    game.status === 'waiting' &&
+    state?.phase === 'lottery' &&
+    playersWithPresence.length >= 2 &&
+    playersWithPresence.every((p) => p.presence === 'in-game')
+  ) {
+    unwrap(
+      await auth.db
+        .from('games')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', id),
+    )
+    gameStatus = 'active'
+  }
+
   const actions =
     unwrap(
       await auth.db
@@ -106,7 +135,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const meta = game as { status: string; state: GameStateLike; root_id?: string | null; rematch_id?: string | null }
   const series = await roomSeries(auth.db, id, meta)
 
-  json(res, 200, { game, player: membership, players: playersWithPresence, actions, latestAction, series })
+  json(res, 200, { game: { ...game, status: gameStatus }, player: membership, players: playersWithPresence, actions, latestAction, series })
 }
 
 interface SeriesScore {

@@ -94,6 +94,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     if (state.phase !== 'over') setResultClosed(false)
   }, [state.phase])
   const showResult = state.phase === 'over' && !duel && !anim && !resultClosed
+  const showPlayAgain = state.phase === 'over' && resultClosed && !duel && !anim
 
   const logNames = useMemo<LogNames>(
     () => ({
@@ -127,7 +128,14 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         youName={user?.name ?? t('common.you')}
       />
 
-      <GameLog entries={logEntries} statusLine={logStatus} statusColor={logStatusColor} />
+      <GameLog
+        entries={logEntries}
+        statusLine={showPlayAgain ? null : logStatus}
+        statusColor={showPlayAgain ? null : logStatusColor}
+        statusAction={
+          showPlayAgain ? { label: t('result.again'), onClick: game.reset } : undefined
+        }
+      />
 
       <Board
         board={state.board}
@@ -189,6 +197,10 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const [rulesOpen, setRulesOpen] = useState(false)
   const [rematching, setRematching] = useState(false)
 
+  useEffect(() => {
+    if (remote.state?.phase !== 'over') setResultClosed(false)
+  }, [remote.state?.phase])
+
   // Follow a rematch: once this game points to a fresh one, both players jump
   // there. The pointer chains, so an old shared link always reaches the latest.
   const rematchId = remote.game?.rematch_id ?? null
@@ -217,7 +229,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
   const waiting = remote.game?.status === 'waiting'
   const inLottery = remote.inLottery
-  const showLottery = inLottery && remote.state?.lottery && remote.players.length >= 2
+  const showLottery = inLottery && remote.state?.lottery && !waiting && remote.players.length >= 2
   const blocked = waiting || inLottery || remote.duel || remote.thinking
   const youName = user?.name ?? t('common.you')
 
@@ -273,6 +285,8 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   // Only declare the result once the duel ceremony is fully played out and
   // dismissed — otherwise the win/loss modal pops over a still-rolling duel.
   const showResult = state.phase === 'over' && !remote.duel && !remote.duelPending && !resultClosed
+  const showPlayAgain =
+    state.phase === 'over' && resultClosed && !remote.duel && !remote.duelPending
 
   return (
     <div className="screen screen--game">
@@ -289,7 +303,16 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         opponentPresence={opponent?.presence ?? null}
       />
 
-      <GameLog entries={logEntries} statusLine={logStatus} statusColor={logStatusColor} />
+      <GameLog
+        entries={logEntries}
+        statusLine={showPlayAgain ? null : logStatus}
+        statusColor={showPlayAgain ? null : logStatusColor}
+        statusAction={
+          showPlayAgain
+            ? { label: t('result.again'), onClick: playAgain, disabled: rematching }
+            : undefined
+        }
+      />
 
       <Board
         board={state.board}

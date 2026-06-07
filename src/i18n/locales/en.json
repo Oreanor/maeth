@@ -42,7 +42,6 @@
     "theme": "Theme",
     "language": "Language",
     "style": "Style",
-    "styleDefault": "Default",
     "styleEngraving": "Engraving",
     "styleColorEngraving": "Color engraving",
     "styleMonochrome": "Monochrome",
@@ -190,13 +189,16 @@
     "losses": "Losses",
     "draws": "Draws",
     "loading": "Loading statistics…",
-    "empty": "No games played yet.",
-    "errLoad": "Could not load statistics"
+    "empty": "No ranked games yet.",
+    "errLoad": "Could not load statistics",
+    "inviteTitle": "Invite {name}?",
+    "inviteHint": "They'll get a notification in the lobby.",
+    "invitePlay": "Invite to play"
   },
   "friends": {
     "title": "Friends",
     "loading": "Loading contacts…",
-    "emptyGoogle": "No other Google players yet. When a friend joins Maeth, they'll show up here.",
+    "emptyGoogle": "No saved opponents yet. Play someone or tap them in statistics to invite.",
     "empty": "No friends found.",
     "googlePlayer": "Google player",
     "invite": "Invite",

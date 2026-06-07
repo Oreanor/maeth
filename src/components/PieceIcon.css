@@ -1,8 +1,3 @@
-.piece-icon--emoji {
-  line-height: 1;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
-}
-
 /* Clip one sprite cell via ::before offsets (stable across varying cell sizes). */
 .piece-icon--sprite {
   display: block;
@@ -21,36 +16,9 @@
   top: calc(var(--sprite-row) * -100%);
   width: 400%;
   height: 400%;
+  background-image: var(--skin-sprite-url);
   background-repeat: no-repeat;
   background-size: 100% 100%;
-}
-
-[data-skin='engraving'] .piece-icon--sprite::before {
-  background-image: url('/pieces-engraving.png');
-}
-[data-skin='color-engraving'] .piece-icon--sprite::before {
-  background-image: url('/pieces-color-engraving.png');
-}
-[data-skin='monochrome'] .piece-icon--sprite::before {
-  background-image: url('/pieces-monochrome.png');
-}
-[data-skin='fantasy'] .piece-icon--sprite::before {
-  background-image: url('/pieces-fantasy.png');
-}
-[data-skin='southpark'] .piece-icon--sprite::before {
-  background-image: url('/pieces-southpark.png');
-}
-[data-skin='simpsons'] .piece-icon--sprite::before {
-  background-image: url('/pieces-simpsons.png');
-}
-[data-skin='chess'] .piece-icon--sprite::before {
-  background-image: url('/pieces-chess.png');
-}
-[data-skin='8bit'] .piece-icon--sprite::before {
-  background-image: url('/pieces-8bit.png');
-}
-[data-skin='16bit'] .piece-icon--sprite::before {
-  background-image: url('/pieces-16bit.png');
 }
 
 [data-skin='8bit'] .piece-icon--sprite,

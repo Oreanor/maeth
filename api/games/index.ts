@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createLotteryState } from '../../src/game/engine.js'
+import { saveFriend } from '../_lib/friends.js'
 import {
   json,
   method,
@@ -20,6 +21,9 @@ interface GameRow {
   created_at: string
   updated_at: string
   created_by?: string
+  rematch_id?: string | null
+  root_id?: string | null
+  duels_enabled?: boolean
 }
 
 interface PlayerRow {
@@ -101,7 +105,11 @@ async function listGames(
   ])
   const profiles = await loadProfiles(db, profileIds)
 
-  const games = playerRows.flatMap((membership) => {
+  // One lobby row per room — hide superseded games from earlier rematches.
+  const visibleRows = collapseRematchRooms(playerRows, gameRows)
+
+  const games = visibleRows
+    .flatMap((membership) => {
     const game = gameRows.find((row) => row.id === membership.game_id)
     if (!game) return []
     const opponent = allPlayers.find((p) => p.game_id === game.id && p.user_id !== userId)
@@ -124,6 +132,11 @@ async function listGames(
       },
     ]
   })
+    .sort(
+      (a, b) =>
+        Date.parse(b.game.updated_at ?? b.game.created_at ?? '0') -
+        Date.parse(a.game.updated_at ?? a.game.created_at ?? '0'),
+    )
 
   const incomingInvites = inviteRows.flatMap((invite) => {
     const game = gameRows.find((row) => row.id === invite.game_id)
@@ -181,6 +194,10 @@ async function createGame(
 
   unwrap(await db.from('game_players').insert({ game_id: game.id, user_id: userId, color: 'white' }))
 
+  if (invitedUserId) {
+    await saveFriend(db, userId, invitedUserId)
+  }
+
   const invite = unwrap(
     await db
       .from('game_invites')
@@ -202,7 +219,7 @@ async function loadGames(db: SupabaseClient, ids: string[]): Promise<GameRow[]> 
   return (unwrap(
     await db
       .from('games')
-      .select('id, status, state, duels_enabled, created_at, updated_at, created_by')
+      .select('id, status, state, duels_enabled, created_at, updated_at, created_by, rematch_id, root_id')
       .in('id', ids),
   ) ?? []) as GameRow[]
 }
@@ -233,7 +250,7 @@ async function loadProfiles(db: SupabaseClient, ids: string[]): Promise<Map<stri
   return new Map(rows.map((profile) => [profile.id, profile]))
 }
 
-function publicGame(game: GameRow & { duels_enabled?: boolean }) {
+function publicGame(game: GameRow) {
   return {
     id: game.id,
     status: game.status,
@@ -242,6 +259,53 @@ function publicGame(game: GameRow & { duels_enabled?: boolean }) {
     created_at: game.created_at,
     updated_at: game.updated_at,
   }
+}
+
+function roomKey(game: GameRow): string {
+  return game.root_id ?? game.id
+}
+
+/** Latest game in a rematch chain — the one both players should re-enter. */
+function tipGameId(roomGames: GameRow[]): string {
+  const byId = new Map(roomGames.map((g) => [g.id, g]))
+  const rootId = roomGames[0]?.root_id ?? roomGames[0]?.id
+  let cur = (rootId ? byId.get(rootId) : undefined) ?? roomGames.find((g) => !g.root_id) ?? roomGames[0]
+  if (!cur) return roomGames[0].id
+
+  const seen = new Set<string>()
+  while (cur.rematch_id && !seen.has(cur.id)) {
+    seen.add(cur.id)
+    const next = byId.get(cur.rematch_id)
+    if (!next) return cur.rematch_id
+    cur = next
+  }
+  return cur.id
+}
+
+/** Keep one membership row per room instead of every historical rematch. */
+function collapseRematchRooms(playerRows: PlayerRow[], gameRows: GameRow[]): PlayerRow[] {
+  const gameById = new Map(gameRows.map((g) => [g.id, g]))
+  const byRoom = new Map<string, PlayerRow[]>()
+
+  for (const row of playerRows) {
+    const game = gameById.get(row.game_id)
+    if (!game) continue
+    const key = roomKey(game)
+    const bucket = byRoom.get(key) ?? []
+    bucket.push(row)
+    byRoom.set(key, bucket)
+  }
+
+  const collapsed: PlayerRow[] = []
+  for (const memberships of byRoom.values()) {
+    const roomGames = unique(memberships.map((m) => m.game_id))
+      .map((id) => gameById.get(id))
+      .filter((g): g is GameRow => g != null)
+    if (roomGames.length === 0) continue
+    const tipId = tipGameId(roomGames)
+    collapsed.push(memberships.find((m) => m.game_id === tipId) ?? memberships[0])
+  }
+  return collapsed
 }
 
 function unique(values: string[]): string[] {

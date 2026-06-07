@@ -408,6 +408,26 @@ describe('placePiece', () => {
     expect(next.turn).toBe('white')
     expect(next.pending).toBeNull()
   })
+
+  it('opens play with the first drafter when they did not place last', () => {
+    const b = emptyBoard()
+    // Black drafted first: B W B W B W B (white places last)
+    for (let i = 0; i < 7; i++) b[i] = piece('rohanWarrior', i % 2 === 1 ? 'white' : 'black')
+    const draft: GameState = {
+      phase: 'draft',
+      board: b,
+      turn: 'white',
+      deck: [],
+      pending: 'ent',
+      placed: { white: 3, black: 4 },
+      captures: { white: 0, black: 0 },
+      status: { kind: 'playing' },
+      history: [],
+    }
+    const next = placePiece(draft, 9)
+    expect(next.phase).toBe('play')
+    expect(next.turn).toBe('black')
+  })
 })
 
 describe('replayPlace', () => {

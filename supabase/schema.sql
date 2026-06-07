@@ -105,6 +105,21 @@ create table if not exists public.game_results (
 create index if not exists game_players_user_id_idx on public.game_players(user_id);
 create index if not exists game_results_white_idx on public.game_results(white_id);
 create index if not exists game_results_black_idx on public.game_results(black_id);
+
+-- Per-user friend list (syncs across devices; backfilled from game history).
+create table if not exists public.saved_friends (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  friend_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, friend_id),
+  check (user_id <> friend_id)
+);
+
+-- Migration for existing databases:
+--   create table if not exists public.saved_friends (...as above...);
+--   create index if not exists saved_friends_user_idx on public.saved_friends(user_id);
+
+create index if not exists saved_friends_user_idx on public.saved_friends(user_id);
 create index if not exists game_invites_game_id_idx on public.game_invites(game_id);
 create index if not exists game_actions_game_id_idx on public.game_actions(game_id);
 
@@ -114,6 +129,7 @@ alter table public.game_players enable row level security;
 alter table public.game_invites enable row level security;
 alter table public.game_actions enable row level security;
 alter table public.game_results enable row level security;
+alter table public.saved_friends enable row level security;
 
 create policy "profiles are readable by authenticated users"
   on public.profiles for select
@@ -124,6 +140,21 @@ create policy "game results are readable by authenticated users"
   on public.game_results for select
   to authenticated
   using (true);
+
+create policy "users read own saved friends"
+  on public.saved_friends for select
+  to authenticated
+  using (user_id = auth.uid());
+
+create policy "users add own saved friends"
+  on public.saved_friends for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+create policy "users remove own saved friends"
+  on public.saved_friends for delete
+  to authenticated
+  using (user_id = auth.uid());
 
 create policy "users can read their game memberships"
   on public.game_players for select

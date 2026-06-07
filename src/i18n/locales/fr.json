@@ -42,7 +42,6 @@
     "theme": "Thème",
     "language": "Langue",
     "style": "Style",
-    "styleDefault": "Par défaut",
     "styleEngraving": "Gravure",
     "styleColorEngraving": "Gravure en couleur",
     "styleMonochrome": "Monochrome",
@@ -190,13 +189,16 @@
     "losses": "Défaites",
     "draws": "Nuls",
     "loading": "Chargement des statistiques…",
-    "empty": "Aucune partie jouée.",
-    "errLoad": "Impossible de charger les statistiques"
+    "empty": "Aucune partie classée pour l'instant.",
+    "errLoad": "Impossible de charger les statistiques",
+    "inviteTitle": "Inviter {name} ?",
+    "inviteHint": "L'invitation apparaîtra dans son lobby.",
+    "invitePlay": "Inviter à jouer"
   },
   "friends": {
     "title": "Amis",
     "loading": "Chargement des contacts…",
-    "emptyGoogle": "Pas encore d'autres joueurs Google. Dès qu'un ami rejoint Maeth, il apparaîtra ici.",
+    "emptyGoogle": "Pas encore d'adversaires enregistrés. Jouez avec quelqu'un ou touchez-le dans les statistiques.",
     "empty": "Aucun ami trouvé.",
     "googlePlayer": "Joueur Google",
     "invite": "Inviter",

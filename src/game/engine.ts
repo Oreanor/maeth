@@ -100,8 +100,9 @@ export function placePiece(state: GameState, cell: number): GameState {
 
   const totalPlaced = placed.white + placed.black
   if (totalPlaced >= PIECES_PER_SIDE * 2) {
-    // Draft complete → move phase. White (player) moves first.
-    const turn: Color = 'white'
+    // Draft complete → move phase. First mover is whoever placed first in the draft
+    // (the player who just placed was last in the draft order).
+    const turn: Color = opposite(state.turn)
     return normalizePlay({
       ...state,
       board,
@@ -136,7 +137,7 @@ export function replayPlace(state: GameState, cell: number, kind: PieceKind): Ga
 
   const totalPlaced = placed.white + placed.black
   if (totalPlaced >= PIECES_PER_SIDE * 2) {
-    const turn: Color = 'white'
+    const turn: Color = opposite(state.turn)
     return normalizePlay({
       ...state,
       board,

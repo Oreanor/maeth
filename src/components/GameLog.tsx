@@ -7,16 +7,19 @@ export function GameLog({
   entries,
   statusLine,
   statusColor,
+  statusAction,
 }: {
   entries: LogEntry[]
   statusLine?: string | null
   statusColor?: LogColor | null
+  /** Shown in the status strip instead of a hint (e.g. play again after viewing the board). */
+  statusAction?: { label: string; onClick: () => void; disabled?: boolean }
 }) {
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [entries, statusLine])
+  }, [entries, statusLine, statusAction?.label])
 
   return (
     <div className="gamelog">
@@ -28,13 +31,23 @@ export function GameLog({
         ))}
         <div ref={endRef} />
       </div>
-      {statusLine ? (
+      {statusLine || statusAction ? (
         <div
           className={`gamelog__status ${
-            statusColor ? `gamelog__status--${statusColor}` : ''
-          }`.trim()}
+            statusAction ? 'gamelog__status--action' : ''
+          } ${statusColor ? `gamelog__status--${statusColor}` : ''}`.trim()}
         >
           {statusLine}
+          {statusAction ? (
+            <button
+              type="button"
+              className="btn btn--primary btn--sm gamelog__action"
+              onClick={statusAction.onClick}
+              disabled={statusAction.disabled}
+            >
+              {statusAction.label}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>

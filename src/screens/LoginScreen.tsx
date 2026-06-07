@@ -41,9 +41,14 @@ export function LoginScreen() {
         </button>
       </div>
 
-      <p className="login__note muted tiny">
-        <span className="login__note-star" aria-hidden="true">*</span> {t('login.subtitle')}
-      </p>
+      <div className="login__meta">
+        <p className="login__note muted tiny">
+          <span className="login__note-star" aria-hidden="true">*</span> {t('login.subtitle')}
+        </p>
+        <a className="screen-copyright" href="mailto:oreanormaeth@gmail.com">
+          © 2026 Oreanor Aurgilion
+        </a>
+      </div>
 
       {error && <p className="muted tiny">{error}</p>}
       {!isSupabaseConfigured && <p className="muted tiny">{t('login.needConfig')}</p>}

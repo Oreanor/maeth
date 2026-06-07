@@ -44,13 +44,34 @@
 :root:not([data-theme='light']) .hero__star {
   color: #fff;
 }
-.login__note {
-  margin-top: 14px;
+.login__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   max-width: min(82vw, 360px);
+}
+
+.login__note {
+  margin: 0;
+  max-width: none;
 }
 .login__note-star {
   font-weight: 800;
 }
+
+.screen-copyright {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted, rgba(120, 120, 130, 0.85));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.screen-copyright:hover {
+  color: var(--text, inherit);
+}
+
 /* Tengwar "Maeth" wordmark. The art is dark ink on transparent, so it reads on
    the light theme as-is; on dark themes we invert it to a light glyph. */
 .hero__wordmark {
@@ -631,6 +652,29 @@
 .stats-table__name {
   overflow-wrap: anywhere;
 }
+.stats-table__row--clickable {
+  cursor: pointer;
+}
+.stats-table__row--clickable:hover {
+  background: rgba(127, 127, 127, 0.08);
+}
+.stats-table__row--clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.invite-player-modal {
+  text-align: center;
+  gap: 10px;
+}
+.invite-player-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+.invite-player-modal__hint {
+  margin: 0;
+}
 
 /* the whole game row except the trash is one big "enter" button */
 .list__item-enter {
@@ -818,17 +862,9 @@
   background: #f5f5fa;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
-.pick-portrait__emoji {
-  font-size: 56px;
-  line-height: 1;
-}
 .pick-portrait__icon.piece-icon--sprite {
   width: 88px;
   height: 88px;
-}
-.pick-portrait__icon.piece-icon--emoji {
-  font-size: 56px;
-  line-height: 1;
 }
 .pick-portrait--spin {
   animation: pick-pulse 0.5s ease-in-out infinite;

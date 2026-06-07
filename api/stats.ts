@@ -22,8 +22,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
 // Win/loss/draw tallies for every stored profile, computed from the durable
 // `game_results` table — so deleting a game does not change anyone's record.
-// (Bot games are local-only and never reach the database; guest accounts are
-// excluded so casual anonymous play doesn't clutter the leaderboard.)
 async function listStats(db: SupabaseClient, res: VercelResponse) {
   const profiles = (unwrap(
     await db.from('profiles').select('id, display_name, avatar_url').neq('provider', 'guest'),
@@ -53,7 +51,6 @@ async function listStats(db: SupabaseClient, res: VercelResponse) {
     const t = tally.get(p.id) ?? { wins: 0, losses: 0, draws: 0 }
     return { id: p.id, name: p.display_name, avatarUrl: p.avatar_url, ...t }
   })
-  // Most wins first, then best win-minus-loss margin, then name.
   rows.sort(
     (a, b) =>
       b.wins - a.wins || b.wins - b.losses - (a.wins - a.losses) || a.name.localeCompare(b.name),

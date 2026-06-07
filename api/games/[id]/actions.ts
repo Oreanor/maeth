@@ -148,6 +148,9 @@ async function recordResult(db: SupabaseClient, gameId: string, status: GameStat
       .from('game_results')
       .upsert({ game_id: gameId, white_id: white, black_id: black, outcome }, { onConflict: 'game_id', ignoreDuplicates: true }),
   )
+
+  const { saveMutualFriends } = await import('../../_lib/friends.js')
+  await saveMutualFriends(db, white, black)
 }
 
 function parseAction(body: unknown): ActionBody | null {

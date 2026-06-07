@@ -53,3 +53,11 @@
 .gamelog__status--neutral {
   color: var(--muted, #6b7280);
 }
+
+.gamelog__status--action {
+  padding: 6px 10px 8px;
+}
+
+.gamelog__action {
+  width: 100%;
+}

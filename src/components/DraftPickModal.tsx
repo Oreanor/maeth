@@ -38,7 +38,8 @@ export function DraftPickModal({
   if (!pick) return null
   const isYou = pick.by === human
   const closing = !!pick.closing
-  const def = settled ? PIECES[settled] : spin ? PIECES[spin] : null
+  const shownKind = settled ?? spin
+  const def = shownKind ? PIECES[shownKind] : null
   // While it's your turn and the carousel is still spinning, the whole modal is
   // a tap target that settles the draw.
   const tappable = isYou && !settled && !closing
@@ -72,11 +73,7 @@ export function DraftPickModal({
             : t('draft.picking')}
         </div>
         <div className={`pick-portrait ${settled ? 'pick-portrait--settled' : 'pick-portrait--spin'}`}>
-          {def ? (
-            <PieceIcon kind={def.kind} className="pick-portrait__icon" />
-          ) : (
-            <span className="pick-portrait__emoji">🎲</span>
-          )}
+          {def && <PieceIcon kind={def.kind} className="pick-portrait__icon" />}
         </div>
         <div className="pick-modal__name">
           {settled && def ? (

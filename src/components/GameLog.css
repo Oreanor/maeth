@@ -1,7 +1,7 @@
 .gamelog {
   display: flex;
   flex-direction: column;
-  width: min(86vw, 420px);
+  width: var(--game-column-w);
   border-radius: 12px;
   background: var(--card);
   overflow: hidden;

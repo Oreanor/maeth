@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
-  width: min(86vw, 420px);
+  width: var(--game-column-w);
   aspect-ratio: 1 / 1;
   border-radius: 14px;
   overflow: hidden;
@@ -165,6 +165,9 @@
   position: absolute;
   right: 0;
   bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-size: clamp(10px, 3.2vw, 15px);
   font-weight: 800;
   color: #11181f;
@@ -172,8 +175,21 @@
   border-radius: 5px;
   padding: 0 3px;
   line-height: 1.15;
-  letter-spacing: 0.2px;
+  letter-spacing: 0;
   z-index: 2;
+}
+
+.piece__badge-range {
+  font-variant-numeric: tabular-nums;
+}
+
+.piece__badge-archer {
+  font-size: 0.82em;
+  line-height: 1;
+}
+
+.piece__badge-rose {
+  color: #11181f;
 }
 
 .piece--ghost {

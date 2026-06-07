@@ -1,8 +1,11 @@
 import { Fragment } from 'react'
 import { useI18n } from '@/i18n'
-import { ALL_KINDS, PIECES, isArcher, type Pattern, type PieceKind } from '@/game/pieces'
+import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, type Pattern, type PieceKind } from '@/game/pieces'
 import { MoveCompass } from './MoveCompass'
+import { PatternRose } from './PatternRose'
 import { useModalDismiss } from './useModalDismiss'
+
+const PATTERN_LEGEND: Pattern[] = ['ortho', 'diag', 'zh', 'all']
 
 const PATTERN_RANK: Record<Pattern, number> = { ortho: 0, diag: 1, zh: 2, all: 3 }
 
@@ -46,6 +49,14 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
 
           <section className="rules-modal__pieces">
             <h4 className="rules-modal__pieces-title">{t('rules.piecesTitle')}</h4>
+            <div className="rules-patterns-legend" aria-label={t('rules.patternsLegend')}>
+              {PATTERN_LEGEND.map((pattern) => (
+                <span key={pattern} className="rules-patterns-legend__item">
+                  <PatternRose pattern={pattern} size={18} />
+                  <span>{t(PATTERN_I18N[pattern])}</span>
+                </span>
+              ))}
+            </div>
             <div className="rules-pieces" role="table">
               <div className="rules-pieces__head" role="row">
                 <span role="columnheader">{t('rules.colPiece')}</span>

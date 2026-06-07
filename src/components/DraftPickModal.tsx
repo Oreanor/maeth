@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
-import { PIECES, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
+import { PIECES, type PieceKind } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import type { DraftPick } from '@/game/useGame'
+import { PieceBadge } from './PieceBadge'
 import { PieceIcon } from './PieceIcon'
 
 // The blind-draw reveal: remaining portraits riffle past; on your turn you tap
@@ -78,7 +79,13 @@ export function DraftPickModal({
           )}
         </div>
         <div className="pick-modal__name">
-          {settled && def ? `${def.name} · ${pieceBadgeLabel(def.kind)}` : ' '}
+          {settled && def ? (
+            <span className="pick-modal__badge-line">
+              {def.name} · <PieceBadge kind={def.kind} roseSize={13} />
+            </span>
+          ) : (
+            ' '
+          )}
         </div>
         <div className="pick-modal__footer">
           {settled ? null : isYou ? (

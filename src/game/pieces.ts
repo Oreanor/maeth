@@ -94,29 +94,17 @@ export function dirsFor(pattern: Pattern): Array<[number, number]> {
   }
 }
 
-export function patternSymbol(pattern: Pattern): '+' | 'x' | 'Ж' | '*' {
-  switch (pattern) {
-    case 'ortho':
-      return '+'
-    case 'diag':
-      return 'x'
-    case 'zh':
-      return 'Ж'
-    case 'all':
-      return '*'
-  }
+export const PATTERN_I18N: Record<Pattern, string> = {
+  ortho: 'rules.patternOrtho',
+  diag: 'rules.patternDiag',
+  zh: 'rules.patternZh',
+  all: 'rules.patternAll',
 }
 
-/** Compact label like "3*" used on the board and in the draft tray. */
-export function pieceBadge(kind: PieceKind): string {
+export function pieceBadgeAria(kind: PieceKind, t: (key: string) => string): string {
   const def = PIECES[kind]
-  return `${def.range}${patternSymbol(def.pattern)}`
-}
-
-/** Badge as shown on the board — archers get a leading ↗ in the same pill. */
-export function pieceBadgeLabel(kind: PieceKind): string {
-  const badge = pieceBadge(kind)
-  return isArcher(kind) ? `↗${badge}` : badge
+  const archer = isArcher(kind) ? `${t('rules.colArcher')}, ` : ''
+  return `${archer}${def.range}, ${t(PATTERN_I18N[def.pattern])}`
 }
 
 export function isArcher(kind: PieceKind): boolean {

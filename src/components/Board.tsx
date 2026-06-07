@@ -1,5 +1,7 @@
+import { useI18n } from '@/i18n'
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
-import { PIECES, isArcher, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
+import { PIECES, isArcher, pieceBadgeAria, type PieceKind } from '@/game/pieces'
+import { PieceBadge } from './PieceBadge'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
 import { MoveAnimation, type AnimInfo } from './MoveAnimation'
 import { PieceIcon } from './PieceIcon'
@@ -50,6 +52,7 @@ export function Board({
   onBoardLeave,
   interactive,
 }: BoardProps) {
+  const { t } = useI18n()
   const order = [...board.keys()]
   const cells = orientation === 'white' ? order : order.slice().reverse()
 
@@ -98,7 +101,7 @@ export function Board({
             {isPreview && (
               <span className={`piece piece--ghost piece--${previewOwner}`}>
                 <PieceIcon kind={previewKind} className="piece__icon" />
-                <span className="piece__badge">{pieceBadgeLabel(previewKind)}</span>
+                <PieceBadge kind={previewKind} />
               </span>
             )}
             {piece && (
@@ -110,10 +113,10 @@ export function Board({
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                title={`${PIECES[piece.kind].name} (${pieceBadgeLabel(piece.kind)})`}
+                title={`${PIECES[piece.kind].name} (${pieceBadgeAria(piece.kind, t)})`}
               >
                 <PieceIcon kind={piece.kind} className="piece__icon" />
-                <span className="piece__badge">{pieceBadgeLabel(piece.kind)}</span>
+                <PieceBadge kind={piece.kind} />
               </span>
             )}
           </button>

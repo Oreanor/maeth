@@ -82,12 +82,17 @@
   },
   "rules": {
     "title": "Cómo jugar",
-    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas** (p. ej. 1+, 2Ж, 3*): el número es el **alcance** en casillas; el símbolo, la **dirección**:\n• **+** — solo recto (horizontal y vertical)\n• **x** — solo diagonal\n• **Ж** — vertical y diagonales, sin este ni oeste\n• **\u002a** — las ocho direcciones\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **no abandonan su casilla**: solo golpean piezas **enemigas** a su alcance en sus direcciones. En el tablero, flechas **discontinuas** y ↗ en el retrato; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
+    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas**: en la pastilla, el número es el **alcance** y junto a él el **icono de direcciones** (leyenda antes de la tabla).\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **no abandonan su casilla**: solo golpean piezas **enemigas** a su alcance en sus direcciones. En el tablero, flechas **discontinuas** y ↗ en la pastilla; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si también amenaza a tu atacante (amenaza mutua), el golpe se disputa: ambos tiran un dado y el atacante gana con una tirada igual o mayor. Si pierdes el duelo, la captura falla: tu pieza se queda donde estaba y su movimiento se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
     "piecesTitle": "Las 16 piezas",
     "colPiece": "Pieza",
     "colRange": "Alcance",
     "colDirections": "Direcciones",
-    "colArcher": "Arquero"
+    "colArcher": "Arquero",
+    "patternsLegend": "Iconos de dirección",
+    "patternOrtho": "4 direcciones",
+    "patternDiag": "4 diagonales",
+    "patternZh": "6 rayos (sin este/oeste)",
+    "patternAll": "8 direcciones"
   },
   "log": {
     "gameStarted": "Partida iniciada.",

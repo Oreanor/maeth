@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { SIZE, colOf, opposite, rowOf, type Color } from '@/game/types'
-import { isArcher, pieceBadgeLabel, type PieceKind } from '@/game/pieces'
+import { isArcher, type PieceKind } from '@/game/pieces'
+import { PieceBadge } from './PieceBadge'
 import { PieceIcon } from './PieceIcon'
 import './MoveAnimation.css'
 
@@ -55,7 +56,7 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
   const animPiece = (kind: PieceKind, color: Color) => (
     <span className={`piece piece--${color}`}>
       <PieceIcon kind={kind} className="piece__icon" />
-      <span className="piece__badge">{pieceBadgeLabel(kind)}</span>
+      <PieceBadge kind={kind} />
     </span>
   )
 

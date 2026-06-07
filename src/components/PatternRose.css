@@ -1,0 +1,16 @@
+.pattern-rose {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.pattern-rose__hub {
+  fill: currentColor;
+  opacity: 0.55;
+}
+
+.pattern-rose__ray {
+  stroke: currentColor;
+  opacity: 0.95;
+}

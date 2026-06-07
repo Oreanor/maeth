@@ -1,6 +1,6 @@
 .screen {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   min-height: 100vh;
   min-height: 100dvh;
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
@@ -240,7 +240,7 @@
 
 /* same header as the lobby, width-matched to the board column below it */
 .game-topbar {
-  width: min(86vw, 420px);
+  width: var(--game-column-w);
 }
 .icon-btn {
   width: 32px;
@@ -361,6 +361,22 @@
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
+.rules-patterns-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.08);
+}
+.rules-patterns-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text);
+}
 .rules-pieces__dirs {
   line-height: 0;
 }
@@ -369,46 +385,20 @@
   font-weight: 800;
   color: var(--accent);
 }
-.move-compass--archer .move-compass__cell--off {
-  opacity: 0;
-}
-.move-compass__dash {
+.move-compass__rose {
   display: block;
-  width: 6px;
-  height: 8px;
   color: var(--accent);
 }
-.move-compass {
-  display: inline-grid;
-  grid-template-columns: repeat(3, 6px);
-  grid-template-rows: repeat(3, 8px);
-  width: 18px;
-  height: 24px;
-  gap: 0;
-  margin: 0;
-  line-height: 8px;
-  font-size: 7px;
-  vertical-align: middle;
+.pick-modal__badge-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
-.move-compass__cell {
-  display: block;
-  text-align: center;
-  line-height: 8px;
-  user-select: none;
-}
-.move-compass__cell--hub {
-  color: var(--muted);
-  font-size: 6px;
-  opacity: 0.45;
-}
-.move-compass__cell--off {
-  color: var(--muted);
-  opacity: 0.14;
-}
-.move-compass__cell--on {
-  color: var(--accent);
-  font-weight: 800;
-  opacity: 1;
+.pick-modal__badge-line .piece__badge {
+  position: static;
+  font-size: 13px;
 }
 
 /* full-width primary action (e.g. "Create game") */
@@ -684,7 +674,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  width: min(86vw, 420px);
+  width: var(--game-column-w);
   padding: 12px;
   border-radius: 12px;
   background: var(--card);
@@ -940,7 +930,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  width: min(86vw, 420px);
+  width: var(--game-column-w);
 }
 .score__names {
   display: flex;
@@ -961,10 +951,13 @@
   min-width: 0;
   font-size: 15px;
   font-weight: 700;
+  line-height: 1.25;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
-/* Each name owns exactly half the row and hugs the centre line, so they stay
-   symmetric (and aligned over their score) regardless of name length. */
 .score__name:first-child {
   text-align: right;
   padding-right: 6px;
@@ -1000,6 +993,7 @@
 .score__nums strong {
   flex: 1 1 0;
   font-size: 26px;
+  font-variant-numeric: tabular-nums;
 }
 .score__nums strong:first-child {
   text-align: right;
@@ -1008,6 +1002,7 @@
   text-align: left;
 }
 .score__colon {
+  flex: 0 0 auto;
   font-size: 22px;
   color: var(--muted);
   padding: 0 8px;
@@ -1018,7 +1013,6 @@
   align-items: baseline;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
 }
 .series__label {
   font-size: 12px;
@@ -1033,14 +1027,4 @@
 .series__draws {
   color: var(--muted);
   font-weight: 600;
-}
-
-.game-end-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.screen__exit {
-  margin-top: 0;
 }

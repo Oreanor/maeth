@@ -13,7 +13,6 @@ import { DuelModal } from '@/components/DuelModal'
 import { SeriesBar } from '@/components/SeriesBar'
 import { useGame } from '@/game/useGame'
 import type { Color } from '@/game/types'
-import { pieceBadgeLabel } from '@/game/pieces'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { useRemoteGame } from '@/game/useRemoteGame'
@@ -59,7 +58,6 @@ export function GameScreen() {
 }
 
 function LocalGameScreen({ config }: { config: PlayConfig }) {
-  const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { t } = useI18n()
   const human = config.humanColor
@@ -111,7 +109,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     state.phase,
     false,
     isHumanTurn,
-    pendingDef ? `${pendingDef.name} · ${pieceBadgeLabel(pendingDef.kind)}` : null,
+    pendingDef ? t(`pieces.${pendingDef.kind}`) : null,
     t,
   )
   const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
@@ -150,17 +148,6 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
       />
 
       <SeriesBar series={game.series} human={human} opponent={bot} />
-
-      <div className="game-end-actions">
-        {state.phase === 'over' && resultClosed && (
-          <button className="btn btn--sm" onClick={game.reset}>
-            {t('result.again')}
-          </button>
-        )}
-        <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
-          {t('game.exit')}
-        </button>
-      </div>
 
       <DraftPickModal
         pick={draftPick}
@@ -246,9 +233,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         remote.state.phase,
         waiting,
         remote.isHumanTurn && !waiting,
-        remote.pendingDef
-          ? `${remote.pendingDef.name} · ${pieceBadgeLabel(remote.pendingDef.kind)}`
-          : null,
+        remote.pendingDef ? t(`pieces.${remote.pendingDef.kind}`) : null,
         t,
       )
     : waiting
@@ -295,7 +280,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         human={human}
         bot={opponentColor}
         opponentName={opponentName}
-        youName={user?.name ?? t('common.you')}
+        youName={youName}
         opponentPresence={opponent?.presence ?? null}
       />
 
@@ -320,17 +305,6 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
       />
 
       {remote.series && <SeriesBar series={remote.series} human={human} opponent={opponentColor} />}
-
-      <div className="game-end-actions">
-        {state.phase === 'over' && resultClosed && (
-          <button className="btn btn--sm" onClick={playAgain} disabled={rematching}>
-            {t('result.again')}
-          </button>
-        )}
-        <button className="btn btn--ghost btn--sm screen__exit" onClick={() => navigate('/')}>
-          {t('game.exit')}
-        </button>
-      </div>
 
       <DraftPickModal
         pick={remote.draftPick}

@@ -811,6 +811,8 @@
   width: 104px;
   height: 104px;
   border-radius: 20px;
+  overflow: hidden;
+  --piece-icon-radius: 14px;
   display: grid;
   place-items: center;
   background: #f5f5fa;

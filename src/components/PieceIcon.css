@@ -10,6 +10,7 @@
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: var(--piece-icon-radius, 0);
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 

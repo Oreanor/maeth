@@ -92,6 +92,8 @@
   width: 84%;
   height: 84%;
   border-radius: 14px;
+  overflow: hidden;
+  --piece-icon-radius: 11px;
   font-size: clamp(26px, 9vw, 44px);
   line-height: 1;
   /* spring in when a piece lands on the board (placement or move) */
@@ -428,6 +430,7 @@
 [data-skin='engraving'] .piece,
 [data-skin='monochrome'] .piece {
   border-radius: 0;
+  --piece-icon-radius: 0;
   background: transparent;
 }
 
@@ -439,11 +442,13 @@
 [data-skin='8bit'] .piece,
 [data-skin='16bit'] .piece {
   border-radius: 5px;
+  --piece-icon-radius: 4px;
   background: transparent;
 }
 
 [data-skin='8bit'] .piece {
   border-radius: 0;
+  --piece-icon-radius: 0;
 }
 
 [data-skin='engraving'] .piece--white,

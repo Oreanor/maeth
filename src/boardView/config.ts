@@ -1,3 +1,5 @@
+import { SKIN_SPRITE_URL } from '@/skin/config'
+
 export type BoardViewMode = '2d' | '3d'
 export type ThreePieceStyle = 'painted' | 'classic'
 
@@ -55,8 +57,8 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
 /** HUD portraits follow the 3D pieces, not the 2D skin: the painted set matches
  * the D&D sheet, the classic set the chess one. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
-  painted: '/pieces-3d.webp',
-  classic: '/pieces-chess.webp',
+  painted: SKIN_SPRITE_URL.dnd,
+  classic: SKIN_SPRITE_URL.chess,
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '2d'

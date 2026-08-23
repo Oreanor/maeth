@@ -1,15 +1,15 @@
 const SKIN_ENTRIES = [
-  { id: 'engraving', i18n: 'lobby.styleEngraving', sprite: '/pieces-engraving.webp' },
-  { id: 'color-engraving', i18n: 'lobby.styleColorEngraving', sprite: '/pieces-color-engraving.webp' },
-  { id: 'monochrome', i18n: 'lobby.styleMonochrome', sprite: '/pieces-monochrome.webp' },
-  { id: 'fantasy', i18n: 'lobby.styleFantasy', sprite: '/pieces-fantasy.webp' },
-  { id: 'dnd', i18n: 'lobby.styleDnd', sprite: '/pieces-3d.webp' },
-  { id: 'southpark', i18n: 'lobby.styleSouthPark', sprite: '/pieces-southpark.webp' },
-  { id: 'southpark-gothic', i18n: 'lobby.styleSouthParkGothic', sprite: '/pieces-southpark-gothic.webp' },
-  { id: 'simpsons', i18n: 'lobby.styleSimpsons', sprite: '/pieces-simpsons.webp' },
-  { id: 'chess', i18n: 'lobby.styleChess', sprite: '/pieces-chess.webp' },
-  { id: '8bit', i18n: 'lobby.style8bit', sprite: '/pieces-8bit.webp' },
-  { id: '16bit', i18n: 'lobby.style16bit', sprite: '/pieces-16bit.webp' },
+  { id: 'engraving', i18n: 'lobby.styleEngraving' },
+  { id: 'color-engraving', i18n: 'lobby.styleColorEngraving' },
+  { id: 'monochrome', i18n: 'lobby.styleMonochrome' },
+  { id: 'fantasy', i18n: 'lobby.styleFantasy' },
+  { id: 'dnd', i18n: 'lobby.styleDnd' },
+  { id: 'southpark', i18n: 'lobby.styleSouthPark' },
+  { id: 'southpark-gothic', i18n: 'lobby.styleSouthParkGothic' },
+  { id: 'simpsons', i18n: 'lobby.styleSimpsons' },
+  { id: 'chess', i18n: 'lobby.styleChess' },
+  { id: '8bit', i18n: 'lobby.style8bit' },
+  { id: '16bit', i18n: 'lobby.style16bit' },
 ] as const
 
 export type Skin = (typeof SKIN_ENTRIES)[number]['id']
@@ -23,10 +23,14 @@ export const SKIN_I18N = Object.fromEntries(SKIN_ENTRIES.map((e) => [e.id, e.i18
   string
 >
 
-export const SKIN_SPRITE_URL = Object.fromEntries(SKIN_ENTRIES.map((e) => [e.id, e.sprite])) as Record<
-  Skin,
-  string
->
+/** Each sheet in `public/pieces/` is named after its skin id. */
+export function skinSpriteUrl(skin: Skin): string {
+  return `/pieces/${skin}.webp`
+}
+
+export const SKIN_SPRITE_URL = Object.fromEntries(
+  SKINS.map((id) => [id, skinSpriteUrl(id)]),
+) as Record<Skin, string>
 
 const STORAGE_KEY = 'maeth.skin'
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { listFriends } from '@/lib/api'
 import type { Friend } from '@/auth/types'
-import { useAnimatedClose } from './useAnimatedClose'
+import { Modal } from './Modal'
 
 export type CreateChoice =
   | { mode: 'open'; duels: boolean }
@@ -27,7 +27,6 @@ export function CreateGameModal({
   onClose: () => void
 }) {
   const { t } = useI18n()
-  const { closing, close } = useAnimatedClose(onClose)
   const [mode, setMode] = useState<Mode>(online ? 'open' : 'bot')
   const [friends, setFriends] = useState<Friend[]>([])
   const [friendId, setFriendId] = useState('')
@@ -60,81 +59,83 @@ export function CreateGameModal({
   }
 
   return (
-    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
-      <div className={`modal create-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
-        <h3>{t('lobby.create')}</h3>
+    <Modal className="create-modal" onClose={onClose}>
+      {(close) => (
+        <>
+          <h3>{t('lobby.create')}</h3>
 
-        <div className="create-opts">
-          {online && (
+          <div className="create-opts">
+            {online && (
+              <label className="radio-row">
+                <input type="radio" name="create-mode" checked={mode === 'open'} onChange={() => setMode('open')} />
+                <span className="radio-row__text">
+                  <span className="radio-row__title">{t('create.optOpen')}</span>
+                  <span className="muted tiny">{t('create.optOpenHint')}</span>
+                </span>
+              </label>
+            )}
+
+            {online && (
+              <label className="radio-row">
+                <input type="radio" name="create-mode" checked={mode === 'friend'} onChange={() => setMode('friend')} />
+                <span className="radio-row__title">{t('create.optFriend')}</span>
+              </label>
+            )}
+            {online && mode === 'friend' && (
+              <div className="create-friend">
+                <select
+                  className="lang-select create-friend__select"
+                  value={friendId}
+                  onChange={(e) => setFriendId(e.target.value)}
+                  disabled={emailEntered}
+                >
+                  <option value="">{friends.length ? t('create.selectFriend') : t('create.noFriends')}</option>
+                  {friends.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="muted tiny">{t('create.orEmail')}</span>
+                <input
+                  className="text-input"
+                  type="email"
+                  placeholder={t('create.emailPlaceholder')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            )}
+
             <label className="radio-row">
-              <input type="radio" name="create-mode" checked={mode === 'open'} onChange={() => setMode('open')} />
+              <input type="radio" name="create-mode" checked={mode === 'bot'} onChange={() => setMode('bot')} />
               <span className="radio-row__text">
-                <span className="radio-row__title">{t('create.optOpen')}</span>
-                <span className="muted tiny">{t('create.optOpenHint')}</span>
+                <span className="radio-row__title">{t('create.optBot')}</span>
+                <span className="muted tiny">{t('create.optBotHint')}</span>
               </span>
             </label>
-          )}
 
-          {online && (
-            <label className="radio-row">
-              <input type="radio" name="create-mode" checked={mode === 'friend'} onChange={() => setMode('friend')} />
-              <span className="radio-row__title">{t('create.optFriend')}</span>
+            <label className="check-row">
+              <input type="checkbox" checked={duels} onChange={(e) => setDuels(e.target.checked)} />
+              <span className="check-row__text">
+                <span className="check-row__title">{t('create.duels')}</span>
+                <span className="muted tiny">{t('create.duelsHint')}</span>
+              </span>
             </label>
-          )}
-          {online && mode === 'friend' && (
-            <div className="create-friend">
-              <select
-                className="lang-select create-friend__select"
-                value={friendId}
-                onChange={(e) => setFriendId(e.target.value)}
-                disabled={emailEntered}
-              >
-                <option value="">{friends.length ? t('create.selectFriend') : t('create.noFriends')}</option>
-                {friends.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-              <span className="muted tiny">{t('create.orEmail')}</span>
-              <input
-                className="text-input"
-                type="email"
-                placeholder={t('create.emailPlaceholder')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          )}
+          </div>
 
-          <label className="radio-row">
-            <input type="radio" name="create-mode" checked={mode === 'bot'} onChange={() => setMode('bot')} />
-            <span className="radio-row__text">
-              <span className="radio-row__title">{t('create.optBot')}</span>
-              <span className="muted tiny">{t('create.optBotHint')}</span>
-            </span>
-          </label>
+          {error && <p className="muted tiny">{error}</p>}
 
-          <label className="check-row">
-            <input type="checkbox" checked={duels} onChange={(e) => setDuels(e.target.checked)} />
-            <span className="check-row__text">
-              <span className="check-row__title">{t('create.duels')}</span>
-              <span className="muted tiny">{t('create.duelsHint')}</span>
-            </span>
-          </label>
-        </div>
-
-        {error && <p className="muted tiny">{error}</p>}
-
-        <div className="create-actions">
-          <button className="btn btn--ghost" onClick={close} disabled={submitting}>
-            {t('create.cancel')}
-          </button>
-          <button className="btn btn--primary" onClick={submit} disabled={submitting || !canSubmit}>
-            {submitting ? t('create.creating') : t('create.submit')}
-          </button>
-        </div>
-      </div>
-    </div>
+          <div className="create-actions">
+            <button className="btn btn--ghost" onClick={close} disabled={submitting}>
+              {t('create.cancel')}
+            </button>
+            <button className="btn btn--primary" onClick={submit} disabled={submitting || !canSubmit}>
+              {submitting ? t('create.creating') : t('create.submit')}
+            </button>
+          </div>
+        </>
+      )}
+    </Modal>
   )
 }

@@ -4,7 +4,7 @@ import { useI18n } from '@/i18n'
 import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, pieceName, type Pattern, type PieceKind } from '@/game/pieces'
 import { MoveCompass } from './MoveCompass'
 import { PatternRose } from './PatternRose'
-import { useAnimatedClose } from './useAnimatedClose'
+import { Modal } from './Modal'
 
 const PATTERN_LEGEND: Pattern[] = ['ortho', 'diag', 'zh', 'all']
 
@@ -35,61 +35,59 @@ function formatRulesLine(line: string) {
  *  body is one i18n string with paragraphs separated by blank lines. */
 export function RulesModal({ onClose }: { onClose: () => void }) {
   const { t } = useI18n()
-  const { closing, close } = useAnimatedClose(onClose)
   const paragraphs = t('rules.body').split('\n').filter((line) => line.trim() !== '')
   return createPortal(
-    <div
-      className={`modal-backdrop modal-backdrop--app-panel ${closing ? 'modal-backdrop--out' : ''}`}
-      onClick={close}
-    >
-      <div className={`modal rules-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
-        <h3>{t('rules.title')}</h3>
-        <div className="rules-modal__body">
-          {paragraphs.map((line, i) => (
-            <p key={i} className="muted">
-              {formatRulesLine(line)}
-            </p>
-          ))}
+    <Modal className="rules-modal" appPanel onClose={onClose}>
+      {(close) => (
+        <>
+          <h3>{t('rules.title')}</h3>
+          <div className="rules-modal__body">
+            {paragraphs.map((line, i) => (
+              <p key={i} className="muted">
+                {formatRulesLine(line)}
+              </p>
+            ))}
 
-          <section className="rules-modal__pieces">
-            <h4 className="rules-modal__pieces-title">{t('rules.piecesTitle')}</h4>
-            <div className="rules-patterns-legend" aria-label={t('rules.patternsLegend')}>
-              {PATTERN_LEGEND.map((pattern) => (
-                <span key={pattern} className="rules-patterns-legend__item">
-                  <PatternRose pattern={pattern} size={18} />
-                  <span>{t(PATTERN_I18N[pattern])}</span>
-                </span>
-              ))}
-            </div>
-            <div className="rules-pieces" role="table">
-              <div className="rules-pieces__head" role="row">
-                <span role="columnheader">{t('rules.colPiece')}</span>
-                <span role="columnheader">{t('rules.colRange')}</span>
-                <span role="columnheader">{t('rules.colDirections')}</span>
-                <span role="columnheader">{t('rules.colArcher')}</span>
+            <section className="rules-modal__pieces">
+              <h4 className="rules-modal__pieces-title">{t('rules.piecesTitle')}</h4>
+              <div className="rules-patterns-legend" aria-label={t('rules.patternsLegend')}>
+                {PATTERN_LEGEND.map((pattern) => (
+                  <span key={pattern} className="rules-patterns-legend__item">
+                    <PatternRose pattern={pattern} size={18} />
+                    <span>{t(PATTERN_I18N[pattern])}</span>
+                  </span>
+                ))}
               </div>
-              {RULES_SORTED_KINDS.map((kind: PieceKind) => (
-                <div key={kind} className="rules-pieces__row" role="row">
-                  <span role="cell">{pieceName(kind, t)}</span>
-                  <span className="rules-pieces__range" role="cell">
-                    {PIECES[kind].range}
-                  </span>
-                  <span className="rules-pieces__dirs" role="cell">
-                    <MoveCompass kind={kind} />
-                  </span>
-                  <span className="rules-pieces__archer" role="cell">
-                    {isArcher(kind) ? '•' : ''}
-                  </span>
+              <div className="rules-pieces" role="table">
+                <div className="rules-pieces__head" role="row">
+                  <span role="columnheader">{t('rules.colPiece')}</span>
+                  <span role="columnheader">{t('rules.colRange')}</span>
+                  <span role="columnheader">{t('rules.colDirections')}</span>
+                  <span role="columnheader">{t('rules.colArcher')}</span>
                 </div>
-              ))}
-            </div>
-          </section>
-        </div>
-        <button className="btn btn--primary" onClick={close}>
-          {t('common.close')}
-        </button>
-      </div>
-    </div>,
+                {RULES_SORTED_KINDS.map((kind: PieceKind) => (
+                  <div key={kind} className="rules-pieces__row" role="row">
+                    <span role="cell">{pieceName(kind, t)}</span>
+                    <span className="rules-pieces__range" role="cell">
+                      {PIECES[kind].range}
+                    </span>
+                    <span className="rules-pieces__dirs" role="cell">
+                      <MoveCompass kind={kind} />
+                    </span>
+                    <span className="rules-pieces__archer" role="cell">
+                      {isArcher(kind) ? '•' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+            <button className="btn btn--primary" onClick={close}>
+              {t('common.close')}
+            </button>
+        </>
+      )}
+    </Modal>,
     document.body,
   )
 }

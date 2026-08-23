@@ -7,7 +7,6 @@ import {
   type ApiGame,
   type ApiGameAction,
   type ApiGamePlayer,
-  type SeriesScore,
 } from '@/lib/api'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
@@ -32,7 +31,6 @@ export interface UseRemoteGame {
   player: RemoteGamePlayer | null
   players: RemotePlayerRow[]
   /** Running win tally between the two players, by colour. */
-  series: SeriesScore | null
   /** Full play-by-play history from the server. */
   actions: ApiGameAction[]
   selected: number | null
@@ -78,7 +76,6 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   const [game, setGame] = useState<ApiGame | null>(null)
   const [player, setPlayer] = useState<RemoteGamePlayer | null>(null)
   const [players, setPlayers] = useState<RemotePlayerRow[]>([])
-  const [series, setSeries] = useState<SeriesScore | null>(null)
   const [actions, setActions] = useState<ApiGameAction[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
@@ -107,7 +104,6 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     setGame(data.game)
     setPlayer(data.player)
     setPlayers(data.players)
-    setSeries(data.series)
     setActions(data.actions ?? [])
 
     const latest = data.latestAction
@@ -383,7 +379,6 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     state,
     player,
     players,
-    series,
     actions,
     selected,
     legalTargets,

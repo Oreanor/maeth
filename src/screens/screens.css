@@ -122,9 +122,7 @@
   pointer-events: auto;
 }
 
-.screen--game-3d .scoreboard,
-.screen--game-3d .gamelog,
-.screen--game-3d .series {
+.screen--game-3d .gamelog {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(12px);
 }
@@ -1459,23 +1457,3 @@
   }
 }
 
-.series {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-}
-.series__label {
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.series__score {
-  font-size: 17px;
-  font-weight: 700;
-}
-.series__draws {
-  color: var(--muted);
-  font-weight: 600;
-}

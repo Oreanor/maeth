@@ -16,7 +16,6 @@ import type { AnimInfo, AnimKind } from './presentation'
 import type { Color, GameState, Move } from './types'
 import { useDelayedCeremonySlot } from './useDelayedCeremonySlot'
 import { useDraftPick, type DraftPick } from './useDraftPick'
-import type { SeriesScore } from '@/lib/api'
 import type { StoredAction } from './actionLog'
 
 export type { DraftPick }
@@ -55,7 +54,6 @@ export interface UseGameOptions {
 export interface UseGame {
   state: GameState
   /** Running score of this local session's games (rematches via reset), by colour. */
-  series: SeriesScore
   /** Local play-by-play history (same shape as server actions). */
   actions: StoredAction[]
   /** Empty cells the human may drop the pending piece on (draft phase). */
@@ -112,10 +110,8 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   const [lastPlaced, setLastPlaced] = useState<number | null>(null)
   // Per-session room score. Persists across `reset()` (a local rematch) and only
   // clears when the screen unmounts (i.e. you leave the room).
-  const [series, setSeries] = useState<SeriesScore>({ white: 0, black: 0, draws: 0 })
   const [localActions, setLocalActions] = useState<StoredAction[]>([])
   const actionIdRef = useRef(0)
-  const countedOverRef = useRef(false)
 
   const recordAction = useCallback(
     (action_type: StoredAction['action_type'], payload: StoredAction['payload']) => {
@@ -410,25 +406,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     return () => clearTimeout(timer.current)
   }, [state, vsBot, humanColor, anim, duel, startMove, canPlace, recordAction])
 
-  // Tally the room score once per finished game (the count survives reset()).
-  useEffect(() => {
-    if (state.phase !== 'over') {
-      countedOverRef.current = false
-      return
-    }
-    if (countedOverRef.current) return
-    countedOverRef.current = true
-    setSeries((s) => {
-      if (state.status.kind === 'draw') return { ...s, draws: s.draws + 1 }
-      if (state.status.kind === 'win') {
-        return state.status.winner === 'white'
-          ? { ...s, white: s.white + 1 }
-          : { ...s, black: s.black + 1 }
-      }
-      return s
-    })
-  }, [state.phase, state.status])
-
   // Only show the ghost while the human is actually drafting.
   const previewCell =
     state.phase === 'draft' && isHumanTurn && preview != null && !state.board[preview]
@@ -437,7 +414,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
 
   return {
     state,
-    series,
     actions: localActions,
     placementTargets,
     selected,

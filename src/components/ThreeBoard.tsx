@@ -671,13 +671,16 @@ export function ThreeBoard(props: BoardProps) {
       const cell = pointerCell(event, canvas, camera, hitCells)
       if (cell != null) propsRef.current.onCellClick(cell)
     }
-    const onPointerLeave = () => {
+    const onPointerLeave = (event: PointerEvent) => {
       pointerStart = null
       lastHover = null
       activePointers.clear()
       multiTouchGesture = false
       canvas.classList.remove('three-board__canvas--dragging', 'three-board__canvas--cell')
-      propsRef.current.onBoardLeave?.()
+      // A touch pointer stops existing the instant the finger lifts, firing
+      // leave right after the tap that set the draft preview. Only a real
+      // cursor travelling off the board should clear that preview.
+      if (event.pointerType === 'mouse') propsRef.current.onBoardLeave?.()
     }
     canvas.addEventListener('pointerdown', onPointerDown)
     canvas.addEventListener('pointermove', onPointerMove)

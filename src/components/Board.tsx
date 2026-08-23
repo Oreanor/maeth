@@ -69,7 +69,9 @@ export function Board({
   return (
     <div
       className={`board ${interactive ? '' : 'board--locked'}`}
-      onMouseLeave={onBoardLeave}
+      onPointerLeave={(event) => {
+        if (event.pointerType === 'mouse') onBoardLeave?.()
+      }}
     >
       {cells.map((i) => {
         const piece = hidden.has(i) ? null : board[i]
@@ -111,8 +113,11 @@ export function Board({
             onClick={() => {
               if (interactive) onCellClick(i)
             }}
-            onMouseEnter={() => {
-              if (interactive) onCellEnter?.(i)
+            onPointerEnter={(event) => {
+              // A tap synthesises enter just before click; letting it set the
+              // preview would make the first tap confirm the placement outright.
+              // Only a hovering cursor previews — touch previews via onCell.
+              if (interactive && event.pointerType === 'mouse') onCellEnter?.(i)
             }}
             aria-label={t('board.cell', { square, content: cellState })}
             aria-pressed={isSel}

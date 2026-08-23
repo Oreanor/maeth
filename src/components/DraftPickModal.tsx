@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/i18n'
-import { useBoardView } from '@/boardView'
+import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
 import { PIECES, pieceName, type PieceKind } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import type { DraftPick } from '@/game/useGame'
@@ -22,7 +22,7 @@ export function DraftPickModal({
   onConfirm: () => void
 }) {
   const { t } = useI18n()
-  const { viewMode } = useBoardView()
+  const { viewMode, threePieceStyle } = useBoardView()
   const [spin, setSpin] = useState<PieceKind | null>(null)
 
   const open = !!pick
@@ -81,7 +81,7 @@ export function DraftPickModal({
               <PieceIcon
                 kind={def.kind}
                 className="piece__icon"
-                spriteUrl={viewMode === '3d' ? '/pieces-3d.png' : undefined}
+                spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
               />
             </span>
           )}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useBoardView } from '@/boardView'
+import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
 import type { DraftPick, DuelEvent } from '@/game/useGame'
 import { opposite, type Color, type LotteryState } from '@/game/types'
 import type { PieceKind } from '@/game/pieces'
@@ -65,7 +65,7 @@ export function GameCeremonyControls({
   onDismissDuel: () => void
   onHintChange?: (hint: CeremonyHint) => void
 }) {
-  const { viewMode } = useBoardView()
+  const { viewMode, threePieceStyle } = useBoardView()
   const [dieSpin, setDieSpin] = useState(1)
   const [pieceSpin, setPieceSpin] = useState<PieceKind | null>(null)
   const [duelStage, setDuelStage] = useState<0 | 1 | 2>(0)
@@ -220,7 +220,7 @@ export function GameCeremonyControls({
           <PieceIcon
             kind={shownPiece}
             className="ceremony-control__piece"
-            spriteUrl={viewMode === '3d' ? '/pieces-3d.png' : undefined}
+            spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
           />
         ) : (
           <span className="ceremony-control__question" aria-hidden="true">?</span>

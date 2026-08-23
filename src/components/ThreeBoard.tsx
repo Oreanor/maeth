@@ -267,14 +267,17 @@ function textureEdgeColor(texture: THREE.Texture): THREE.Color | null {
   }
 }
 
-function classicMaterial(color: Color): THREE.MeshStandardMaterial {
-  const light = color === 'white'
+/** Both sides of the classic set share one warm bone tone; facing direction and
+ * board position tell the two players apart. Tune the carve here. */
+const CLASSIC_PIECE_COLOR = 0xcbb692
+
+function classicMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
-    color: light ? 0xd8c7a4 : 0x181b20,
-    emissive: light ? 0x342c20 : 0x101722,
-    emissiveIntensity: light ? 0.18 : 0.42,
-    roughness: light ? 0.68 : 0.5,
-    metalness: light ? 0.035 : 0.1,
+    color: CLASSIC_PIECE_COLOR,
+    emissive: 0x2b2216,
+    emissiveIntensity: 0.1,
+    roughness: 0.72,
+    metalness: 0.02,
   })
 }
 
@@ -319,10 +322,10 @@ async function createPiece(
     if (!(object instanceof THREE.Mesh)) return
     object.material = Array.isArray(object.material)
       ? object.material.map((material) =>
-          style === 'classic' ? classicMaterial(color) : cloneMaterial(material),
+          style === 'classic' ? classicMaterial() : cloneMaterial(material),
         )
       : style === 'classic'
-        ? classicMaterial(color)
+        ? classicMaterial()
         : cloneMaterial(object.material)
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     for (const material of materials) tunePieceMaterial(material, ghost)

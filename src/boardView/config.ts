@@ -52,6 +52,13 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
   ]),
 ) as Record<BoardStyle, BoardStyleConfig>
 
+/** HUD portraits follow the 3D pieces, not the 2D skin: the painted set matches
+ * the D&D sheet, the classic set the chess one. */
+export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
+  painted: '/pieces-3d.png',
+  classic: '/pieces-chess.png',
+}
+
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '2d'
 export const DEFAULT_BOARD_STYLE: BoardStyle = 'board-1'
 export const DEFAULT_THREE_PIECE_STYLE: ThreePieceStyle = 'painted'

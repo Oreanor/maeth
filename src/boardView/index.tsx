@@ -26,6 +26,7 @@ export {
   DEFAULT_BOARD_STYLE,
   DEFAULT_BOARD_VIEW,
   DEFAULT_THREE_PIECE_STYLE,
+  THREE_PIECE_SPRITE_URL,
   type BoardStyle,
   type BoardStyleConfig,
   type BoardViewMode,

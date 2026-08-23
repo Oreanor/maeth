@@ -3,7 +3,7 @@
   --game-column-w: min(86vw, var(--game-column));
   /* Default skin sprite (chess) before the skin JS applies the stored choice;
      kept here rather than as an inline <html> style so Vite can build the HTML. */
-  --skin-sprite-url: url('/pieces-chess.png');
+  --skin-sprite-url: url('/pieces-chess.webp');
 
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

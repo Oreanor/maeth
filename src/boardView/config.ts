@@ -45,8 +45,8 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
     {
       id,
       number: index + 1,
-      top: `/boards/board-${index + 1}-top.jpg`,
-      bottom: `/boards/board-${index + 1}-bottom.jpg`,
+      top: `/boards/board-${index + 1}-top.webp`,
+      bottom: `/boards/board-${index + 1}-bottom.webp`,
       ...SIDE_MATERIALS[index],
     },
   ]),
@@ -55,8 +55,8 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
 /** HUD portraits follow the 3D pieces, not the 2D skin: the painted set matches
  * the D&D sheet, the classic set the chess one. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
-  painted: '/pieces-3d.png',
-  classic: '/pieces-chess.png',
+  painted: '/pieces-3d.webp',
+  classic: '/pieces-chess.webp',
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '2d'

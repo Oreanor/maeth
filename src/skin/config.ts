@@ -1,15 +1,15 @@
 const SKIN_ENTRIES = [
-  { id: 'engraving', i18n: 'lobby.styleEngraving', sprite: '/pieces-engraving.png' },
-  { id: 'color-engraving', i18n: 'lobby.styleColorEngraving', sprite: '/pieces-color-engraving.png' },
-  { id: 'monochrome', i18n: 'lobby.styleMonochrome', sprite: '/pieces-monochrome.png' },
-  { id: 'fantasy', i18n: 'lobby.styleFantasy', sprite: '/pieces-fantasy.png' },
-  { id: 'dnd', i18n: 'lobby.styleDnd', sprite: '/pieces-3d.png' },
-  { id: 'southpark', i18n: 'lobby.styleSouthPark', sprite: '/pieces-southpark.png' },
-  { id: 'southpark-gothic', i18n: 'lobby.styleSouthParkGothic', sprite: '/pieces-southpark-gothic.png' },
-  { id: 'simpsons', i18n: 'lobby.styleSimpsons', sprite: '/pieces-simpsons.png' },
-  { id: 'chess', i18n: 'lobby.styleChess', sprite: '/pieces-chess.png' },
-  { id: '8bit', i18n: 'lobby.style8bit', sprite: '/pieces-8bit.png' },
-  { id: '16bit', i18n: 'lobby.style16bit', sprite: '/pieces-16bit.png' },
+  { id: 'engraving', i18n: 'lobby.styleEngraving', sprite: '/pieces-engraving.webp' },
+  { id: 'color-engraving', i18n: 'lobby.styleColorEngraving', sprite: '/pieces-color-engraving.webp' },
+  { id: 'monochrome', i18n: 'lobby.styleMonochrome', sprite: '/pieces-monochrome.webp' },
+  { id: 'fantasy', i18n: 'lobby.styleFantasy', sprite: '/pieces-fantasy.webp' },
+  { id: 'dnd', i18n: 'lobby.styleDnd', sprite: '/pieces-3d.webp' },
+  { id: 'southpark', i18n: 'lobby.styleSouthPark', sprite: '/pieces-southpark.webp' },
+  { id: 'southpark-gothic', i18n: 'lobby.styleSouthParkGothic', sprite: '/pieces-southpark-gothic.webp' },
+  { id: 'simpsons', i18n: 'lobby.styleSimpsons', sprite: '/pieces-simpsons.webp' },
+  { id: 'chess', i18n: 'lobby.styleChess', sprite: '/pieces-chess.webp' },
+  { id: '8bit', i18n: 'lobby.style8bit', sprite: '/pieces-8bit.webp' },
+  { id: '16bit', i18n: 'lobby.style16bit', sprite: '/pieces-16bit.webp' },
 ] as const
 
 export type Skin = (typeof SKIN_ENTRIES)[number]['id']

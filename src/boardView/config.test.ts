@@ -9,8 +9,8 @@ import {
 describe('board view configuration', () => {
   it('exposes every copied board material', () => {
     expect(BOARD_STYLES).toHaveLength(10)
-    expect(BOARD_STYLE_CONFIG['board-1'].top).toBe('/boards/board-1-top.jpg')
-    expect(BOARD_STYLE_CONFIG['board-10'].bottom).toBe('/boards/board-10-bottom.jpg')
+    expect(BOARD_STYLE_CONFIG['board-1'].top).toBe('/boards/board-1-top.webp')
+    expect(BOARD_STYLE_CONFIG['board-10'].bottom).toBe('/boards/board-10-bottom.webp')
   })
 
   it('accepts only supported 3D piece materials', () => {

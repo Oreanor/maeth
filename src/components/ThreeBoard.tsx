@@ -409,6 +409,7 @@ interface ThreeScene {
   renderer: THREE.WebGLRenderer
   controls: OrbitControls
   pieceRoot: THREE.Group
+  ghostRoot: THREE.Group
   arrowRoot: THREE.Group
   hitCells: THREE.Mesh[]
   highlights: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[]
@@ -478,6 +479,7 @@ export function ThreeBoard(props: BoardProps) {
   const sceneRef = useRef<ThreeScene | null>(null)
   const propsRef = useRef(props)
   const syncIdRef = useRef(0)
+  const ghostIdRef = useRef(0)
   const { boardStyle, threePieceStyle } = useBoardView()
   const { theme } = useTheme()
   const { t } = useI18n()
@@ -573,8 +575,9 @@ export function ThreeBoard(props: BoardProps) {
     scene.add(ground)
 
     const pieceRoot = new THREE.Group()
+    const ghostRoot = new THREE.Group()
     const arrowRoot = new THREE.Group()
-    scene.add(pieceRoot, arrowRoot)
+    scene.add(pieceRoot, ghostRoot, arrowRoot)
 
     const hitCells: THREE.Mesh[] = []
     const highlights: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = []
@@ -619,6 +622,7 @@ export function ThreeBoard(props: BoardProps) {
       renderer,
       controls,
       pieceRoot,
+      ghostRoot,
       arrowRoot,
       hitCells,
       highlights,
@@ -714,6 +718,7 @@ export function ThreeBoard(props: BoardProps) {
 
     return () => {
       syncIdRef.current += 1
+      ghostIdRef.current += 1
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('pointerdown', onPointerDown)
       canvas.removeEventListener('pointermove', onPointerMove)
@@ -723,6 +728,7 @@ export function ThreeBoard(props: BoardProps) {
       cancelAnimationFrame(threeScene.frame)
       controls.dispose()
       clearGroup(pieceRoot)
+      clearGroup(ghostRoot)
       clearGroup(arrowRoot)
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh)) return
@@ -785,56 +791,15 @@ export function ThreeBoard(props: BoardProps) {
     }
   }, [boardStyle])
 
+  // Board pieces and the move animation. Kept apart from the cheap highlight
+  // and arrow passes below: every run here clones a GLB and builds fresh
+  // materials per mesh, so it must not re-run on mere hover or selection.
   useEffect(() => {
     const current = sceneRef.current
     if (!current) return
     const syncId = ++syncIdRef.current
     current.animation = null
     clearGroup(current.pieceRoot)
-    clearGroup(current.arrowRoot)
-
-    const captureTargets = new Set(props.selectedMoves.filter((move) => move.capture).map((move) => move.to))
-    for (let cell = 0; cell < 16; cell++) {
-      const material = current.highlights[cell].material
-      let color = 0xffffff
-      let opacity = 0
-      if (props.selected === cell) {
-        color = 0xf6c945
-        opacity = 0.45
-      } else if (captureTargets.has(cell)) {
-        color = 0xe23b34
-        opacity = 0.42
-      } else if (props.legalTargets.includes(cell)) {
-        color = 0x3fae5a
-        opacity = 0.34
-      } else if (props.placementTargets.includes(cell)) {
-        color = 0x4a90d9
-        opacity = 0.27
-      }
-      material.color.setHex(color)
-      material.opacity = opacity
-      current.highlights[cell].visible = opacity > 0
-    }
-
-    const arrowFrom = props.selected ?? props.previewCell
-    if (props.selected != null) {
-      for (const move of props.selectedMoves) {
-        addArrow(
-          current.arrowRoot,
-          cellPosition(move.from),
-          cellPosition(move.to),
-          move.capture ? 0xe23b34 : 0x3fae5a,
-        )
-      }
-    } else if (arrowFrom != null && props.previewKind) {
-      for (const arrow of edgeArrows(arrowFrom, props.previewKind, '#4a90d9')) {
-        const from = cellPosition(arrowFrom)
-        const to = from
-          .clone()
-          .add(new THREE.Vector3(arrow.dc * arrow.len * CELL_SIZE, 0, arrow.dr * arrow.len * CELL_SIZE))
-        addArrow(current.arrowRoot, from, to, 0x4a90d9)
-      }
-    }
 
     const anim = props.anim
     const archerShot = Boolean(anim && isArcher(anim.attacker) && anim.kind === 'capture')
@@ -868,20 +833,6 @@ export function ThreeBoard(props: BoardProps) {
         }),
       )
     })
-
-    if (props.previewCell != null && props.previewKind) {
-      tasks.push(
-        createPiece(props.previewKind, props.previewOwner, threePieceStyle, true).then((object) => {
-          if (syncId !== syncIdRef.current) {
-            disposeObject(object)
-            return
-          }
-          object.position.copy(piecePosition(props.previewCell!))
-          object.position.y = 0
-          current.pieceRoot.add(object)
-        }),
-      )
-    }
 
     if (anim && anim.kind !== 'duel') {
       let attacker: THREE.Group | null = null
@@ -928,25 +879,92 @@ export function ThreeBoard(props: BoardProps) {
           attacker,
           victim,
         }
-        if (archerShot) addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), 0xf0b84b)
       })
     } else {
       void Promise.all(tasks).then(() => {
         if (syncId === syncIdRef.current) setLoading(false)
       })
     }
-  }, [
-    props.anim,
-    props.board,
-    props.legalTargets,
-    props.placementTargets,
-    props.previewCell,
-    props.previewKind,
-    props.previewOwner,
-    props.selected,
-    props.selectedMoves,
-    threePieceStyle,
-  ])
+  }, [props.anim, props.board, threePieceStyle])
+
+  // The draft ghost lives in its own group, so following the cursor rebuilds
+  // one piece instead of the whole board.
+  useEffect(() => {
+    const current = sceneRef.current
+    if (!current) return
+    const ghostId = ++ghostIdRef.current
+    clearGroup(current.ghostRoot)
+    const cell = props.previewCell
+    const kind = props.previewKind
+    if (cell == null || !kind) return
+    void createPiece(kind, props.previewOwner, threePieceStyle, true).then((object) => {
+      if (ghostId !== ghostIdRef.current) {
+        disposeObject(object)
+        return
+      }
+      object.position.copy(piecePosition(cell))
+      object.position.y = 0
+      current.ghostRoot.add(object)
+    })
+  }, [props.previewCell, props.previewKind, props.previewOwner, threePieceStyle])
+
+  // Cell highlights: colour/opacity writes on materials that already exist.
+  useEffect(() => {
+    const current = sceneRef.current
+    if (!current) return
+    const captureTargets = new Set(props.selectedMoves.filter((move) => move.capture).map((move) => move.to))
+    for (let cell = 0; cell < 16; cell++) {
+      const material = current.highlights[cell].material
+      let color = 0xffffff
+      let opacity = 0
+      if (props.selected === cell) {
+        color = 0xf6c945
+        opacity = 0.45
+      } else if (captureTargets.has(cell)) {
+        color = 0xe23b34
+        opacity = 0.42
+      } else if (props.legalTargets.includes(cell)) {
+        color = 0x3fae5a
+        opacity = 0.34
+      } else if (props.placementTargets.includes(cell)) {
+        color = 0x4a90d9
+        opacity = 0.27
+      }
+      material.color.setHex(color)
+      material.opacity = opacity
+      current.highlights[cell].visible = opacity > 0
+    }
+  }, [props.legalTargets, props.placementTargets, props.selected, props.selectedMoves])
+
+  // Arrows: cheap line rebuilds, including the archer's shot during a capture.
+  useEffect(() => {
+    const current = sceneRef.current
+    if (!current) return
+    clearGroup(current.arrowRoot)
+    const arrowFrom = props.selected ?? props.previewCell
+    if (props.selected != null) {
+      for (const move of props.selectedMoves) {
+        addArrow(
+          current.arrowRoot,
+          cellPosition(move.from),
+          cellPosition(move.to),
+          move.capture ? 0xe23b34 : 0x3fae5a,
+        )
+      }
+    } else if (arrowFrom != null && props.previewKind) {
+      for (const arrow of edgeArrows(arrowFrom, props.previewKind, '#4a90d9')) {
+        const from = cellPosition(arrowFrom)
+        const to = from
+          .clone()
+          .add(new THREE.Vector3(arrow.dc * arrow.len * CELL_SIZE, 0, arrow.dr * arrow.len * CELL_SIZE))
+        addArrow(current.arrowRoot, from, to, 0x4a90d9)
+      }
+    }
+    const anim = props.anim
+    if (anim && isArcher(anim.attacker) && anim.kind === 'capture') {
+      addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), 0xf0b84b)
+    }
+  }, [props.anim, props.previewCell, props.previewKind, props.selected, props.selectedMoves])
 
   return (
     <div ref={hostRef} className="three-board-shell" aria-label={t('board.threeView')}>

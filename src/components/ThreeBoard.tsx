@@ -27,6 +27,10 @@ const PIECE_GRID_SCALE = 0.94
 const TOP_Y = BOARD_THICKNESS / 2 + 0.026
 const PIECE_BASE_THICKNESS_SCALE = 1.5
 const PIECE_BASE_HEIGHT = 0.108 * PIECE_BASE_THICKNESS_SCALE
+// A GLB's bounding box bottoms out a little below the sculpted feet, so a model
+// seated exactly on the base reads as hovering. Sink each piece by a fraction of
+// its own height to close that gap.
+const PIECE_SINK_RATIO = 0.02
 const BOARD_EDGE_DARKEN = 0.56
 
 const PIECE_BASE_GEOMETRY = new THREE.LatheGeometry(
@@ -66,6 +70,8 @@ const MODEL_URL: Record<PieceKind, string> = {
 const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   rohanWarrior: 1.5,
   balrog: 1.5,
+  shelob: 1.5,
+  ent: 1.5,
 }
 
 const gltfLoader = new GLTFLoader()
@@ -342,9 +348,10 @@ async function createPiece(
     Math.min(0.88 / horizontal, 1.02 / Math.max(size.y, 0.001)) *
     (MODEL_SCALE[kind] ?? 1)
   model.scale.setScalar(scale)
+  const sink = size.y * scale * PIECE_SINK_RATIO
   model.position.set(
     -center.x * scale,
-    TOP_Y + PIECE_BASE_HEIGHT - bounds.min.y * scale,
+    TOP_Y + PIECE_BASE_HEIGHT - bounds.min.y * scale - sink,
     -center.z * scale,
   )
 

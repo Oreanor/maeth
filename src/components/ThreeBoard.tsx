@@ -65,6 +65,7 @@ const MODEL_URL: Record<PieceKind, string> = {
 /** Per-model visual corrections after normalising GLB bounds. */
 const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   rohanWarrior: 1.5,
+  balrog: 1.5,
 }
 
 const gltfLoader = new GLTFLoader()

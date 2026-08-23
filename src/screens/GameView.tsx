@@ -18,6 +18,8 @@ import type { AnimInfo } from '@/game/presentation'
 import type { Color, GameState, LotteryState, Move } from '@/game/types'
 import type { Presence } from '@/lib/api'
 import { useI18n } from '@/i18n'
+import { useBoardView } from '@/boardView'
+import { preloadPieceModel } from '@/three/preload'
 
 function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): string | null {
   if (hint === 'stop-die') return t('game.stopDie')
@@ -126,6 +128,7 @@ export function GameView({
   againBusy,
 }: GameViewProps) {
   const { t } = useI18n()
+  const { viewMode } = useBoardView()
   const [rulesOpen, setRulesOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
@@ -135,6 +138,13 @@ export function GameView({
   useEffect(() => {
     if (state.phase !== 'over') setResultClosed(false)
   }, [state.phase])
+
+  // A drawn piece is settled before its carousel starts spinning, so the GLB
+  // can be on the wire while the reveal plays instead of after it lands.
+  const drawn = state.pending
+  useEffect(() => {
+    if (viewMode === '3d' && drawn != null) preloadPieceModel(drawn)
+  }, [viewMode, drawn])
 
   const over = state.phase === 'over' && !resultBlocked
   const showResult = over && !resultClosed

@@ -16,7 +16,7 @@
   top: calc(var(--sprite-row) * -100%);
   width: 400%;
   height: 400%;
-  background-image: var(--skin-sprite-url);
+  background-image: var(--piece-sprite-url, var(--skin-sprite-url));
   background-repeat: no-repeat;
   background-size: 100% 100%;
 }

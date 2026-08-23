@@ -3,6 +3,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { LoginIllustration } from '@/components/LoginIllustration'
+import { UserMenu } from '@/components/UserMenu'
 import logoMaeth from '@/assets/logo-maeth.png'
 import './screens.css'
 
@@ -21,7 +22,10 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="screen screen--center">
+    <div className="screen screen--center screen--login">
+      <div className="login-settings">
+        <UserMenu appearanceOnly />
+      </div>
       <div className="hero">
         <LoginIllustration
           overlay={
@@ -48,6 +52,10 @@ export function LoginScreen() {
         <button className="btn btn--ghost" disabled={loading} onClick={() => login('guest')}>
           {t('login.guest')}
         </button>
+        {error && <p className="login__status muted tiny">{error}</p>}
+        {!isSupabaseConfigured && (
+          <p className="login__status muted tiny">{t('login.needConfig')}</p>
+        )}
       </div>
 
       <div className="login__meta">
@@ -59,8 +67,6 @@ export function LoginScreen() {
         </a>
       </div>
 
-      {error && <p className="muted tiny">{error}</p>}
-      {!isSupabaseConfigured && <p className="muted tiny">{t('login.needConfig')}</p>}
     </div>
   )
 }

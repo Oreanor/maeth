@@ -23,13 +23,21 @@ create table if not exists public.games (
   updated_at timestamptz not null default now(),
   -- Points to the follow-up game once a rematch is started.
   rematch_id uuid references public.games(id) on delete set null,
+  -- Original game in a rematch chain; null on the original game itself.
+  root_id uuid references public.games(id) on delete set null,
   -- When false, contested captures are resolved as clean takes (no dice).
   duels_enabled boolean not null default true
 );
 
 -- Migration for existing databases:
 --   alter table public.games add column if not exists rematch_id uuid references public.games(id) on delete set null;
+--   alter table public.games add column if not exists root_id uuid references public.games(id) on delete set null;
 --   alter table public.games add column if not exists duels_enabled boolean not null default true;
+
+-- Keep this executable migration alongside CREATE TABLE: CREATE TABLE IF NOT
+-- EXISTS does not add newly introduced columns to an existing installation.
+alter table public.games
+  add column if not exists root_id uuid references public.games(id) on delete set null;
 
 create table if not exists public.game_players (
   game_id uuid not null references public.games(id) on delete cascade,
@@ -72,6 +80,68 @@ create table if not exists public.game_actions (
   created_at timestamptz not null default now()
 );
 
+-- Compare-and-swap a validated game transition and its audit record in one
+-- transaction. The API computes the next state with the shared TypeScript game
+-- engine; this function prevents two requests validated against the same state
+-- from both committing.
+create or replace function public.commit_game_action(
+  p_game_id uuid,
+  p_expected_updated_at timestamptz,
+  p_next_state jsonb,
+  p_next_status text,
+  p_user_id uuid,
+  p_action_type text,
+  p_payload jsonb
+)
+returns table (
+  id bigint,
+  user_id uuid,
+  action_type text,
+  payload jsonb,
+  created_at timestamptz,
+  game_updated_at timestamptz
+)
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  current_updated_at timestamptz;
+  committed_at timestamptz;
+  saved public.game_actions%rowtype;
+begin
+  select g.updated_at
+    into current_updated_at
+    from public.games g
+    where g.id = p_game_id
+    for update;
+
+  if not found or current_updated_at <> p_expected_updated_at then
+    return;
+  end if;
+
+  committed_at := clock_timestamp();
+  update public.games
+    set state = p_next_state,
+        status = p_next_status,
+        updated_at = committed_at
+    where games.id = p_game_id;
+
+  insert into public.game_actions (game_id, user_id, action_type, payload, resulting_state)
+    values (p_game_id, p_user_id, p_action_type, p_payload, p_next_state)
+    returning * into saved;
+
+  return query
+    select saved.id, saved.user_id, saved.action_type, saved.payload,
+           saved.created_at, committed_at;
+end;
+$$;
+
+revoke execute on function public.commit_game_action(uuid, timestamptz, jsonb, text, uuid, text, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.commit_game_action(uuid, timestamptz, jsonb, text, uuid, text, jsonb)
+  to service_role;
+
 -- Immutable record of every finished match, kept separate from `games` so the
 -- leaderboard survives players deleting their old games. `game_id` keeps no
 -- cascade — deleting the game nulls it but the result stays.
@@ -103,6 +173,7 @@ create table if not exists public.game_results (
 --   on conflict (game_id) do nothing;
 
 create index if not exists game_players_user_id_idx on public.game_players(user_id);
+create index if not exists games_root_id_idx on public.games(root_id);
 create index if not exists game_results_white_idx on public.game_results(white_id);
 create index if not exists game_results_black_idx on public.game_results(black_id);
 

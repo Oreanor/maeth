@@ -39,8 +39,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const game = unwrapOne(
-    await auth.db.from('games').select('id, status, state, created_by, duels_enabled').eq('id', id).single(),
-  ) as { id: string; status: string; state: unknown; created_by: string; duels_enabled: boolean }
+    await auth.db
+      .from('games')
+      .select('id, status, state, created_by, duels_enabled, updated_at')
+      .eq('id', id)
+      .single(),
+  ) as {
+    id: string
+    status: string
+    state: unknown
+    created_by: string
+    duels_enabled: boolean
+    updated_at: string
+  }
 
   if (game.status !== 'active') {
     json(res, 409, { error: 'Game is not active' })
@@ -81,12 +92,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       turn: firstTurn,
     }
 
-    unwrap(
+    const updatedAt = new Date().toISOString()
+    const updated = (unwrap(
       await auth.db
         .from('games')
-        .update({ state: next, updated_at: new Date().toISOString() })
-        .eq('id', id),
-    )
+        .update({ state: next, updated_at: updatedAt })
+        .eq('id', id)
+        .eq('updated_at', game.updated_at)
+        .select('id'),
+    ) ?? []) as { id: string }[]
+    if (updated.length === 0) {
+      json(res, 409, { error: 'Lottery state changed; refresh and try again' })
+      return
+    }
 
     json(res, 200, {
       game: {
@@ -94,6 +112,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         status: 'active',
         state: next,
         duels_enabled: game.duels_enabled !== false,
+        updated_at: updatedAt,
       },
     })
     return
@@ -111,12 +130,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const next = beginDraft(state.lottery.firstTurn)
-  unwrap(
+  const updatedAt = new Date().toISOString()
+  const updated = (unwrap(
     await auth.db
       .from('games')
-      .update({ state: next, updated_at: new Date().toISOString() })
-      .eq('id', id),
-  )
+      .update({ state: next, updated_at: updatedAt })
+      .eq('id', id)
+      .eq('updated_at', game.updated_at)
+      .select('id'),
+  ) ?? []) as { id: string }[]
+  if (updated.length === 0) {
+    json(res, 409, { error: 'Lottery state changed; refresh and try again' })
+    return
+  }
 
   json(res, 200, {
     game: {
@@ -124,6 +150,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       status: 'active',
       state: next,
       duels_enabled: game.duels_enabled !== false,
+      updated_at: updatedAt,
     },
   })
 }

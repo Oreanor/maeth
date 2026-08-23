@@ -58,7 +58,7 @@ function applyStoredMove(
 
 /** Rebuild the full event log by replaying stored server/local actions. */
 export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT): LogEntry[] {
-  const lines: LogEntry[] = [{ text: t('log.gameStarted'), color: 'neutral' }]
+  const lines: LogEntry[] = []
   let state = createInitialState()
 
   for (const action of actions) {

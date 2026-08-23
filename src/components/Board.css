@@ -325,6 +325,32 @@
   border-color: rgba(100, 100, 100, 0.4);
 }
 
+/* southpark-gothic: dark board frame to match the black-metal portraits */
+[data-skin='southpark-gothic'] .board {
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  border: 6px solid #141018;
+  background: #08060a;
+  gap: 1px;
+}
+
+[data-skin='southpark-gothic'] .cell {
+  background: linear-gradient(155deg, #2a2430 0%, #1e1924 48%, #16121a 100%);
+}
+
+[data-skin='southpark-gothic'] .cell--selected {
+  background: linear-gradient(155deg, #4a2840 0%, #3a2034 48%, #2a1828 100%) !important;
+}
+
+[data-skin='southpark-gothic'] .cell--target {
+  box-shadow: inset 0 0 0 3px rgba(160, 90, 130, 0.4);
+}
+
+[data-skin='southpark-gothic'] .cell--place::after {
+  border-color: rgba(130, 90, 150, 0.45);
+}
+
 /* chess + 8bit + 16bit: dark blue-gray tiles in a frame matched to the page bg */
 [data-skin='chess'] .board,
 [data-skin='8bit'] .board,
@@ -402,7 +428,9 @@
 
 [data-skin='color-engraving'] .piece,
 [data-skin='fantasy'] .piece,
+[data-skin='dnd'] .piece,
 [data-skin='southpark'] .piece,
+[data-skin='southpark-gothic'] .piece,
 [data-skin='simpsons'] .piece,
 [data-skin='chess'] .piece,
 [data-skin='16bit'] .piece {
@@ -416,4 +444,44 @@
 
 [data-skin] .piece--black {
   box-shadow: inset 0 0 0 4px #d63030;
+}
+
+/* Board artwork is independent from both theme and piece skin. The texture's
+   painted frame surrounds a transparent 4x4 interaction grid. */
+:root[data-board-view='2d'] .board {
+  gap: 0;
+  padding: 14.4%;
+  border: 0;
+  border-radius: 3.2%;
+  overflow: hidden;
+  background: var(--board-top-url) center / cover no-repeat;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-board-view='2d'] .board .cell {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-board-view='2d'] .board .cell--selected {
+  background: rgba(246, 201, 69, 0.42) !important;
+  box-shadow: inset 0 0 0 3px rgba(255, 224, 105, 0.82);
+}
+
+:root[data-board-view='2d'] .board .cell--target {
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.58);
+}
+
+:root[data-board-view='2d'] .board .cell--place::after {
+  border-radius: 8px;
+  border-color: rgba(240, 228, 176, 0.68);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+:root[data-board-view='2d'] .board > .arrow-overlay {
+  inset: 14.4%;
+  width: auto;
+  height: auto;
 }

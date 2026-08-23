@@ -1,21 +1,10 @@
 import type { CSSProperties } from 'react'
 import { SIZE, colOf, opposite, rowOf, type Color } from '@/game/types'
 import { isArcher, type PieceKind } from '@/game/pieces'
+import type { AnimInfo } from '@/game/presentation'
 import { PieceBadge } from './PieceBadge'
 import { PieceIcon } from './PieceIcon'
 import './MoveAnimation.css'
-
-export type AnimKind = 'move' | 'capture' | 'duel'
-
-export interface AnimInfo {
-  from: number
-  to: number
-  kind: AnimKind
-  attacker: PieceKind
-  /** Captured piece (for the shrink), when kind is 'capture'. */
-  victim: PieceKind | null
-  owner: Color
-}
 
 const OWNER_COLOR: Record<Color, string> = { white: '#4a90d9', black: '#d64545' }
 

@@ -42,8 +42,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const game = unwrapOne(
-    await auth.db.from('games').select('id, status, state, duels_enabled').eq('id', id).single(),
-  ) as { id: string; status: string; state: unknown; duels_enabled: boolean }
+    await auth.db
+      .from('games')
+      .select('id, status, state, duels_enabled, updated_at')
+      .eq('id', id)
+      .single(),
+  ) as { id: string; status: string; state: unknown; duels_enabled: boolean; updated_at: string }
 
   if (game.status !== 'active') {
     json(res, 409, { error: 'Game is not active' })
@@ -70,12 +74,37 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const nextStatus = result.state.phase === 'over' ? 'over' : 'active'
-  unwrap(
-    await auth.db
-      .from('games')
-      .update({ state: result.state, status: nextStatus, updated_at: new Date().toISOString() })
-      .eq('id', id),
-  )
+  const payload = {
+    ...action,
+    ...(placedKind != null ? { kind: placedKind } : {}),
+    duel: result.duel,
+    by: color,
+  }
+  const committed = (unwrap(
+    await auth.db.rpc('commit_game_action', {
+      p_game_id: id,
+      p_expected_updated_at: game.updated_at,
+      p_next_state: result.state,
+      p_next_status: nextStatus,
+      p_user_id: auth.user.id,
+      p_action_type: action.type,
+      p_payload: payload,
+    }),
+  ) ?? []) as Array<{
+    id: number
+    user_id: string
+    action_type: string
+    payload: unknown
+    created_at: string
+    game_updated_at: string
+  }>
+
+  if (committed.length === 0) {
+    json(res, 409, { error: 'Game state changed; refresh and try again' })
+    return
+  }
+
+  const { game_updated_at, ...savedAction } = committed[0]
 
   // On game over, write a durable result row so the leaderboard survives the
   // game later being deleted. Idempotent via the unique game_id.
@@ -83,27 +112,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     await recordResult(auth.db, id, result.state.status)
   }
 
-  const savedAction = unwrap(
-    await auth.db
-      .from('game_actions')
-      .insert({
-        game_id: id,
-        user_id: auth.user.id,
-        action_type: action.type,
-        payload: {
-          ...action,
-          ...(placedKind != null ? { kind: placedKind } : {}),
-          duel: result.duel,
-          by: color,
-        },
-        resulting_state: result.state,
-      })
-      .select('id, user_id, action_type, payload, created_at')
-      .single(),
-  )
-
   json(res, 200, {
-    game: { id, status: nextStatus, state: result.state, duels_enabled: game.duels_enabled !== false },
+    game: {
+      id,
+      status: nextStatus,
+      state: result.state,
+      duels_enabled: game.duels_enabled !== false,
+      updated_at: game_updated_at,
+    },
     duel: result.duel,
     latestAction: savedAction,
   })

@@ -31,15 +31,13 @@ const draftActions = (): StoredAction[] => {
 }
 
 describe('buildActionLog', () => {
-  it('opens with a "game started" line then one line per placement', () => {
+  it('contains one useful line per placement without a synthetic start event', () => {
     const out = buildActionLog(draftActions(), names, t)
-    expect(out[0].text).toBe('log.gameStarted')
-    expect(out[0].color).toBe('neutral')
-    expect(out).toHaveLength(1 + 8)
-    expect(out[1].text).toContain('log.place')
-    expect(out[1].text).toContain('Alice') // actor name threaded through
-    expect(out[1].color).toBe('white')
-    expect(out[2].color).toBe('black')
+    expect(out).toHaveLength(8)
+    expect(out[0].text).toContain('log.place')
+    expect(out[0].text).toContain('Alice') // actor name threaded through
+    expect(out[0].color).toBe('white')
+    expect(out[1].color).toBe('black')
   })
 
   it('labels a won duel, a quiet move and a plain capture', () => {
@@ -74,7 +72,6 @@ describe('buildActionLog', () => {
       { id: 2, action_type: 'place', payload: { by: 'white' } }, // no cell
       { id: 3, action_type: 'move', payload: { by: 'white', from: 0 } }, // no `to`
     ]
-    // Only the opening line survives.
-    expect(buildActionLog(actions, names, t)).toEqual([{ text: 'log.gameStarted', color: 'neutral' }])
+    expect(buildActionLog(actions, names, t)).toEqual([])
   })
 })

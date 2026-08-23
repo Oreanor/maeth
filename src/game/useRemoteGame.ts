@@ -83,10 +83,11 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  // Mirror of `submitting` for the polling timer, so an in-flight optimistic
-  // action isn't clobbered by a stale snapshot from a concurrent refresh.
-  const submittingRef = useRef(false)
-  submittingRef.current = submitting
+  // Synchronous refs for polling: React state does not update until the next
+  // render, while a timer may fire in the same tick as a user action.
+  const mutationInFlightRef = useRef(false)
+  const mutationEpochRef = useRef(0)
+  const refreshIdRef = useRef(0)
   const [duel, setDuel] = useState<DuelEvent | null>(null)
   const [duelPending, setDuelPending] = useState(false)
   const [lotteryRolling, setLotteryRolling] = useState(false)
@@ -101,7 +102,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     // While our own action is in flight, ignore snapshots — a poll started before
     // the click would otherwise overwrite the optimistic state with a stale board
     // (piece blinks out, then springs back in on the server response).
-    if (submittingRef.current && initializedRef.current) return
+    if (mutationInFlightRef.current && initializedRef.current) return
 
     setGame(data.game)
     setPlayer(data.player)
@@ -134,7 +135,12 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
   }, [])
 
   const refresh = useCallback(async () => {
+    const epoch = mutationEpochRef.current
+    const refreshId = ++refreshIdRef.current
     const data = await getGame(gameId)
+    // A mutation started after this request. Its response is older than the
+    // transition we are currently committing, even if it arrives last.
+    if (epoch !== mutationEpochRef.current || refreshId !== refreshIdRef.current) return
     applySnapshot(data)
   }, [applySnapshot, gameId])
 
@@ -180,11 +186,21 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     // Only a cancelled game truly stops.
     if (!game || game.status === 'cancelled') return
     const interval = game.status === 'over' ? 3000 : 700
-    const timer = window.setInterval(() => {
-      if (submittingRef.current) return // don't overwrite an optimistic update mid-flight
-      refresh().catch((e) => setError(e instanceof Error ? e.message : tRef.current('game.errRefresh')))
-    }, interval)
-    return () => window.clearInterval(timer)
+    let stopped = false
+    let timer: number | undefined
+    const poll = async () => {
+      if (!mutationInFlightRef.current) {
+        await refresh().catch((e) =>
+          setError(e instanceof Error ? e.message : tRef.current('game.errRefresh')),
+        )
+      }
+      if (!stopped) timer = window.setTimeout(() => void poll(), interval)
+    }
+    timer = window.setTimeout(() => void poll(), interval)
+    return () => {
+      stopped = true
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
   }, [game?.status, refresh])
 
   const state = game?.state ?? null
@@ -264,14 +280,19 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
         if (prevGame) setGame({ ...prevGame, state: optimistic })
         setSelected(null)
         setPreview(null)
+        mutationEpochRef.current += 1
+        mutationInFlightRef.current = true
         setSubmitting(true)
         submitGameAction(gameId, { type: 'place', cell })
-          .then((data) => setGame(data.game))
+          .then((data) => setGame((current) => (current ? { ...current, ...data.game } : data.game)))
           .catch((e) => {
             if (prevGame) setGame(prevGame) // revert the optimistic placement
             setError(e instanceof Error ? e.message : tRef.current('game.errPlace'))
           })
-          .finally(() => setSubmitting(false))
+          .finally(() => {
+            mutationInFlightRef.current = false
+            setSubmitting(false)
+          })
         return
       }
 
@@ -284,6 +305,8 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
         if (selected != null) {
           const move = selectedMoves.find((m) => m.to === cell)
           if (move) {
+            mutationEpochRef.current += 1
+            mutationInFlightRef.current = true
             setSubmitting(true)
             setSelected(null)
             // If this strike is contested, open the rolling duel panel right away
@@ -291,7 +314,7 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
             if (game?.duels_enabled !== false && isDuelMove(state.board, move)) setDuelPending(true)
             submitGameAction(gameId, { type: 'move', from: move.from, to: move.to })
               .then((data) => {
-                setGame(data.game)
+                setGame((current) => (current ? { ...current, ...data.game } : data.game))
                 if (data.duel && data.game.duels_enabled !== false) {
                   seenActionIdRef.current = data.latestAction.id
                   setDuel({ ...data.duel, by: state.turn })
@@ -302,7 +325,10 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
                 setDuelPending(false)
                 setError(e instanceof Error ? e.message : tRef.current('game.errMove'))
               })
-              .finally(() => setSubmitting(false))
+              .finally(() => {
+                mutationInFlightRef.current = false
+                setSubmitting(false)
+              })
             return
           }
         }
@@ -324,20 +350,30 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
 
   const rollLottery = useCallback(() => {
     if (lotteryRolling) return
+    mutationEpochRef.current += 1
+    mutationInFlightRef.current = true
     setLotteryRolling(true)
     submitLottery(gameId, 'roll')
-      .then((data) => setGame(data.game))
+      .then((data) => setGame((current) => (current ? { ...current, ...data.game } : data.game)))
       .catch((e) => setError(e instanceof Error ? e.message : tRef.current('lottery.errRoll')))
-      .finally(() => setLotteryRolling(false))
+      .finally(() => {
+        mutationInFlightRef.current = false
+        setLotteryRolling(false)
+      })
   }, [gameId, lotteryRolling])
 
   const startLottery = useCallback(() => {
     if (lotteryStarting) return
+    mutationEpochRef.current += 1
+    mutationInFlightRef.current = true
     setLotteryStarting(true)
     submitLottery(gameId, 'start')
-      .then((data) => setGame(data.game))
+      .then((data) => setGame((current) => (current ? { ...current, ...data.game } : data.game)))
       .catch((e) => setError(e instanceof Error ? e.message : tRef.current('lottery.errStart')))
-      .finally(() => setLotteryStarting(false))
+      .finally(() => {
+        mutationInFlightRef.current = false
+        setLotteryStarting(false)
+      })
   }, [gameId, lotteryStarting])
 
   return {

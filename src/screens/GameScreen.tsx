@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Board } from '@/components/Board'
+import { GameBoard } from '@/components/GameBoard'
 import { AppHeader } from '@/components/AppHeader'
+import { AppStage } from '@/components/AppStage'
 import { RulesModal } from '@/components/RulesModal'
+import { StatsModal } from '@/components/StatsModal'
 import { Scoreboard } from '@/components/Scoreboard'
 import { GameLog } from '@/components/GameLog'
 import { buildActionLog, type LogNames } from '@/game/actionLog'
 import { gameLogStatusColor, gameLogStatusLine } from '@/game/logStatus'
 import { ResultModal } from '@/components/ResultModal'
-import { DraftPickModal } from '@/components/DraftPickModal'
-import { DuelModal } from '@/components/DuelModal'
-import { TurnLotteryModal } from '@/components/TurnLotteryModal'
-import { SeriesBar } from '@/components/SeriesBar'
+import {
+  GameCeremonyControls,
+  type CeremonyHint,
+} from '@/components/GameCeremonyControls'
 import { useGame } from '@/game/useGame'
 import { pieceName } from '@/game/pieces'
 import type { Color } from '@/game/types'
@@ -21,24 +23,19 @@ import { useRemoteGame } from '@/game/useRemoteGame'
 import { rematchGame } from '@/lib/api'
 import './screens.css'
 
-/** In-game header: the shared app header, width-matched to the board column. */
-function GameTopbar({
-  name,
-  onHelp,
-  onLogout,
-}: {
-  name?: string
-  onHelp: () => void
-  onLogout: () => void
-}) {
-  return <AppHeader name={name} onLogout={onLogout} onHelp={onHelp} className="game-topbar" />
-}
-
 interface PlayConfig {
   vsBot: boolean
   opponentName: string
   humanColor: Color
   duels?: boolean
+}
+
+function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): string | null {
+  if (hint === 'stop-die') return t('game.stopDie')
+  if (hint === 'wait-die') return t('game.opponentRolling')
+  if (hint === 'stop-piece') return t('game.stopPiece')
+  if (hint === 'wait-piece') return t('game.opponentChoosingPiece')
+  return null
 }
 
 export function GameScreen() {
@@ -91,6 +88,8 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
   // when a new game ends.
   const [resultClosed, setResultClosed] = useState(false)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
+  const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
   useEffect(() => {
     if (state.phase !== 'over') setResultClosed(false)
   }, [state.phase])
@@ -118,11 +117,18 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
   )
   const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
   const showLottery = game.inLottery && state.lottery
+  const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
   const blocked = game.inLottery || !!anim || !!duel
 
   return (
-    <div className="screen screen--game">
-      <GameTopbar name={user?.name} onHelp={() => setRulesOpen(true)} onLogout={logout} />
+    <AppStage>
+      <AppHeader
+        name={user?.name}
+        onHelp={() => setRulesOpen(true)}
+        onStats={() => setStatsOpen(true)}
+        onLogout={logout}
+        className="game-topbar"
+      />
 
       <Scoreboard
         state={state}
@@ -134,14 +140,14 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
 
       <GameLog
         entries={logEntries}
-        statusLine={showPlayAgain ? null : logStatus}
+        statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
         statusColor={showPlayAgain ? null : logStatusColor}
         statusAction={
           showPlayAgain ? { label: t('result.again'), onClick: game.reset } : undefined
         }
       />
 
-      <Board
+      <GameBoard
         board={state.board}
         selected={selected}
         legalTargets={legalTargets}
@@ -160,37 +166,22 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
         interactive={isHumanTurn && !blocked}
       />
 
-      <SeriesBar series={game.series} human={human} opponent={bot} />
-
-      <DraftPickModal
-        pick={draftPick}
+      <GameCeremonyControls
         human={human}
-        opponentName={config.opponentName}
-        onConfirm={confirmDraftPick}
-      />
-
-      {showLottery && state.lottery && (
-        <TurnLotteryModal
-          lottery={state.lottery}
-          myColor={human}
-          isCreator
-          whiteName={logNames.white}
-          blackName={logNames.black}
-          onRoll={game.rollLottery}
-          onStart={game.startLottery}
-          rolling={false}
-          starting={false}
-          humanConfirmsStart={config.vsBot}
-        />
-      )}
-
-      <DuelModal
+        lottery={showLottery ? state.lottery ?? null : null}
+        canRollLottery={Boolean(showLottery)}
+        canStartLottery={Boolean(
+          showLottery && state.lottery?.firstTurn && (config.vsBot || state.lottery.firstTurn === human),
+        )}
+        lotteryBusy={false}
+        onRollLottery={game.rollLottery}
+        onStartLottery={game.startLottery}
+        draftPick={draftPick}
+        onConfirmDraftPick={confirmDraftPick}
         duel={duel}
-        pending={false}
-        human={human}
-        youName={user?.name ?? t('common.you')}
-        opponentName={config.opponentName}
-        onClose={game.dismissDuel}
+        duelPending={false}
+        onDismissDuel={game.dismissDuel}
+        onHintChange={setCeremonyHint}
       />
 
       {showResult && (
@@ -203,7 +194,8 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
       )}
 
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
-    </div>
+      {statsOpen && <StatsModal onClose={() => setStatsOpen(false)} />}
+    </AppStage>
   )
 }
 
@@ -214,7 +206,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const remote = useRemoteGame(gameId)
   const [resultClosed, setResultClosed] = useState(false)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
   const [rematching, setRematching] = useState(false)
+  const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
 
   useEffect(() => {
     if (remote.state?.phase !== 'over') setResultClosed(false)
@@ -280,6 +274,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
     : waiting
       ? 'neutral'
       : null
+  const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
 
   if (remote.loading) {
     return (
@@ -308,8 +303,14 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
     state.phase === 'over' && resultClosed && !remote.duel && !remote.duelPending
 
   return (
-    <div className="screen screen--game">
-      <GameTopbar name={user?.name} onHelp={() => setRulesOpen(true)} onLogout={logout} />
+    <AppStage>
+      <AppHeader
+        name={user?.name}
+        onHelp={() => setRulesOpen(true)}
+        onStats={() => setStatsOpen(true)}
+        onLogout={logout}
+        className="game-topbar"
+      />
 
       {remote.error && <p className="muted tiny">{remote.error}</p>}
 
@@ -324,7 +325,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
 
       <GameLog
         entries={logEntries}
-        statusLine={showPlayAgain ? null : logStatus}
+        statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
         statusColor={showPlayAgain ? null : logStatusColor}
         statusAction={
           showPlayAgain
@@ -333,7 +334,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         }
       />
 
-      <Board
+      <GameBoard
         board={state.board}
         selected={remote.selected}
         legalTargets={remote.legalTargets}
@@ -343,7 +344,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         previewCell={remote.previewCell}
         previewKind={remote.previewCell != null && remote.pendingDef ? remote.pendingDef.kind : null}
         previewOwner={human}
-        orientation="white"
+        orientation={human}
         anim={null}
         onCellClick={remote.onCell}
         onCellEnter={remote.onCellEnter}
@@ -351,36 +352,22 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
         interactive={remote.isHumanTurn && !blocked}
       />
 
-      {remote.series && <SeriesBar series={remote.series} human={human} opponent={opponentColor} />}
-
-      <DraftPickModal
-        pick={remote.draftPick}
+      <GameCeremonyControls
         human={human}
-        opponentName={opponentName}
-        onConfirm={remote.confirmDraftPick}
-      />
-
-      {showLottery && remote.state.lottery && (
-        <TurnLotteryModal
-          lottery={remote.state.lottery}
-          myColor={human}
-          isCreator={remote.isCreator}
-          whiteName={logNames.white}
-          blackName={logNames.black}
-          onRoll={remote.rollLottery}
-          onStart={remote.startLottery}
-          rolling={remote.lotteryRolling}
-          starting={remote.lotteryStarting}
-        />
-      )}
-
-      <DuelModal
+        lottery={showLottery ? remote.state.lottery ?? null : null}
+        canRollLottery={Boolean(showLottery && remote.isCreator)}
+        canStartLottery={Boolean(
+          showLottery && remote.state.lottery?.firstTurn === human,
+        )}
+        lotteryBusy={remote.lotteryRolling || remote.lotteryStarting}
+        onRollLottery={remote.rollLottery}
+        onStartLottery={remote.startLottery}
+        draftPick={remote.draftPick}
+        onConfirmDraftPick={remote.confirmDraftPick}
         duel={remote.duel}
-        pending={remote.duelPending}
-        human={human}
-        youName={user?.name ?? t('common.you')}
-        opponentName={opponentName}
-        onClose={remote.dismissDuel}
+        duelPending={remote.duelPending}
+        onDismissDuel={remote.dismissDuel}
+        onHintChange={setCeremonyHint}
       />
 
       {showResult && (
@@ -394,6 +381,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
       )}
 
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
-    </div>
+      {statsOpen && <StatsModal onClose={() => setStatsOpen(false)} />}
+    </AppStage>
   )
 }

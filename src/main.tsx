@@ -6,6 +6,7 @@ import { AuthProviderComponent } from './auth/AuthContext'
 import { I18nProvider } from './i18n'
 import { ThemeProvider } from './theme'
 import { SkinProvider } from './skin'
+import { BoardViewProvider } from './boardView'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -13,11 +14,13 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ThemeProvider>
         <I18nProvider>
-          <SkinProvider>
-            <AuthProviderComponent>
-              <App />
-            </AuthProviderComponent>
-          </SkinProvider>
+          <BoardViewProvider>
+            <SkinProvider>
+              <AuthProviderComponent>
+                <App />
+              </AuthProviderComponent>
+            </SkinProvider>
+          </BoardViewProvider>
         </I18nProvider>
       </ThemeProvider>
     </BrowserRouter>

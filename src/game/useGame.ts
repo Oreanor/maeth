@@ -12,7 +12,7 @@ import {
 } from './engine'
 import { chooseBotMove, chooseBotPlacement } from './bot'
 import { PIECES, type PieceDef } from './pieces'
-import type { AnimInfo, AnimKind } from '@/components/MoveAnimation'
+import type { AnimInfo, AnimKind } from './presentation'
 import type { Color, GameState, Move } from './types'
 import { useDelayedCeremonySlot } from './useDelayedCeremonySlot'
 import { useDraftPick, type DraftPick } from './useDraftPick'
@@ -38,11 +38,11 @@ type PendingMove = Pick<AnimInfo, 'from' | 'to' | 'attacker' | 'victim' | 'owner
 const ANIM_MOVE_MS = 1100
 const ANIM_DUEL_AIM_MS = 650
 
-// The bot fakes deliberation: a random ~1–2s before it "clicks" Choose, a slow
-// (~2× the old delay) placement, and a 2–3s idle "think" before each move.
-const botPickDelay = () => 1000 + Math.random() * 1000
-const botPlaceDelay = () => 900 + Math.random() * 700
-const botMoveDelay = () => 1800 + Math.random() * 1300
+// Short, slightly random pauses keep the bot readable without making the player
+// wait: 0.5–1s to stop the draw, 0.45–0.8s to place, 0.9–1.55s to move.
+const botPickDelay = () => 500 + Math.random() * 500
+const botPlaceDelay = () => 450 + Math.random() * 350
+const botMoveDelay = () => 900 + Math.random() * 650
 
 export interface UseGameOptions {
   /** Color the human plays (the other side is the bot when vsBot). */

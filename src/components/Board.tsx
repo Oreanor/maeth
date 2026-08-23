@@ -1,13 +1,14 @@
 import { useI18n } from '@/i18n'
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
 import { isArcher, pieceBadgeAria, pieceName, type PieceKind } from '@/game/pieces'
+import type { AnimInfo } from '@/game/presentation'
 import { PieceBadge } from './PieceBadge'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
-import { MoveAnimation, type AnimInfo } from './MoveAnimation'
+import { MoveAnimation } from './MoveAnimation'
 import { PieceIcon } from './PieceIcon'
 import './Board.css'
 
-interface BoardProps {
+export interface BoardProps {
   board: BoardModel
   selected: number | null
   legalTargets: number[]
@@ -78,6 +79,21 @@ export function Board({
         const isPlaced = lastPlaced === i
         const isMovable = movable?.includes(i) ?? false
         const isPreview = previewCell === i && previewKind != null && !piece
+        const square = `r${rowOf(i) + 1}c${colOf(i) + 1}`
+        const content = piece
+          ? `${t(`board.${piece.color}`)} ${pieceName(piece.kind, t)} (${pieceBadgeAria(piece.kind, t)})`
+          : isPreview && previewKind
+            ? `${t(`board.${previewOwner}`)} ${pieceName(previewKind, t)} (${pieceBadgeAria(previewKind, t)})`
+            : t('board.empty')
+        const cellState = [
+          content,
+          isSel ? t('board.selected') : null,
+          isTarget ? t('board.legalTarget') : null,
+          isPlace ? t('board.placementTarget') : null,
+          piece?.moved ? t('board.moved') : null,
+        ]
+          .filter((value): value is string => value != null)
+          .join(', ')
         return (
           <button
             key={i}
@@ -92,9 +108,15 @@ export function Board({
             ]
               .filter(Boolean)
               .join(' ')}
-            onClick={() => onCellClick(i)}
-            onMouseEnter={() => onCellEnter?.(i)}
-            aria-label={`r${rowOf(i)}c${colOf(i)}`}
+            onClick={() => {
+              if (interactive) onCellClick(i)
+            }}
+            onMouseEnter={() => {
+              if (interactive) onCellEnter?.(i)
+            }}
+            aria-label={t('board.cell', { square, content: cellState })}
+            aria-pressed={isSel}
+            aria-disabled={!interactive}
           >
             {isTarget && !piece && <span className="dot" />}
             {isPreview && (

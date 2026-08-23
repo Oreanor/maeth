@@ -1,0 +1,158 @@
+.ceremony-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  pointer-events: none;
+}
+
+.ceremony-control {
+  --control-size: 128px;
+  appearance: none;
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 17px;
+  border: 4px solid color-mix(in srgb, var(--text) 72%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card) 78%, transparent);
+  color: var(--text);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.25), inset 0 0 0 3px rgba(255, 255, 255, 0.12);
+  opacity: 0.26;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: default;
+  display: grid;
+  place-items: center;
+  transition: opacity 180ms ease, transform 120ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ceremony-control--die {
+  left: max(18px, env(safe-area-inset-left));
+}
+
+.ceremony-control--piece {
+  right: max(18px, env(safe-area-inset-right));
+  padding: 9px;
+}
+
+.ceremony-control--visible,
+.ceremony-control--running {
+  opacity: 0.78;
+}
+
+.ceremony-control--actionable {
+  opacity: 1;
+  cursor: pointer;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent), 0 12px 38px rgba(0, 0, 0, 0.3);
+  animation: ceremony-ready 1.2s ease-in-out infinite;
+}
+
+.ceremony-control--actionable:hover {
+  transform: scale(1.035);
+}
+
+.ceremony-control--actionable:active {
+  transform: scale(0.96);
+}
+
+.corner-die {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 85%;
+  height: 85%;
+  padding: 16%;
+  border-radius: 23%;
+  background: #f8f4e9;
+  box-shadow: inset 0 -7px 14px rgba(52, 34, 19, 0.18), 0 7px 14px rgba(0, 0, 0, 0.28);
+}
+
+.corner-die__pip {
+  width: 76%;
+  aspect-ratio: 1;
+  place-self: center;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.corner-die__pip--on {
+  background: #20242a;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.ceremony-control__piece {
+  --piece-icon-radius: 50%;
+  width: 100%;
+  height: 100%;
+}
+
+.ceremony-control__question {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: Georgia, serif;
+  font-size: 83px;
+  font-weight: 800;
+  line-height: 1;
+  transform: translateY(-3px);
+}
+
+@keyframes ceremony-ready {
+  50% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, var(--accent) 12%, transparent), 0 12px 38px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (max-width: 720px), (max-height: 680px) {
+  .ceremony-control {
+    --control-size: 90px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 12px;
+    border-width: 3px;
+  }
+
+  .ceremony-control--die {
+    left: max(10px, env(safe-area-inset-left));
+  }
+
+  .ceremony-control--piece {
+    right: max(10px, env(safe-area-inset-right));
+    padding: 6px;
+  }
+
+  .ceremony-control__question {
+    font-size: 58px;
+  }
+}
+
+@media (max-width: 720px) {
+  .ceremony-control {
+    --control-size: 128px;
+    bottom: calc(
+      max(10px, env(safe-area-inset-bottom)) +
+      var(--mobile-log-height, 122px) +
+      var(--mobile-hud-gap, 12px)
+    );
+    padding: 17px;
+    border-width: 4px;
+  }
+
+  .ceremony-control--piece {
+    padding: 9px;
+  }
+
+  .ceremony-control__question {
+    font-size: 83px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ceremony-control--actionable {
+    animation: none;
+  }
+}

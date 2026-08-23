@@ -1,14 +1,55 @@
 import { useState } from 'react'
-import { Globe, LogOut, Moon, Palette, Settings, Sun } from 'lucide-react'
+import {
+  BarChart3,
+  Box,
+  Circle,
+  Globe,
+  Grid2X2,
+  HelpCircle,
+  Image,
+  LogOut,
+  Moon,
+  Palette,
+  Settings,
+  Sun,
+} from 'lucide-react'
 import { LANGS, useI18n, type Lang } from '@/i18n'
 import { useTheme } from '@/theme'
 import { SKINS, SKIN_I18N, useSkin, type Skin } from '@/skin'
+import {
+  BOARD_STYLES,
+  BOARD_STYLE_CONFIG,
+  useBoardView,
+  type BoardStyle,
+  type ThreePieceStyle,
+} from '@/boardView'
 
 /** Settings button that opens theme, style, language and sign-out. */
-export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => void }) {
+export function UserMenu({
+  name,
+  onLogout,
+  onHelp,
+  onStats,
+  appearanceOnly = false,
+}: {
+  name?: string
+  onLogout?: () => void
+  onHelp?: () => void
+  onStats?: () => void
+  /** Login screen: use the identical menu shell but keep only language and theme. */
+  appearanceOnly?: boolean
+}) {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
   const { skin, setSkin } = useSkin()
+  const {
+    viewMode,
+    setViewMode,
+    boardStyle,
+    setBoardStyle,
+    threePieceStyle,
+    setThreePieceStyle,
+  } = useBoardView()
   const [open, setOpen] = useState(false)
 
   return (
@@ -29,27 +70,6 @@ export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => vo
           <div className="usermenu__panel" role="menu">
             {name && <div className="usermenu__name">{name}</div>}
 
-            <button className="usermenu__item" role="menuitem" onClick={toggle}>
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-              <span>{t('lobby.theme')}</span>
-            </button>
-
-            <label className="usermenu__item usermenu__item--lang">
-              <Palette size={18} />
-              <span>{t('lobby.style')}</span>
-              <select
-                className="usermenu__lang"
-                value={skin}
-                onChange={(e) => setSkin(e.target.value as Skin)}
-              >
-                {SKINS.map((code) => (
-                  <option key={code} value={code}>
-                    {t(SKIN_I18N[code])}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <label className="usermenu__item usermenu__item--lang">
               <Globe size={18} />
               <span>{t('lobby.language')}</span>
@@ -66,14 +86,102 @@ export function UserMenu({ name, onLogout }: { name?: string; onLogout: () => vo
               </select>
             </label>
 
-            <button
-              className="usermenu__item usermenu__item--danger"
-              role="menuitem"
-              onClick={onLogout}
-            >
-              <LogOut size={18} />
-              <span>{t('lobby.logout')}</span>
+            <button className="usermenu__item" role="menuitem" onClick={toggle}>
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              <span>{t('lobby.theme')}</span>
             </button>
+
+            {!appearanceOnly && (
+              <>
+                <button
+                  className="usermenu__item"
+                  role="menuitem"
+                  onClick={() => setViewMode(viewMode === '2d' ? '3d' : '2d')}
+                >
+                  {viewMode === '3d' ? <Box size={18} /> : <Grid2X2 size={18} />}
+                  <span>{t('lobby.boardView')}</span>
+                  <span className="usermenu__value">
+                    {viewMode === '3d' ? t('lobby.boardView3d') : t('lobby.boardView2d')}
+                  </span>
+                </button>
+
+                <label className="usermenu__item usermenu__item--lang">
+                  <Image size={18} />
+                  <span>{t('lobby.boardStyle')}</span>
+                  <select
+                    className="usermenu__lang"
+                    value={boardStyle}
+                    onChange={(e) => setBoardStyle(e.target.value as BoardStyle)}
+                  >
+                    {BOARD_STYLES.map((style) => (
+                      <option key={style} value={style}>
+                        {t('lobby.boardNumber', { number: BOARD_STYLE_CONFIG[style].number })}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="usermenu__item usermenu__item--lang">
+                  {viewMode === '3d' ? <Circle size={18} /> : <Palette size={18} />}
+                  <span>{t('lobby.pieceStyle')}</span>
+                  {viewMode === '3d' ? (
+                    <select
+                      className="usermenu__lang"
+                      value={threePieceStyle}
+                      onChange={(e) => setThreePieceStyle(e.target.value as ThreePieceStyle)}
+                    >
+                      <option value="painted">{t('lobby.pieceStyle3dPainted')}</option>
+                      <option value="classic">{t('lobby.pieceStyle3dClassic')}</option>
+                    </select>
+                  ) : (
+                    <select
+                      className="usermenu__lang"
+                      value={skin}
+                      onChange={(e) => setSkin(e.target.value as Skin)}
+                    >
+                      {SKINS.map((code) => (
+                        <option key={code} value={code}>
+                          {t(SKIN_I18N[code])}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+
+                <button
+                  className="usermenu__item"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false)
+                    onStats?.()
+                  }}
+                >
+                  <BarChart3 size={18} />
+                  <span>{t('stats.title')}</span>
+                </button>
+
+                <button
+                  className="usermenu__item"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false)
+                    onHelp?.()
+                  }}
+                >
+                  <HelpCircle size={18} />
+                  <span>{t('lobby.help')}</span>
+                </button>
+
+                <button
+                  className="usermenu__item usermenu__item--danger"
+                  role="menuitem"
+                  onClick={onLogout}
+                >
+                  <LogOut size={18} />
+                  <span>{t('lobby.logout')}</span>
+                </button>
+              </>
+            )}
           </div>
         </>
       )}

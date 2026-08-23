@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { createPortal } from 'react-dom'
 import { useI18n } from '@/i18n'
 import { ALL_KINDS, PATTERN_I18N, PIECES, isArcher, pieceName, type Pattern, type PieceKind } from '@/game/pieces'
 import { MoveCompass } from './MoveCompass'
@@ -36,8 +37,11 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
   const { t } = useI18n()
   const { closing, close } = useAnimatedClose(onClose)
   const paragraphs = t('rules.body').split('\n').filter((line) => line.trim() !== '')
-  return (
-    <div className={`modal-backdrop ${closing ? 'modal-backdrop--out' : ''}`} onClick={close}>
+  return createPortal(
+    <div
+      className={`modal-backdrop modal-backdrop--app-panel ${closing ? 'modal-backdrop--out' : ''}`}
+      onClick={close}
+    >
       <div className={`modal rules-modal ${closing ? 'modal--out' : ''}`} onClick={(e) => e.stopPropagation()}>
         <h3>{t('rules.title')}</h3>
         <div className="rules-modal__body">
@@ -85,6 +89,7 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
           {t('common.close')}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

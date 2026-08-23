@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { AppHeader } from '@/components/AppHeader'
+import { AppStage } from '@/components/AppStage'
+import { EmptyGameBoard } from '@/components/GameBoard'
+import { GlassPanel } from '@/components/GlassPanel'
 import { RulesModal } from '@/components/RulesModal'
+import { StatsModal } from '@/components/StatsModal'
 import { CreateGameModal, type CreateChoice } from '@/components/CreateGameModal'
 import { ShareLinkModal } from '@/components/ShareLinkModal'
 import { InvitePopup } from '@/components/InvitePopup'
@@ -38,6 +42,7 @@ export function LobbyScreen() {
   const [joining, setJoining] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   // Game id of a just-created open game whose share link we're showing.
   const [shareGameId, setShareGameId] = useState<string | null>(null)
@@ -190,118 +195,128 @@ export function LobbyScreen() {
   const popupInvite = invites.find((inv) => !dismissedInvites.includes(inv.invite.id)) ?? null
 
   return (
-    <div className="screen">
-      <AppHeader name={user?.name} onLogout={logout} onHelp={() => setRulesOpen(true)} />
+    <AppStage className="screen--lobby">
+      <AppHeader
+        name={user?.name}
+        onLogout={logout}
+        onHelp={() => setRulesOpen(true)}
+        onStats={() => setStatsOpen(true)}
+        className="game-topbar"
+      />
 
-      <button
-        className="btn btn--primary btn--block btn--icon-text"
-        onClick={() => {
-          setCreateError(null)
-          setCreateOpen(true)
-        }}
-      >
-        <Plus size={18} />
-        {t('lobby.create')}
-      </button>
+      <EmptyGameBoard />
 
-      {error && <p className="muted tiny">{error}</p>}
+      <div className="lobby-hud">
+        <button
+          className="btn btn--primary btn--block btn--icon-text lobby-hud__create"
+          onClick={() => {
+            setCreateError(null)
+            setCreateOpen(true)
+          }}
+        >
+          <Plus size={18} />
+          {t('lobby.create')}
+        </button>
 
-      {online && (
-        <section className="card">
-          <div className="section-head">
-            <h3>{t('lobby.yourGames')}</h3>
-            <button
-              className="icon-btn"
-              disabled={loadingGames}
-              onClick={loadGameLists}
-              aria-label={t('common.refresh')}
-              title={t('common.refresh')}
-            >
-              <RefreshCw size={16} className={loadingGames ? 'spin' : ''} />
-            </button>
-          </div>
-          {loadingGames ? (
-            <p className="muted tiny">{t('lobby.loadingGames')}</p>
-          ) : games.length === 0 ? (
-            <p className="muted tiny">{t('lobby.noGames')}</p>
-          ) : (
-            <ul className="list">
-              {games.map((item) => (
-                <li key={item.game.id} className="list__item">
-                  <button
-                    className="list__item-enter"
-                    onClick={() => openGame(item)}
-                    aria-label={t('lobby.continueGame')}
-                    title={t('lobby.continueGame')}
-                  >
-                    <span className="list__item-play">
-                      <Play size={16} />
-                    </span>
-                    <span className="list__item-info">
-                      <span className="who__name">
-                        {item.opponentName ? t('lobby.vs', { name: item.opponentName }) : t('create.optOpen')}
+        {error && <p className="lobby-hud__error muted tiny">{error}</p>}
+
+        {online && (
+          <GlassPanel as="section" className="lobby-panel">
+            <div className="section-head">
+              <h3>{t('lobby.yourGames')}</h3>
+              <button
+                className="icon-btn"
+                disabled={loadingGames}
+                onClick={loadGameLists}
+                aria-label={t('common.refresh')}
+                title={t('common.refresh')}
+              >
+                <RefreshCw size={16} className={loadingGames ? 'spin' : ''} />
+              </button>
+            </div>
+            {loadingGames ? (
+              <p className="muted tiny">{t('lobby.loadingGames')}</p>
+            ) : games.length === 0 ? (
+              <p className="muted tiny">{t('lobby.noGames')}</p>
+            ) : (
+              <ul className="list">
+                {games.map((item) => (
+                  <li key={item.game.id} className="list__item">
+                    <button
+                      className="list__item-enter"
+                      onClick={() => openGame(item)}
+                      aria-label={t('lobby.continueGame')}
+                      title={t('lobby.continueGame')}
+                    >
+                      <span className="list__item-play">
+                        <Play size={16} />
                       </span>
-                      <span className="muted tiny">
-                        {gameStatusLabel(item.game.status)}
-                        {item.game.created_at ? ` · ${formatWhen(item.game.created_at)}` : ''}
+                      <span className="list__item-info">
+                        <span className="who__name">
+                          {item.opponentName ? t('lobby.vs', { name: item.opponentName }) : t('create.optOpen')}
+                        </span>
+                        <span className="muted tiny">
+                          {gameStatusLabel(item.game.status)}
+                          {item.game.created_at ? ` · ${formatWhen(item.game.created_at)}` : ''}
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                  <button
-                    className="icon-btn"
-                    disabled={deleting === item.game.id}
-                    onClick={() => setConfirmTarget(item)}
-                    aria-label={t('lobby.delete')}
-                    title={t('lobby.delete')}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+                    </button>
+                    <button
+                      className="icon-btn"
+                      disabled={deleting === item.game.id}
+                      onClick={() => setConfirmTarget(item)}
+                      aria-label={t('lobby.delete')}
+                      title={t('lobby.delete')}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassPanel>
+        )}
 
-      {online && (
-        <section className="card">
-          <div className="section-head">
-            <h3>{t('lobby.invites')}</h3>
-            <button
-              className="icon-btn"
-              disabled={loadingGames}
-              onClick={loadGameLists}
-              aria-label={t('common.refresh')}
-              title={t('common.refresh')}
-            >
-              <RefreshCw size={16} className={loadingGames ? 'spin' : ''} />
-            </button>
-          </div>
-          {loadingGames ? (
-            <p className="muted tiny">{t('lobby.loadingGames')}</p>
-          ) : invites.length === 0 ? (
-            <p className="muted tiny">{t('lobby.noInvites')}</p>
-          ) : (
-            <ul className="list">
-              {invites.map((invite) => (
-                <li key={invite.invite.id} className="list__item">
-                  <div>
-                    <div className="who__name">{invite.from.name}</div>
-                    <div className="muted tiny">{t('lobby.invitesYou')}</div>
-                  </div>
-                  <button
-                    className="btn btn--sm"
-                    disabled={joining === invite.game.id}
-                    onClick={() => acceptInvite(invite)}
-                  >
-                    {joining === invite.game.id ? t('lobby.accepting') : t('lobby.accept')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+        {online && (
+          <GlassPanel as="section" className="lobby-panel">
+            <div className="section-head">
+              <h3>{t('lobby.invites')}</h3>
+              <button
+                className="icon-btn"
+                disabled={loadingGames}
+                onClick={loadGameLists}
+                aria-label={t('common.refresh')}
+                title={t('common.refresh')}
+              >
+                <RefreshCw size={16} className={loadingGames ? 'spin' : ''} />
+              </button>
+            </div>
+            {loadingGames ? (
+              <p className="muted tiny">{t('lobby.loadingGames')}</p>
+            ) : invites.length === 0 ? (
+              <p className="muted tiny">{t('lobby.noInvites')}</p>
+            ) : (
+              <ul className="list">
+                {invites.map((invite) => (
+                  <li key={invite.invite.id} className="list__item">
+                    <div>
+                      <div className="who__name">{invite.from.name}</div>
+                      <div className="muted tiny">{t('lobby.invitesYou')}</div>
+                    </div>
+                    <button
+                      className="btn btn--sm"
+                      disabled={joining === invite.game.id}
+                      onClick={() => acceptInvite(invite)}
+                    >
+                      {joining === invite.game.id ? t('lobby.accepting') : t('lobby.accept')}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassPanel>
+        )}
+      </div>
 
       {createOpen && (
         <CreateGameModal
@@ -348,6 +363,7 @@ export function LobbyScreen() {
       )}
 
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
-    </div>
+      {statsOpen && <StatsModal onClose={() => setStatsOpen(false)} />}
+    </AppStage>
   )
 }

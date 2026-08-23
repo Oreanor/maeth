@@ -17,7 +17,7 @@ export function ConfirmModal({
   onClose: () => void
 }) {
   return (
-    <Modal className="confirm-modal" onClose={onClose}>
+    <Modal className="confirm-modal" dismissible={!busy} onClose={onClose}>
       {(close) => (
         <>
           <p className="confirm-modal__message">{message}</p>

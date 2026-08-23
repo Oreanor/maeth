@@ -1,26 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { GameBoard } from '@/components/GameBoard'
-import { AppHeader } from '@/components/AppHeader'
-import { AppStage } from '@/components/AppStage'
-import { RulesModal } from '@/components/RulesModal'
-import { StatsModal } from '@/components/StatsModal'
-import { Scoreboard } from '@/components/Scoreboard'
-import { GameLog } from '@/components/GameLog'
 import { buildActionLog, type LogNames } from '@/game/actionLog'
 import { gameLogStatusColor, gameLogStatusLine } from '@/game/logStatus'
-import { ResultModal } from '@/components/ResultModal'
-import {
-  GameCeremonyControls,
-  type CeremonyHint,
-} from '@/components/GameCeremonyControls'
 import { useGame } from '@/game/useGame'
+import { useRemoteGame } from '@/game/useRemoteGame'
 import { pieceName } from '@/game/pieces'
 import type { Color } from '@/game/types'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
-import { useRemoteGame } from '@/game/useRemoteGame'
 import { rematchGame } from '@/lib/api'
+import { GameView } from './GameView'
 import './screens.css'
 
 interface PlayConfig {
@@ -28,14 +17,6 @@ interface PlayConfig {
   opponentName: string
   humanColor: Color
   duels?: boolean
-}
-
-function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): string | null {
-  if (hint === 'stop-die') return t('game.stopDie')
-  if (hint === 'wait-die') return t('game.opponentRolling')
-  if (hint === 'stop-piece') return t('game.stopPiece')
-  if (hint === 'wait-piece') return t('game.opponentChoosingPiece')
-  return null
 }
 
 export function GameScreen() {
@@ -61,141 +42,78 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
   const { t } = useI18n()
   const human = config.humanColor
   const bot: Color = human === 'white' ? 'black' : 'white'
+  const youName = user?.name ?? t('common.you')
 
   const game = useGame({
     humanColor: human,
     vsBot: config.vsBot,
     duels: config.duels !== false,
   })
-  const {
-    state,
-    selected,
-    legalTargets,
-    selectedMoves,
-    movableCells,
-    placementTargets,
-    previewCell,
-    pendingDef,
-    draftPick,
-    confirmDraftPick,
-    lastPlaced,
-    duel,
-    anim,
-    isHumanTurn,
-  } = game
-
-  // The result modal can be dismissed to inspect the final board; it returns
-  // when a new game ends.
-  const [resultClosed, setResultClosed] = useState(false)
-  const [rulesOpen, setRulesOpen] = useState(false)
-  const [statsOpen, setStatsOpen] = useState(false)
-  const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
-  useEffect(() => {
-    if (state.phase !== 'over') setResultClosed(false)
-  }, [state.phase])
-  const showResult = state.phase === 'over' && !duel && !anim && !resultClosed
-  const showPlayAgain = state.phase === 'over' && resultClosed && !duel && !anim
+  const { state, pendingDef, duel, anim, isHumanTurn } = game
 
   const logNames = useMemo<LogNames>(
     () => ({
-      white: human === 'white' ? (user?.name ?? t('common.you')) : config.opponentName,
-      black: human === 'black' ? (user?.name ?? t('common.you')) : config.opponentName,
+      white: human === 'white' ? youName : config.opponentName,
+      black: human === 'black' ? youName : config.opponentName,
     }),
-    [human, user?.name, config.opponentName, t],
+    [human, youName, config.opponentName],
   )
   const logEntries = useMemo(
     () => buildActionLog(game.actions, logNames, t),
     [game.actions, logNames, t],
   )
-  const logStatus = gameLogStatusLine(
-    state.phase,
-    false,
-    isHumanTurn,
-    pendingDef ? pieceName(pendingDef.kind, t) : null,
-    t,
-    state.lottery,
-  )
-  const logStatusColor = gameLogStatusColor(state.phase, false, state.turn)
-  const showLottery = game.inLottery && state.lottery
-  const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
+  const showLottery = Boolean(game.inLottery && state.lottery)
   const blocked = game.inLottery || !!anim || !!duel
 
   return (
-    <AppStage>
-      <AppHeader
-        name={user?.name}
-        onHelp={() => setRulesOpen(true)}
-        onStats={() => setStatsOpen(true)}
-        onLogout={logout}
-        className="game-topbar"
-      />
-
-      <Scoreboard
-        state={state}
-        human={human}
-        bot={bot}
-        opponentName={config.opponentName}
-        youName={user?.name ?? t('common.you')}
-      />
-
-      <GameLog
-        entries={logEntries}
-        statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
-        statusColor={showPlayAgain ? null : logStatusColor}
-        statusAction={
-          showPlayAgain ? { label: t('result.again'), onClick: game.reset } : undefined
-        }
-      />
-
-      <GameBoard
-        board={state.board}
-        selected={selected}
-        legalTargets={legalTargets}
-        selectedMoves={selectedMoves}
-        placementTargets={pendingDef ? placementTargets : []}
-        lastPlaced={state.phase === 'draft' ? lastPlaced : null}
-        movable={isHumanTurn && !blocked ? movableCells : []}
-        previewCell={previewCell}
-        previewKind={previewCell != null && pendingDef ? pendingDef.kind : null}
-        previewOwner={human}
-        orientation={human}
-        anim={anim}
-        onCellClick={game.onCell}
-        onCellEnter={game.onCellEnter}
-        onBoardLeave={game.clearPreview}
-        interactive={isHumanTurn && !blocked}
-      />
-
-      <GameCeremonyControls
-        human={human}
-        lottery={showLottery ? state.lottery ?? null : null}
-        canRollLottery={Boolean(showLottery)}
-        canStartLottery={Boolean(
-          showLottery && state.lottery?.firstTurn && (config.vsBot || state.lottery.firstTurn === human),
-        )}
-        lotteryBusy={false}
-        onRollLottery={game.rollLottery}
-        onStartLottery={game.startLottery}
-        draftPick={draftPick}
-        onConfirmDraftPick={confirmDraftPick}
-        duel={duel}
-        duelPending={false}
-        onDismissDuel={game.dismissDuel}
-        onHintChange={setCeremonyHint}
-      />
-
-      {showResult && (
-        <ResultModal
-          status={state.status}
-          human={human}
-          onAgain={game.reset}
-          onClose={() => setResultClosed(true)}
-        />
+    <GameView
+      userName={user?.name}
+      onLogout={logout}
+      state={state}
+      human={human}
+      opponentColor={bot}
+      opponentName={config.opponentName}
+      youName={youName}
+      logEntries={logEntries}
+      logStatus={gameLogStatusLine(
+        state.phase,
+        false,
+        isHumanTurn,
+        pendingDef ? pieceName(pendingDef.kind, t) : null,
+        t,
+        state.lottery,
       )}
-
-      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
-      {statsOpen && <StatsModal onClose={() => setStatsOpen(false)} />}
-    </AppStage>
+      logStatusColor={gameLogStatusColor(state.phase, false, state.turn)}
+      selected={game.selected}
+      legalTargets={game.legalTargets}
+      selectedMoves={game.selectedMoves}
+      placementTargets={game.placementTargets}
+      movableCells={game.movableCells}
+      previewCell={game.previewCell}
+      pendingDef={pendingDef}
+      lastPlaced={game.lastPlaced}
+      anim={anim}
+      interactive={isHumanTurn && !blocked}
+      onCell={game.onCell}
+      onCellEnter={game.onCellEnter}
+      clearPreview={game.clearPreview}
+      showLottery={showLottery}
+      lottery={state.lottery ?? null}
+      canRollLottery={showLottery}
+      canStartLottery={Boolean(
+        showLottery && state.lottery?.firstTurn && (config.vsBot || state.lottery.firstTurn === human),
+      )}
+      lotteryBusy={false}
+      onRollLottery={game.rollLottery}
+      onStartLottery={game.startLottery}
+      draftPick={game.draftPick}
+      onConfirmDraftPick={game.confirmDraftPick}
+      duel={duel}
+      duelPending={false}
+      onDismissDuel={game.dismissDuel}
+      resultBlocked={!!duel || !!anim}
+      onAgain={game.reset}
+    />
   )
 }
 
@@ -204,15 +122,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const { user, logout } = useAuth()
   const { t } = useI18n()
   const remote = useRemoteGame(gameId)
-  const [resultClosed, setResultClosed] = useState(false)
-  const [rulesOpen, setRulesOpen] = useState(false)
-  const [statsOpen, setStatsOpen] = useState(false)
   const [rematching, setRematching] = useState(false)
-  const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
-
-  useEffect(() => {
-    if (remote.state?.phase !== 'over') setResultClosed(false)
-  }, [remote.state?.phase])
 
   // Follow a rematch: once this game points to a fresh one, both players jump
   // there. The pointer chains, so an old shared link always reaches the latest.
@@ -242,7 +152,9 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   const opponentName = opponent?.profiles?.display_name ?? config.opponentName ?? t('common.friend')
   const waiting = remote.game?.status === 'waiting'
   const inLottery = remote.inLottery
-  const showLottery = inLottery && remote.state?.lottery && !waiting && remote.players.length >= 2
+  const showLottery = Boolean(
+    inLottery && remote.state?.lottery && !waiting && remote.players.length >= 2,
+  )
   const blocked = waiting || inLottery || remote.duel || remote.thinking
   const youName = user?.name ?? t('common.you')
 
@@ -257,24 +169,6 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
     () => buildActionLog(remote.actions, logNames, t),
     [remote.actions, logNames, t],
   )
-  const logStatus = remote.state
-    ? gameLogStatusLine(
-        remote.state.phase,
-        waiting,
-        remote.isHumanTurn && !waiting,
-        remote.pendingDef ? pieceName(remote.pendingDef.kind, t) : null,
-        t,
-        remote.state.lottery,
-      )
-    : waiting
-      ? t('game.waitingPlayer')
-      : null
-  const logStatusColor = remote.state
-    ? gameLogStatusColor(remote.state.phase, waiting, remote.state.turn)
-    : waiting
-      ? 'neutral'
-      : null
-  const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
 
   if (remote.loading) {
     return (
@@ -296,92 +190,56 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
   }
 
   const state = remote.state
-  // Only declare the result once the duel ceremony is fully played out and
-  // dismissed — otherwise the win/loss modal pops over a still-rolling duel.
-  const showResult = state.phase === 'over' && !remote.duel && !remote.duelPending && !resultClosed
-  const showPlayAgain =
-    state.phase === 'over' && resultClosed && !remote.duel && !remote.duelPending
-
   return (
-    <AppStage>
-      <AppHeader
-        name={user?.name}
-        onHelp={() => setRulesOpen(true)}
-        onStats={() => setStatsOpen(true)}
-        onLogout={logout}
-        className="game-topbar"
-      />
-
-      {remote.error && <p className="muted tiny">{remote.error}</p>}
-
-      <Scoreboard
-        state={state}
-        human={human}
-        bot={opponentColor}
-        opponentName={opponentName}
-        youName={youName}
-        opponentPresence={opponent?.presence ?? null}
-      />
-
-      <GameLog
-        entries={logEntries}
-        statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
-        statusColor={showPlayAgain ? null : logStatusColor}
-        statusAction={
-          showPlayAgain
-            ? { label: t('result.again'), onClick: playAgain, disabled: rematching }
-            : undefined
-        }
-      />
-
-      <GameBoard
-        board={state.board}
-        selected={remote.selected}
-        legalTargets={remote.legalTargets}
-        selectedMoves={remote.selectedMoves}
-        placementTargets={remote.pendingDef ? remote.placementTargets : []}
-        movable={remote.isHumanTurn && !blocked ? remote.movableCells : []}
-        previewCell={remote.previewCell}
-        previewKind={remote.previewCell != null && remote.pendingDef ? remote.pendingDef.kind : null}
-        previewOwner={human}
-        orientation={human}
-        anim={null}
-        onCellClick={remote.onCell}
-        onCellEnter={remote.onCellEnter}
-        onBoardLeave={remote.clearPreview}
-        interactive={remote.isHumanTurn && !blocked}
-      />
-
-      <GameCeremonyControls
-        human={human}
-        lottery={showLottery ? remote.state.lottery ?? null : null}
-        canRollLottery={Boolean(showLottery && remote.isCreator)}
-        canStartLottery={Boolean(
-          showLottery && remote.state.lottery?.firstTurn === human,
-        )}
-        lotteryBusy={remote.lotteryRolling || remote.lotteryStarting}
-        onRollLottery={remote.rollLottery}
-        onStartLottery={remote.startLottery}
-        draftPick={remote.draftPick}
-        onConfirmDraftPick={remote.confirmDraftPick}
-        duel={remote.duel}
-        duelPending={remote.duelPending}
-        onDismissDuel={remote.dismissDuel}
-        onHintChange={setCeremonyHint}
-      />
-
-      {showResult && (
-        <ResultModal
-          status={state.status}
-          human={human}
-          onAgain={playAgain}
-          againBusy={rematching}
-          onClose={() => setResultClosed(true)}
-        />
+    <GameView
+      userName={user?.name}
+      onLogout={logout}
+      state={state}
+      human={human}
+      opponentColor={opponentColor}
+      opponentName={opponentName}
+      youName={youName}
+      opponentPresence={opponent?.presence ?? null}
+      error={remote.error}
+      logEntries={logEntries}
+      logStatus={gameLogStatusLine(
+        state.phase,
+        waiting,
+        remote.isHumanTurn && !waiting,
+        remote.pendingDef ? pieceName(remote.pendingDef.kind, t) : null,
+        t,
+        state.lottery,
       )}
-
-      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
-      {statsOpen && <StatsModal onClose={() => setStatsOpen(false)} />}
-    </AppStage>
+      logStatusColor={gameLogStatusColor(state.phase, waiting, state.turn)}
+      selected={remote.selected}
+      legalTargets={remote.legalTargets}
+      selectedMoves={remote.selectedMoves}
+      placementTargets={remote.placementTargets}
+      movableCells={remote.movableCells}
+      previewCell={remote.previewCell}
+      pendingDef={remote.pendingDef}
+      anim={null}
+      interactive={remote.isHumanTurn && !blocked}
+      onCell={remote.onCell}
+      onCellEnter={remote.onCellEnter}
+      clearPreview={remote.clearPreview}
+      showLottery={showLottery}
+      lottery={state.lottery ?? null}
+      canRollLottery={Boolean(showLottery && remote.isCreator)}
+      canStartLottery={Boolean(showLottery && state.lottery?.firstTurn === human)}
+      lotteryBusy={remote.lotteryRolling || remote.lotteryStarting}
+      onRollLottery={remote.rollLottery}
+      onStartLottery={remote.startLottery}
+      draftPick={remote.draftPick}
+      onConfirmDraftPick={remote.confirmDraftPick}
+      duel={remote.duel}
+      duelPending={remote.duelPending}
+      onDismissDuel={remote.dismissDuel}
+      // Only declare the result once the duel ceremony is fully played out and
+      // dismissed — otherwise the win/loss modal pops over a still-rolling duel.
+      resultBlocked={Boolean(remote.duel || remote.duelPending)}
+      onAgain={playAgain}
+      againBusy={rematching}
+    />
   )
 }

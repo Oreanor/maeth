@@ -7,6 +7,7 @@ import {
   Grid2X2,
   HelpCircle,
   Home,
+  LogIn,
   Image,
   LogOut,
   Moon,
@@ -33,6 +34,7 @@ export function UserMenu({
   onStats,
   appearanceOnly = false,
   onExit,
+  onSignIn,
 }: {
   name?: string
   onLogout?: () => void
@@ -42,6 +44,9 @@ export function UserMenu({
   appearanceOnly?: boolean
   /** Supplied by the game screen only — the lobby is already the way out. */
   onExit?: () => void
+  /** Offered while signed out; signing in is what unlocks online play and stats,
+   *  so it leads the menu. */
+  onSignIn?: () => void
 }) {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
@@ -73,6 +78,20 @@ export function UserMenu({
           <div className="usermenu__overlay" onClick={() => setOpen(false)} />
           <div className="usermenu__panel" role="menu">
             {name && <div className="usermenu__name">{name}</div>}
+
+            {onSignIn && (
+              <button
+                className="usermenu__item usermenu__item--accent"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false)
+                  onSignIn()
+                }}
+              >
+                <LogIn size={18} />
+                <span>{t('login.google')}</span>
+              </button>
+            )}
 
             <label className="usermenu__item usermenu__item--lang">
               <Globe size={18} />
@@ -171,6 +190,7 @@ export function UserMenu({
                   </span>
                 </label>
 
+                {onStats && (
                 <button
                   className="usermenu__item"
                   role="menuitem"
@@ -182,6 +202,7 @@ export function UserMenu({
                   <BarChart3 size={18} />
                   <span>{t('stats.title')}</span>
                 </button>
+                )}
 
                 <button
                   className="usermenu__item"
@@ -209,14 +230,16 @@ export function UserMenu({
                   </button>
                 )}
 
-                <button
-                  className="usermenu__item usermenu__item--danger"
-                  role="menuitem"
-                  onClick={onLogout}
-                >
-                  <LogOut size={18} />
-                  <span>{t('lobby.logout')}</span>
-                </button>
+                {onLogout && (
+                  <button
+                    className="usermenu__item usermenu__item--danger"
+                    role="menuitem"
+                    onClick={onLogout}
+                  >
+                    <LogOut size={18} />
+                    <span>{t('lobby.logout')}</span>
+                  </button>
+                )}
               </>
             )}
           </div>

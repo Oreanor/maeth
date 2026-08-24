@@ -22,11 +22,7 @@
     "rotateHint": "Arraste para rodar · Roda ou pinça para ampliar"
   },
   "login": {
-    "subtitle": "Maeth (escaramuça - sind.) — jogo de tabuleiro élfico",
-    "google": "Entrar com o Google",
-    "guest": "Jogar como convidado",
-    "googleError": "Não foi possível entrar com o Google",
-    "needConfig": "Para entrar com o Google, preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY."
+    "google": "Entrar com o Google"
   },
   "lobby": {
     "logout": "Sair",

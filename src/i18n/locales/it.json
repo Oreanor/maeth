@@ -22,11 +22,7 @@
     "rotateHint": "Trascina per ruotare · Rotella o pizzico per zoomare"
   },
   "login": {
-    "subtitle": "Maeth (schermaglia - sind.) — gioco da tavolo elfico",
-    "google": "Accedi con Google",
-    "guest": "Gioca come ospite",
-    "googleError": "Accesso con Google non riuscito",
-    "needConfig": "Per l'accesso con Google, imposta VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY."
+    "google": "Accedi con Google"
   },
   "lobby": {
     "logout": "Esci",

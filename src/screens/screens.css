@@ -38,12 +38,12 @@
   padding: 0;
 }
 
-.screen--lobby > .board {
+/* The lobby absorbed the login screen, so it wears the same backdrop: one of
+   the illustrations, contained rather than cropped. */
+.screen--lobby > .hero {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 0;
   z-index: 0;
-  transform: translate(-50%, -50%);
 }
 
 .lobby-hud {
@@ -1220,9 +1220,11 @@
 .lobby-hud__logo {
   flex: 0 0 auto;
   align-self: center;
-  width: min(400px, 100%);
+  width: min(440px, 100%);
   height: auto;
-  margin-bottom: 22px;
+  /* Set against the HUD's own 12px gap, this is the 50px break asked for
+     between the wordmark and the controls under it. */
+  margin-bottom: 38px;
 }
 
 /* Keep the settings menu against the right edge even when the header has no
@@ -1330,4 +1332,22 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+/* Signing in is the one item that unlocks the rest of the menu, so it leads it
+   and is the only one that carries the accent. */
+.usermenu__item--accent {
+  color: var(--accent);
+}
+
+/* Both lists scroll inside themselves rather than growing the HUD: the whole
+   screen has to fit without scrolling, so a long list must not push the panel
+   below it off the bottom. Four rows of 56px plus their gaps. */
+.lobby-panel .list {
+  max-height: calc(4 * 56px + 3 * 8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  /* Room for the scrollbar so it never sits on top of a row's buttons. */
+  padding-right: 2px;
 }

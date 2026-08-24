@@ -22,11 +22,7 @@
     "rotateHint": "Тяните, чтобы вращать · Колесо или щипок — масштаб"
   },
   "login": {
-    "subtitle": "Maeth (схватка - синд.) — эльфийская настольная игра",
-    "google": "Войти через Google",
-    "guest": "Играть как гость",
-    "googleError": "Не удалось войти через Google",
-    "needConfig": "Для входа через Google заполните VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY."
+    "google": "Войти через Google"
   },
   "lobby": {
     "logout": "Выход",

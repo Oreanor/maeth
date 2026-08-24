@@ -4,7 +4,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
 import { AppHeader } from '@/components/AppHeader'
 import { AppStage } from '@/components/AppStage'
-import { EmptyGameBoard } from '@/components/GameBoard'
+import { LoginIllustration } from '@/components/LoginIllustration'
 import { GlassPanel } from '@/components/GlassPanel'
 import { RulesModal } from '@/components/RulesModal'
 import { StatsModal } from '@/components/StatsModal'
@@ -18,7 +18,7 @@ import logoMaeth from '@/assets/logo-maeth.png'
 import './screens.css'
 
 export function LobbyScreen() {
-  const { user, logout, online } = useAuth()
+  const { user, logout, online, login } = useAuth()
   const { t, lang } = useI18n()
   // Day + time so two games against the same opponent are still distinguishable.
   const formatWhen = (iso?: string) =>
@@ -199,13 +199,16 @@ export function LobbyScreen() {
     <AppStage className="screen--lobby">
       <AppHeader
         name={user?.name}
-        onLogout={logout}
+        onLogout={user ? logout : undefined}
         onHelp={() => setRulesOpen(true)}
-        onStats={() => setStatsOpen(true)}
+        onStats={user ? () => setStatsOpen(true) : undefined}
+        onSignIn={user ? undefined : () => void login('google')}
         className="game-topbar"
       />
 
-      <EmptyGameBoard />
+      <div className="hero">
+        <LoginIllustration />
+      </div>
 
       <div className="lobby-hud">
         <img className="lobby-hud__logo" src={logoMaeth} alt="Maeth" />

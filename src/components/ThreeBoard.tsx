@@ -50,7 +50,7 @@ const PIECE_SINK_RATIO = 0.003
 // it. The board coasts to a stop on OrbitControls' own damping, and once it has
 // settled the same pieces are put back where they were.
 /** Radians per frame at the moment of release that count as a flick. */
-const FLING_RELEASE_SPEED = 0.07
+const FLING_RELEASE_SPEED = 0.11
 /** How long the pieces stay off the board before it is set up again. */
 const FLING_SETTLE_MS = 2300
 const FLING_GRAVITY = 9

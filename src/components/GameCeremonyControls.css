@@ -55,8 +55,9 @@
   transform: scale(1.035);
 }
 
+/* Presses in and springs back out; the transition above carries the release. */
 .ceremony-control--actionable:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
 .corner-die {
@@ -199,5 +200,15 @@
   border-color: var(--accent);
   box-shadow:
     0 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 12px 38px rgba(0, 0, 0, 0.3);
+}
+
+/* A ceremony the opponent acted on keeps their colour once it settles — the
+   settled rule above would otherwise repaint the ring in the accent, turning
+   their result into one that looks like yours. */
+.ceremony-control--settled.ceremony-control--opponent {
+  border-color: #e2655d;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, #e2655d 22%, transparent),
     0 12px 38px rgba(0, 0, 0, 0.3);
 }

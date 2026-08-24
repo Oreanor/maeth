@@ -246,8 +246,14 @@ export function GameCeremonyControls({
   const piece = useLingering(pieceVisible, shownPiece, EXIT_MS)
   // A ceremony is running but the button is not yours to press: the opponent is
   // the one acting on it.
-  const dieOpponent = dieRunning && !dieActionable
-  const pieceOpponent = draftRunning && !draftActionable
+  // Whose ceremony this is, which outlives the acting. "The opponent is acting"
+  // stops being true the moment it settles, and without the second half the
+  // ring would turn from theirs to yours while the result is still on screen.
+  const dieOpponent =
+    (dieRunning && !dieActionable) || (dieSettled && duel != null && duel.by !== human)
+  const pieceOpponent =
+    (draftRunning && !draftActionable) ||
+    (pieceSettled && draftPick != null && draftPick.by !== human)
 
   return (
     <div className="ceremony-controls" aria-live="polite">

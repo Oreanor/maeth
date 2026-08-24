@@ -45,7 +45,7 @@ describe('buildActionLog', () => {
     actions.push({
       id: nextId++,
       action_type: 'move',
-      payload: { by: 'white', from: 0, to: 8, duel: { attacker: 5, defender: 2, success: true } },
+      payload: { by: 'white', from: 0, to: 8, duel: { attacker: 5, success: true } },
     })
     actions.push({ id: nextId++, action_type: 'move', payload: { by: 'black', from: 14, to: 9 } })
     actions.push({ id: nextId++, action_type: 'move', payload: { by: 'white', from: 1, to: 9 } })
@@ -61,7 +61,7 @@ describe('buildActionLog', () => {
     actions.push({
       id: nextId++,
       action_type: 'move',
-      payload: { by: 'white', from: 0, to: 8, duel: { attacker: 1, defender: 6, success: false } },
+      payload: { by: 'white', from: 0, to: 8, duel: { attacker: 2, success: false } },
     })
     expect(keys(actions)).toContain('log.duelFail')
   })

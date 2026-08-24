@@ -37,6 +37,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     json(res, 404, { error: 'Game not found' })
     return
   }
+  const playerColor = membership.color as Color
 
   const game = unwrapOne(
     await auth.db
@@ -85,7 +86,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const roll = 1 + Math.floor(Math.random() * 6)
-    const firstTurn = firstTurnFromRoll(roll)
+    const firstTurn = firstTurnFromRoll(roll, playerColor)
     const next: GameState = {
       ...state,
       lottery: { step: 'revealed', roll, firstTurn },
@@ -123,8 +124,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const color = membership.color as Color
-  if (color !== state.lottery.firstTurn) {
+  if (playerColor !== state.lottery.firstTurn) {
     json(res, 403, { error: 'Only the first player can start' })
     return
   }

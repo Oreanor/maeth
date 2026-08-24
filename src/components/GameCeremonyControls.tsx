@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
 import { useI18n } from '@/i18n'
 import type { DraftPick, DuelEvent } from '@/game/useGame'
-import { opposite, type Color, type LotteryState } from '@/game/types'
+import type { Color, LotteryState } from '@/game/types'
 import type { PieceKind } from '@/game/pieces'
 import { PieceIcon } from './PieceIcon'
 import './GameCeremonyControls.css'
@@ -49,7 +49,14 @@ const PIP_MAP: Record<number, number[]> = {
   6: [1, 3, 4, 6, 7, 9],
 }
 
-export type CeremonyHint = 'stop-die' | 'wait-die' | 'stop-piece' | 'wait-piece' | null
+export type CeremonyHint =
+  | 'stop-die'
+  | 'wait-die'
+  | 'stop-lottery'
+  | 'wait-lottery'
+  | 'stop-piece'
+  | 'wait-piece'
+  | null
 
 function DieFace({ value }: { value: number }) {
   const active = PIP_MAP[value] ?? []
@@ -98,25 +105,19 @@ export function GameCeremonyControls({
   const { t } = useI18n()
   const [dieSpin, setDieSpin] = useState(1)
   const [pieceSpin, setPieceSpin] = useState<PieceKind | null>(null)
-  const [duelStage, setDuelStage] = useState<0 | 1 | 2>(0)
-  const [duelFaces, setDuelFaces] = useState<[number | null, number | null]>([null, null])
+  const [duelSettled, setDuelSettled] = useState(false)
   const [pendingStopped, setPendingStopped] = useState(false)
   const dismissRef = useRef(onDismissDuel)
   dismissRef.current = onDismissDuel
 
   const duelOpen = duelPending || duel != null
-  const duelRoller = duel && duelStage < 2
-    ? duelStage === 0
-      ? duel.by
-      : opposite(duel.by)
-    : null
-  const duelActionable = Boolean(duel && duelStage < 2 && duelRoller === human)
+  const duelActionable = Boolean(duel && !duelSettled && duel.by === human)
   const pendingActionable = duelPending && !duel && !pendingStopped
   const lotteryAwaiting = lottery?.step === 'await_roll'
   const lotteryActionable = Boolean(lotteryAwaiting && canRollLottery && !lotteryBusy)
   const dieRunning = Boolean(
     (duelPending && !pendingStopped) ||
-      (duel && duelStage < 2) ||
+      (duel && !duelSettled) ||
       (lotteryAwaiting && !lotteryBusy),
   )
   const dieActionable = pendingActionable || duelActionable || (!duelOpen && lotteryActionable)
@@ -140,47 +141,36 @@ export function GameCeremonyControls({
   // already stopped the cycling die, apply that stop as soon as the true roll arrives.
   useEffect(() => {
     if (!duel) {
-      setDuelStage(0)
-      setDuelFaces([null, null])
+      setDuelSettled(false)
       if (!duelPending) setPendingStopped(false)
       return
     }
     if (pendingStopped && duel.by === human) {
-      setDuelFaces([duel.attacker, null])
-      setDuelStage(1)
+      setDuelSettled(true)
     } else {
-      setDuelFaces([null, null])
-      setDuelStage(0)
+      setDuelSettled(false)
     }
   }, [duel, duelPending, human, pendingStopped])
 
-  const settleDuelStage = useCallback(() => {
-    if (!duel || duelStage >= 2) return
-    const value = duelStage === 0 ? duel.attacker : duel.defender
-    setDuelFaces((faces) => {
-      const next: [number | null, number | null] = [...faces]
-      if (duelStage === 0) next[0] = value
-      else next[1] = value
-      return next
-    })
-    setDuelStage((stage) => (stage === 0 ? 1 : 2))
-  }, [duel, duelStage])
+  const settleDuel = useCallback(() => {
+    if (duel) setDuelSettled(true)
+  }, [duel])
 
-  // The other side uses the same cycling control, but its stop is simulated.
+  // Only the attacker rolls. On the other client's screen its stop is simulated.
   useEffect(() => {
-    if (!duel || duelStage >= 2 || duelRoller === human) return
+    if (!duel || duelSettled || duel.by === human) return
     const timer = window.setTimeout(
-      settleDuelStage,
+      settleDuel,
       BOT_STOP_MIN_MS + Math.random() * BOT_STOP_JITTER_MS,
     )
     return () => window.clearTimeout(timer)
-  }, [duel, duelRoller, duelStage, human, settleDuelStage])
+  }, [duel, duelSettled, human, settleDuel])
 
   useEffect(() => {
-    if (!duel || duelStage !== 2) return
+    if (!duel || !duelSettled) return
     const timer = window.setTimeout(() => dismissRef.current(), SETTLED_LINGER_MS)
     return () => window.clearTimeout(timer)
-  }, [duel, duelStage])
+  }, [duel, duelSettled])
 
   // There is no second confirmation panel anymore. Once the server/local engine
   // reveals the first player, that player's client starts the draft automatically.
@@ -192,11 +182,11 @@ export function GameCeremonyControls({
 
   const hint = useMemo<CeremonyHint>(() => {
     if (duelPending && !duel) return pendingStopped ? 'wait-die' : 'stop-die'
-    if (duel && duelStage < 2) return duelRoller === human ? 'stop-die' : 'wait-die'
-    if (lotteryAwaiting) return lotteryActionable ? 'stop-die' : 'wait-die'
+    if (duel && !duelSettled) return duel.by === human ? 'stop-die' : 'wait-die'
+    if (lotteryAwaiting) return lotteryActionable ? 'stop-lottery' : 'wait-lottery'
     if (draftRunning) return draftActionable ? 'stop-piece' : 'wait-piece'
     return null
-  }, [draftActionable, draftRunning, duel, duelPending, duelRoller, duelStage, human, lotteryActionable, lotteryAwaiting, pendingStopped])
+  }, [draftActionable, draftRunning, duel, duelPending, duelSettled, human, lotteryActionable, lotteryAwaiting, pendingStopped])
 
   useEffect(() => onHintChange?.(hint), [hint, onHintChange])
 
@@ -206,19 +196,17 @@ export function GameCeremonyControls({
       return
     }
     if (duel && duelActionable) {
-      settleDuelStage()
+      settleDuel()
       return
     }
     if (!duelOpen && lotteryActionable) onRollLottery()
   }
 
-  const shownDie = duel && duelStage === 2
-    ? (duelFaces[1] ?? duel.defender)
-    : duel && duelStage === 1 && duelFaces[0] != null
-      ? dieSpin
-      : lottery?.step === 'revealed' && lottery.roll != null && !duelOpen
-        ? lottery.roll
-        : dieSpin
+  const shownDie = duel && duelSettled
+    ? duel.attacker
+    : lottery?.step === 'revealed' && lottery.roll != null && !duelOpen
+      ? lottery.roll
+      : dieSpin
   const shownPiece = draftPick?.settled ?? pieceSpin
   // One control at a time, centred on the board, and only while a ceremony is
   // actually running — the two idle corner buttons are gone. A duel or the

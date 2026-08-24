@@ -1,7 +1,15 @@
 import { SKIN_SPRITE_URL } from '@/skin/config'
 
 export type BoardViewMode = '2d' | '3d'
-export type ThreePieceStyle = 'painted' | 'classic'
+export const THREE_PIECE_STYLES = [
+  'painted',
+  'classic',
+  'wood',
+  'stone',
+  'bone',
+  'metal',
+] as const
+export type ThreePieceStyle = (typeof THREE_PIECE_STYLES)[number]
 
 export const BOARD_STYLES = [
   'board-1',
@@ -54,11 +62,15 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
   ]),
 ) as Record<BoardStyle, BoardStyleConfig>
 
-/** HUD portraits follow the 3D pieces, not the 2D skin: the painted set matches
- * the D&D sheet, the classic set the chess one. */
+/** HUD portraits follow the 3D pieces, not the 2D skin: painted models use the
+ * D&D sheet, while every runtime chess material shares the chess sheet. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
   painted: SKIN_SPRITE_URL.dnd,
   classic: SKIN_SPRITE_URL.chess,
+  wood: SKIN_SPRITE_URL.chess,
+  stone: SKIN_SPRITE_URL.chess,
+  bone: SKIN_SPRITE_URL.chess,
+  metal: SKIN_SPRITE_URL.chess,
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '3d'
@@ -74,5 +86,5 @@ export function isBoardStyle(value: string | null): value is BoardStyle {
 }
 
 export function isThreePieceStyle(value: string | null): value is ThreePieceStyle {
-  return value === 'painted' || value === 'classic'
+  return THREE_PIECE_STYLES.includes(value as ThreePieceStyle)
 }

@@ -149,6 +149,10 @@ export function UserMenu({
                       >
                         <option value="painted">{t('lobby.pieceStyle3dPainted')}</option>
                         <option value="classic">{t('lobby.pieceStyle3dClassic')}</option>
+                        <option value="wood">{t('lobby.pieceStyle3dWood')}</option>
+                        <option value="stone">{t('lobby.pieceStyle3dStone')}</option>
+                        <option value="bone">{t('lobby.pieceStyle3dBone')}</option>
+                        <option value="metal">{t('lobby.pieceStyle3dMetal')}</option>
                       </select>
                     ) : (
                       <select

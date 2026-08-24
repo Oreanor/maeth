@@ -104,7 +104,6 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
             attacker: attackerName,
             victim: pieceLabel(victim.kind, t),
             roll: duel.attacker,
-            def: duel.defender,
           }),
         })
       } else if (victim) {

@@ -50,13 +50,15 @@ describe('turn lottery', () => {
     expect(s.board.every((c) => c === null)).toBe(true)
   })
 
-  it('maps odd rolls to white and even rolls to black', () => {
+  it('lets the roller start on odd values and the opponent on even values', () => {
     expect(firstTurnFromRoll(1)).toBe('white')
     expect(firstTurnFromRoll(3)).toBe('white')
     expect(firstTurnFromRoll(5)).toBe('white')
     expect(firstTurnFromRoll(2)).toBe('black')
     expect(firstTurnFromRoll(4)).toBe('black')
     expect(firstTurnFromRoll(6)).toBe('black')
+    expect(firstTurnFromRoll(1, 'black')).toBe('black')
+    expect(firstTurnFromRoll(2, 'black')).toBe('white')
   })
 
   it('beginDraft shuffles and sets the first turn', () => {
@@ -275,19 +277,19 @@ describe('duels', () => {
     expect(next.turn).toBe('black')
   })
 
-  it('resolveMove rolls the dice on a contested capture (attacker ≥ defender wins)', () => {
-    vi.spyOn(Math, 'random').mockReturnValueOnce(0.99).mockReturnValueOnce(0) // 6 vs 1
+  it('resolveMove lets the attacker win a contested capture on an odd roll', () => {
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.7) // 5
     const b = emptyBoard()
     b[5] = piece('rohanWarrior', 'white')
     b[13] = piece('balrog', 'black')
     const { next, duel } = resolveMove(playState(b), { from: 5, to: 13, capture: true })
-    expect(duel).toEqual({ attacker: 6, defender: 1, success: true })
+    expect(duel).toEqual({ attacker: 5, success: true })
     expect(next.captures.white).toBe(1)
     expect(next.board[13]).toMatchObject({ kind: 'rohanWarrior' })
   })
 
   it('resolveMove keeps the attacker on a lost duel', () => {
-    vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.99) // 1 vs 6
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.99) // 6
     const b = emptyBoard()
     b[5] = piece('rohanWarrior', 'white')
     b[13] = piece('balrog', 'black')
@@ -295,6 +297,18 @@ describe('duels', () => {
     expect(duel?.success).toBe(false)
     expect(next.captures.white).toBe(0)
     expect(next.board[5]).toMatchObject({ kind: 'rohanWarrior', moved: true })
+  })
+
+  it('wins on every odd face and fails on every even face', () => {
+    const random = vi.spyOn(Math, 'random')
+    for (const roll of [1, 2, 3, 4, 5, 6]) {
+      random.mockReturnValue((roll - 0.5) / 6)
+      const b = emptyBoard()
+      b[5] = piece('rohanWarrior', 'white')
+      b[13] = piece('balrog', 'black')
+      const { duel } = resolveMove(playState(b), { from: 5, to: 13, capture: true })
+      expect(duel).toEqual({ attacker: roll, success: roll % 2 === 1 })
+    }
   })
 
   it('with duels disabled a contested capture is a clean take (no dice)', () => {
@@ -316,7 +330,7 @@ describe('duels', () => {
   })
 
   it('exposes the closed-form attacker win probability', () => {
-    expect(DUEL_ATTACKER_WIN_P).toBeCloseTo(21 / 36, 10)
+    expect(DUEL_ATTACKER_WIN_P).toBe(1 / 2)
   })
 })
 

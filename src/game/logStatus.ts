@@ -22,7 +22,10 @@ export function gameLogStatusLine(
   if (phase === 'draft') {
     if (!isHumanTurn) return t('game.opponentPlacing')
     if (pendingLabel) return t('game.placePiece', { piece: pendingLabel })
-    return t('game.yourDraft')
+    // The cycling piece control owns this hint. Returning "draw a piece" here
+    // briefly brought the old instruction back after the player had already
+    // stopped the carousel and before the selected piece reached game state.
+    return null
   }
   return isHumanTurn ? t('game.yourTurn') : t('game.opponentTurn')
 }

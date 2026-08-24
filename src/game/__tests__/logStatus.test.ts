@@ -15,7 +15,7 @@ describe('gameLogStatusLine', () => {
   it('covers the draft phase for both sides', () => {
     expect(gameLogStatusLine('draft', false, false, null, t)).toBe('game.opponentPlacing')
     expect(gameLogStatusLine('draft', false, true, 'Ent · 3+', t)).toBe('game.placePiece:Ent · 3+')
-    expect(gameLogStatusLine('draft', false, true, null, t)).toBe('game.yourDraft')
+    expect(gameLogStatusLine('draft', false, true, null, t)).toBeNull()
   })
 
   it('covers the turn lottery phase', () => {

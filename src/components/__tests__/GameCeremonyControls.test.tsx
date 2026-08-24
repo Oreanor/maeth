@@ -75,10 +75,10 @@ describe('GameCeremonyControls', () => {
     expect(onConfirmDraftPick).toHaveBeenCalledOnce()
   })
 
-  it('lets the human stop their duel roll and simulates the opponent roll', () => {
+  it('lets the attacking human stop the only duel roll', () => {
     const onDismissDuel = vi.fn()
     renderControls({
-      duel: { by: 'white', attacker: 5, defender: 3, success: true },
+      duel: { by: 'white', attacker: 5, success: true },
       onDismissDuel,
     })
 
@@ -87,25 +87,21 @@ describe('GameCeremonyControls', () => {
     fireEvent.click(die)
     expect(die.getAttribute('aria-disabled')).toBe('true')
 
-    act(() => vi.advanceTimersByTime(1100))
-    expect(onDismissDuel).not.toHaveBeenCalled()
     act(() => vi.advanceTimersByTime(700))
     expect(onDismissDuel).toHaveBeenCalledOnce()
   })
 
-  it('simulates a bot attack before enabling the human defence roll', () => {
+  it('simulates the opposing attacker without offering a defence roll', () => {
     const onDismissDuel = vi.fn()
     renderControls({
-      duel: { by: 'black', attacker: 4, defender: 4, success: false },
+      duel: { by: 'black', attacker: 4, success: false },
       onDismissDuel,
     })
 
     const die = screen.getByRole('button', { name: 'Dice' })
     expect(die.getAttribute('aria-disabled')).toBe('true')
     act(() => vi.advanceTimersByTime(1100))
-    expect(die.getAttribute('aria-disabled')).toBe('false')
-
-    fireEvent.click(die)
+    expect(die.getAttribute('aria-disabled')).toBe('true')
     act(() => vi.advanceTimersByTime(700))
     expect(onDismissDuel).toHaveBeenCalledOnce()
   })

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BOARD_STYLES, useBoardView } from '@/boardView'
+import { BOARD_STYLES, THREE_PIECE_STYLES, useBoardView } from '@/boardView'
 import { LANGS, useI18n } from '@/i18n'
 import { SKINS, useSkin } from '@/skin'
 import { useTheme } from '@/theme'
@@ -50,7 +50,7 @@ export function useAppShortcuts(): void {
         case 'KeyF':
           // "Pieces" means whichever set the current view actually draws.
           if (viewMode === '3d') {
-            setThreePieceStyle(threePieceStyle === 'painted' ? 'classic' : 'painted')
+            setThreePieceStyle(next(THREE_PIECE_STYLES, threePieceStyle))
           } else {
             setSkin(next(SKINS, skin))
           }

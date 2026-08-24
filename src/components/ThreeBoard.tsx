@@ -55,6 +55,11 @@ const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   ent: 1.4,
 }
 
+/** Extra seating depth for models whose accessories extend below their feet. */
+const MODEL_SINK_RATIO: Partial<Record<PieceKind, number>> = {
+  tomBombadil: 0.05,
+}
+
 function cellPosition(cell: number): THREE.Vector3 {
   return new THREE.Vector3((colOf(cell) - 1.5) * CELL_SIZE, TOP_Y, (rowOf(cell) - 1.5) * CELL_SIZE)
 }
@@ -132,18 +137,171 @@ function textureEdgeColor(texture: THREE.Texture): THREE.Color | null {
   }
 }
 
-/** Both sides of the classic set share one warm bone tone; facing direction and
- * board position tell the two players apart. Tune the carve here. */
-const CLASSIC_PIECE_COLOR = 0xd0b583
+type ChessMaterialStyle = Exclude<ThreePieceStyle, 'painted'>
+type ProceduralTextureStyle = Exclude<ChessMaterialStyle, 'classic'>
 
-function classicMaterial(): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({
-    color: CLASSIC_PIECE_COLOR,
-    emissive: 0x2b2216,
-    emissiveIntensity: 0.1,
+interface ChessMaterialPreset {
+  light: number
+  dark: number
+  roughness: number
+  metalness: number
+  clearcoat: number
+  clearcoatRoughness: number
+  texture?: ProceduralTextureStyle
+}
+
+const CHESS_MATERIALS: Record<ChessMaterialStyle, ChessMaterialPreset> = {
+  classic: {
+    light: 0xd0b583,
+    dark: 0xd0b583,
     roughness: 0.72,
     metalness: 0.02,
+    clearcoat: 0,
+    clearcoatRoughness: 1,
+  },
+  wood: {
+    light: 0xd2a36a,
+    dark: 0x9a6843,
+    roughness: 0.84,
+    metalness: 0,
+    clearcoat: 0.025,
+    clearcoatRoughness: 0.94,
+    texture: 'wood',
+  },
+  stone: {
+    light: 0xbdbab2,
+    dark: 0x287a59,
+    roughness: 0.34,
+    metalness: 0,
+    clearcoat: 0.42,
+    clearcoatRoughness: 0.2,
+    texture: 'stone',
+  },
+  bone: {
+    light: 0xdfcca2,
+    dark: 0x9b784d,
+    roughness: 0.5,
+    metalness: 0,
+    clearcoat: 0.2,
+    clearcoatRoughness: 0.68,
+    texture: 'bone',
+  },
+  metal: {
+    light: 0xd8dde1,
+    dark: 0xb8892e,
+    roughness: 0.3,
+    metalness: 0.88,
+    clearcoat: 0.28,
+    clearcoatRoughness: 0.42,
+    texture: 'metal',
+  },
+}
+
+/** Procedural patterns use world position, so they remain visible even on GLBs
+ * with missing, tiny or inconsistent UV islands. No alternate model textures
+ * are stored or uploaded. */
+function applyProceduralMaterial(
+  material: THREE.MeshPhysicalMaterial,
+  style: ProceduralTextureStyle,
+  color: Color,
+) {
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vPieceWorldPosition;')
+      .replace(
+        '#include <fog_vertex>',
+        'vPieceWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#include <fog_vertex>',
+      )
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+varying vec3 vPieceWorldPosition;
+float pieceHash(vec3 p) {
+  p = fract(p * 0.1031);
+  p += dot(p, p.yzx + 33.33);
+  return fract((p.x + p.y) * p.z);
+}
+float pieceNoise(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(pieceHash(i), pieceHash(i + vec3(1, 0, 0)), f.x),
+        mix(pieceHash(i + vec3(0, 1, 0)), pieceHash(i + vec3(1, 1, 0)), f.x), f.y),
+    mix(mix(pieceHash(i + vec3(0, 0, 1)), pieceHash(i + vec3(1, 0, 1)), f.x),
+        mix(pieceHash(i + vec3(0, 1, 1)), pieceHash(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+float piecePattern = 0.5;`,
+      )
+
+    const stonePattern = color === 'white' ? `
+vec3 pieceP = vPieceWorldPosition;
+float pieceCloud = pieceNoise(pieceP * 7.0) * 0.7 + pieceNoise(pieceP * 19.0) * 0.3;
+float pieceVeinA = 1.0 - smoothstep(0.035, 0.18, abs(sin((pieceP.x + pieceP.z * 0.68 + pieceCloud * 0.5) * 11.0)));
+float pieceVeinB = 1.0 - smoothstep(0.025, 0.12, abs(sin((pieceP.x * 0.34 - pieceP.z + pieceCloud * 0.35) * 16.0)));
+float pieceVein = max(pieceVeinA, pieceVeinB * 0.58);
+piecePattern = clamp(0.76 + pieceCloud * 0.2 - pieceVein * 0.82, 0.0, 1.0);
+diffuseColor.rgb *= mix(vec3(0.3, 0.34, 0.4), vec3(1.06, 1.05, 1.02), piecePattern);` : `
+vec3 pieceP = vPieceWorldPosition;
+float pieceCloud = pieceNoise(pieceP * 5.5);
+float pieceFlow = pieceP.x * 0.7 + pieceP.z * 0.48 + pieceP.y * 0.16 + pieceCloud * 0.48;
+float pieceBandA = 0.5 + 0.5 * sin(pieceFlow * 23.0);
+float pieceBandB = 0.5 + 0.5 * sin(pieceFlow * 47.0 + pieceNoise(pieceP * 14.0) * 4.0);
+piecePattern = clamp(pieceBandA * 0.72 + pieceBandB * 0.2 + pieceCloud * 0.08, 0.0, 1.0);
+diffuseColor.rgb *= mix(vec3(0.2, 0.48, 0.3), vec3(1.24, 1.12, 0.76), piecePattern);`
+
+    const pattern = {
+      wood: `
+vec3 pieceP = vPieceWorldPosition;
+float pieceWarp = pieceNoise(pieceP * vec3(4.2, 1.15, 4.2));
+float pieceSlow = pieceNoise(pieceP * vec3(2.7, 1.3, 2.7));
+float pieceDetail = pieceNoise(pieceP * vec3(11.0, 4.0, 11.0));
+float pieceFineLine = pow(0.5 + 0.5 * sin(pieceP.y * 39.0 + pieceP.x * 5.0 + pieceWarp * 13.0), 22.0);
+piecePattern = clamp(0.45 + pieceSlow * 0.42 + pieceDetail * 0.13 - pieceFineLine * 0.12, 0.0, 1.0);
+vec3 pieceWoodTint = mix(vec3(0.7, 0.61, 0.5), vec3(1.16, 1.08, 0.94), piecePattern);
+diffuseColor.rgb *= pieceWoodTint;`,
+      stone: stonePattern,
+      bone: `
+vec3 pieceP = vPieceWorldPosition;
+float pieceCloud = pieceNoise(pieceP * 8.0);
+float pieceLayers = 0.5 + 0.5 * sin(pieceP.y * 21.0 + pieceCloud * 5.0);
+float piecePores = smoothstep(0.72, 0.88, pieceNoise(pieceP * 42.0));
+piecePattern = clamp(0.48 + pieceCloud * 0.25 + pieceLayers * 0.22 - piecePores * 0.5, 0.0, 1.0);
+diffuseColor.rgb *= mix(vec3(0.56, 0.49, 0.39), vec3(1.14, 1.1, 0.98), piecePattern);`,
+      metal: `
+vec3 pieceP = vPieceWorldPosition;
+float pieceBrush = 0.5 + 0.5 * sin(pieceP.y * 190.0 + pieceNoise(pieceP * 25.0) * 3.0);
+piecePattern = pieceBrush;
+diffuseColor.rgb *= mix(0.82, 1.12, piecePattern);`,
+    }[style]
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <color_fragment>', `#include <color_fragment>\n${pattern}`)
+      .replace(
+        '#include <roughnessmap_fragment>',
+        '#include <roughnessmap_fragment>\nroughnessFactor = clamp(roughnessFactor + (0.5 - piecePattern) * 0.16, 0.08, 1.0);',
+      )
+  }
+  material.customProgramCacheKey = () => `maeth-piece-${style}-${color}-v3`
+}
+
+function chessMaterial(style: ChessMaterialStyle, color: Color): THREE.MeshPhysicalMaterial {
+  const preset = CHESS_MATERIALS[style]
+  const baseColor = new THREE.Color(color === 'white' ? preset.light : preset.dark)
+  const isMalachite = style === 'stone' && color === 'black'
+  const material = new THREE.MeshPhysicalMaterial({
+    color: baseColor,
+    emissive: baseColor.clone().multiplyScalar(style === 'metal' ? 0.025 : 0.06),
+    emissiveIntensity: style === 'metal' ? 0.05 : 0.07,
+    roughness: isMalachite ? 0.27 : preset.roughness,
+    metalness: preset.metalness,
+    clearcoat: isMalachite ? 0.52 : preset.clearcoat,
+    clearcoatRoughness: isMalachite ? 0.14 : preset.clearcoatRoughness,
   })
+  if (preset.texture) applyProceduralMaterial(material, preset.texture, color)
+  return material
 }
 
 /** Lift detail out of the dark GLB textures without overexposing the board.
@@ -186,11 +344,11 @@ async function createPiece(
     if (!(object instanceof THREE.Mesh)) return
     object.material = Array.isArray(object.material)
       ? object.material.map((material) =>
-          style === 'classic' ? classicMaterial() : cloneMaterial(material),
+          style === 'painted' ? cloneMaterial(material) : chessMaterial(style, color),
         )
-      : style === 'classic'
-        ? classicMaterial()
-        : cloneMaterial(object.material)
+      : style === 'painted'
+        ? cloneMaterial(object.material)
+        : chessMaterial(style, color)
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     for (const material of materials) tunePieceMaterial(material, ghost)
     object.castShadow = !ghost
@@ -209,7 +367,7 @@ async function createPiece(
     Math.min(0.88 / horizontal, 1.02 / Math.max(size.y, 0.001)) *
     (MODEL_SCALE[kind] ?? 1)
   model.scale.setScalar(scale)
-  const sink = size.y * scale * PIECE_SINK_RATIO
+  const sink = size.y * scale * (MODEL_SINK_RATIO[kind] ?? PIECE_SINK_RATIO)
   model.position.set(
     -center.x * scale,
     TOP_Y + PIECE_BASE_HEIGHT - bounds.min.y * scale - sink,

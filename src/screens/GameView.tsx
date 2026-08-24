@@ -25,6 +25,8 @@ import { preloadPieceModel } from '@/three/preload'
 function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): string | null {
   if (hint === 'stop-die') return t('game.stopDie')
   if (hint === 'wait-die') return t('game.opponentRolling')
+  if (hint === 'stop-lottery') return t('lottery.stopRoll')
+  if (hint === 'wait-lottery') return t('lottery.firstPlayerRolling')
   if (hint === 'stop-piece') return t('game.stopPiece')
   if (hint === 'wait-piece') return t('game.opponentChoosingPiece')
   return null
@@ -152,6 +154,10 @@ export function GameView({
   const showResult = over && !resultClosed
   const showPlayAgain = over && resultClosed
   const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
+  const selectionStatus =
+    state.phase === 'play' && interactive && selected != null
+      ? t('game.chooseMoveOrPiece')
+      : null
 
   return (
     <AppStage>
@@ -173,7 +179,7 @@ export function GameView({
         opponentName={opponentName}
         youName={youName}
         opponentPresence={opponentPresence}
-        statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
+        statusLine={showPlayAgain ? null : (ceremonyStatus ?? selectionStatus ?? logStatus)}
         statusColor={showPlayAgain ? null : logStatusColor}
         statusAction={
           showPlayAgain

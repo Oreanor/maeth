@@ -26,7 +26,7 @@ export interface Move {
 
 export type Phase = 'lottery' | 'draft' | 'play' | 'over'
 
-/** Online turn lottery before the draft — odd roll → white, even → black. */
+/** Turn lottery — odd roll → the creator, even → the other player. */
 export interface LotteryState {
   step: 'await_roll' | 'revealed'
   roll?: number

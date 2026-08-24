@@ -56,9 +56,9 @@ export function createLotteryState(): GameState {
   }
 }
 
-/** Map a d6 roll to the side that drafts and moves first. */
-export function firstTurnFromRoll(roll: number): Color {
-  return roll % 2 === 1 ? 'white' : 'black'
+/** The roller starts on odd values; their opponent starts on even values. */
+export function firstTurnFromRoll(roll: number, roller: Color = 'white'): Color {
+  return roll % 2 === 1 ? roller : opposite(roller)
 }
 
 /** Begin the draft after the turn lottery — deck shuffled, `firstTurn` draws first. */
@@ -295,13 +295,12 @@ export function applyMove(state: GameState, move: Move): GameState {
 // ── duels (contested captures) ───────────────────────────────────────────────
 //
 // When you capture a piece that is ALSO aimed at your attacker (a mutual
-// threat), the strike is contested: both roll a d6 and the attacker wins on a
-// greater-or-equal roll (ties favour the attacker). A failed strike still
-// spends the attacker's move (it stays put). Capturing a piece that can't hit
-// you back is a clean, automatic kill.
+// threat), the strike is contested: the attacker rolls one d6. Odd values win,
+// even values fail. A failed strike still spends the attacker's move (it stays
+// put). Capturing a piece that can't hit you back is a clean, automatic kill.
 
-/** P(attacker wins) for two d6 when ties favour the attacker (≥) = 21/36. */
-export const DUEL_ATTACKER_WIN_P = 21 / 36
+/** P(attacker wins): three successful faces (1, 3, 5) out of six. */
+export const DUEL_ATTACKER_WIN_P = 1 / 2
 
 /** Is this capture a duel — does the victim also threaten the attacker? */
 export function isDuelMove(board: Board, move: Move): boolean {
@@ -325,7 +324,6 @@ export function applyFailedStrike(state: GameState, move: Move): GameState {
 
 export interface DuelRoll {
   attacker: number
-  defender: number
   success: boolean
 }
 
@@ -344,10 +342,9 @@ export function resolveMove(
   const duelsOn = options.duels !== false
   if (!duelsOn || !isDuelMove(state.board, move)) return { next: applyMove(state, move), duel: null }
   const attacker = rollD6()
-  const defender = rollD6()
-  const success = attacker >= defender // ties favour the attacker
+  const success = attacker % 2 === 1
   const next = success ? applyMove(state, move) : applyFailedStrike(state, move)
-  return { next, duel: { attacker, defender, success } }
+  return { next, duel: { attacker, success } }
 }
 
 /** All legal moves for the side to move (used by the bot). */

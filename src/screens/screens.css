@@ -1270,3 +1270,24 @@
   width: max-content;
   margin-top: 6px;
 }
+
+/* Whose move it is: before your name, after theirs, so the two markers sit on
+   the outside of the pair and read at a glance. The status line says the same
+   thing in words, so these are decorative. */
+.score__turn {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.score__turn--you {
+  margin-right: 6px;
+  background: #4a90d9;
+}
+
+.score__turn--them {
+  margin-left: 6px;
+  background: #d64545;
+}

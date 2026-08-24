@@ -34,16 +34,27 @@ export function Scoreboard({
         opponentPresence
       ]
     : undefined
+  // Only while a side actually owes a move — the lottery and the finished game
+  // still carry a turn, but pointing at someone there would be misleading.
+  const inPlay = state.phase === 'draft' || state.phase === 'play'
   return (
     <div className="score">
       <div className="score__names">
-        <span className={`score__name score__name--${human}`}>{youName}</span>
+        <span className={`score__name score__name--${human}`}>
+          {inPlay && state.turn === human && (
+            <span className="score__turn score__turn--you" aria-hidden />
+          )}
+          {youName}
+        </span>
         <span className="score__vs">vs</span>
         <span className={`score__name score__name--${bot}`}>
           {opponentPresence && (
             <span className={`presence-dot presence-dot--${opponentPresence}`} title={presenceTitle} />
           )}
           {opponentName}
+          {inPlay && state.turn === bot && (
+            <span className="score__turn score__turn--them" aria-hidden />
+          )}
         </span>
       </div>
       <div className="score__nums">

@@ -165,11 +165,10 @@ function tunePieceMaterial(material: THREE.Material, ghost: boolean) {
     return
   }
 
-  if (material.map) {
-    material.emissive.set(0xffffff)
-    material.emissiveMap = material.map
-    material.emissiveIntensity = 0.22
-  } else if (material.emissiveIntensity === 0) {
+  // Textured pieces used to be lifted with an emissive pass over the same map,
+  // which cost a second texture fetch on every pixel they cover. The lights
+  // below carry that brightness now.
+  if (!material.map && material.emissiveIntensity === 0) {
     material.emissive.copy(material.color)
     material.emissiveIntensity = 0.16
   }
@@ -195,7 +194,10 @@ async function createPiece(
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     for (const material of materials) tunePieceMaterial(material, ghost)
     object.castShadow = !ghost
-    object.receiveShadow = true
+    // Pieces cast onto the board but do not catch each other's shadows: that is
+    // a PCF lookup on every pixel of the thing that fills the screen when you
+    // zoom in, for an effect you have to hunt for. Their bases still receive.
+    object.receiveShadow = false
     object.userData.sharedGeometry = true
   })
 
@@ -241,8 +243,10 @@ async function createPiece(
   return group
 }
 
-/** How far a spent piece is pushed toward grey. */
+/** How far a spent piece is pushed toward grey, and how far an untextured one
+ *  is dimmed instead. */
 const SPENT_GREY = 0.85
+const SPENT_DIM = 0.55
 
 /**
  * Grey out a piece that has already moved this turn.
@@ -253,6 +257,14 @@ const SPENT_GREY = 0.85
  * ever moves.
  */
 function markSpent(material: THREE.Material) {
+  // The classic set is carved from one cream tone, so draining its colour reads
+  // as "a piece of the other side" rather than "already moved". Dim it instead,
+  // which it can afford because its colour is the material's, not a texture's.
+  if (material instanceof THREE.MeshStandardMaterial && !material.map) {
+    material.color.multiplyScalar(SPENT_DIM)
+    material.emissiveIntensity *= SPENT_DIM
+    return
+  }
   material.onBeforeCompile = (shader) => {
     const anchor = '#include <dithering_fragment>'
     if (!shader.fragmentShader.includes(anchor)) return
@@ -429,7 +441,10 @@ export function ThreeBoard(props: BoardProps) {
     const cameraSign = props.orientation === 'white' ? 1 : -1
     camera.position.set(7 * cameraSign, 7.3, 8.2 * cameraSign)
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    // No MSAA: it multiplies the cost of every frame, and this scene is
+    // fill-bound — the board and pieces are what fill the screen. Flip back to
+    // true if the silhouettes read as too jagged.
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true })
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.08
@@ -464,9 +479,9 @@ export function ThreeBoard(props: BoardProps) {
     controls.maxPolarAngle = Math.PI * 0.72
     controls.target.set(0, 0.05, 0)
 
-    const ambient = new THREE.HemisphereLight(0xf4eee3, 0x1b2430, 2.15)
+    const ambient = new THREE.HemisphereLight(0xf4eee3, 0x1b2430, 2.9)
     scene.add(ambient)
-    const key = new THREE.DirectionalLight(0xfff2d6, 4.2)
+    const key = new THREE.DirectionalLight(0xfff2d6, 4.8)
     key.position.set(-5, 9, 6)
     key.castShadow = true
     key.shadow.mapSize.set(2048, 2048)

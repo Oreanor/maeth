@@ -279,6 +279,8 @@ interface ThreeScene {
   bottomMaterial: THREE.MeshStandardMaterial
   sideMaterial: THREE.MeshStandardMaterial
   animation: ActiveThreeAnimation | null
+  /** Ask for a redraw; the loop is otherwise idle. */
+  invalidate: () => void
   frame: number
 }
 
@@ -373,6 +375,13 @@ export function ThreeBoard(props: BoardProps) {
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
+
+  // Every effect below mutates the scene imperatively, so rather than have each
+  // remember to ask for a frame, any render at all buys one. Async model and
+  // texture loads still invalidate by hand — they arrive without a render.
+  useEffect(() => {
+    sceneRef.current?.invalidate()
+  })
   propsRef.current = props
 
   useEffect(() => {
@@ -511,6 +520,8 @@ export function ThreeBoard(props: BoardProps) {
       scene,
       camera,
       renderer,
+      // replaced below, once the loop owns the dirty flag
+      invalidate: () => {},
       controls,
       pieceRoot,
       ghostRoot,
@@ -531,6 +542,7 @@ export function ThreeBoard(props: BoardProps) {
       camera.aspect = width / Math.max(1, height)
       camera.updateProjectionMatrix()
       renderer.setSize(width, height, false)
+      threeScene.invalidate()
     }
     resize()
     window.addEventListener('resize', resize)
@@ -557,6 +569,7 @@ export function ThreeBoard(props: BoardProps) {
       // Inspecting a piece works whoever's turn it is, so hover is tracked
       // before the interactivity gate that guards the draft preview.
       hoverProbe = { x: event.clientX, y: event.clientY }
+      threeScene.invalidate()
       if (!current.interactive) return
       const cell = pointerCell(event, canvas, camera, hitCells)
       canvas.classList.toggle('three-board__canvas--cell', cell != null)
@@ -581,6 +594,7 @@ export function ThreeBoard(props: BoardProps) {
       if (cell != null) propsRef.current.onCellClick(cell)
     }
     const onPointerLeave = (event: PointerEvent) => {
+      threeScene.invalidate()
       pointerStart = null
       lastHover = null
       activePointers.clear()
@@ -655,10 +669,23 @@ export function ThreeBoard(props: BoardProps) {
       if (name && !named) name.style.opacity = '0'
     }
 
+    // Nothing on this board moves by itself, so the loop draws only while the
+    // camera is moving, a piece is animating, or something asked it to. A canvas
+    // that is dirty every frame is not only its own cost: the browser has to
+    // recomposite it and recompute any blurred backdrop above it just as often.
+    let dirtyFrames = 2
+    threeScene.invalidate = () => {
+      dirtyFrames = 2
+    }
+
     const render = (time: number) => {
       threeScene.frame = requestAnimationFrame(render)
-      controls.update()
+      const moving = controls.update()
       const animation = threeScene.animation
+      if (!moving && !animation) {
+        if (dirtyFrames <= 0) return
+        dirtyFrames -= 1
+      }
       if (animation) {
         // Pieces are moving, so the shadows have to follow them.
         renderer.shadowMap.needsUpdate = true
@@ -731,6 +758,7 @@ export function ThreeBoard(props: BoardProps) {
         current.topMaterial.needsUpdate = true
         current.bottomMaterial.needsUpdate = true
         current.renderer.shadowMap.needsUpdate = true
+        current.invalidate()
         setLoading(false)
       },
       () => setLoading(false),
@@ -818,6 +846,7 @@ export function ThreeBoard(props: BoardProps) {
       void Promise.all(tasks).then(() => {
         if (syncId !== syncIdRef.current) return
         current.renderer.shadowMap.needsUpdate = true
+        current.invalidate()
         const from = piecePosition(anim.from)
         const to = piecePosition(anim.to)
         from.y = 0
@@ -835,6 +864,7 @@ export function ThreeBoard(props: BoardProps) {
       void Promise.all(tasks).then(() => {
         if (syncId !== syncIdRef.current) return
         current.renderer.shadowMap.needsUpdate = true
+        current.invalidate()
         setLoading(false)
       })
     }
@@ -858,6 +888,7 @@ export function ThreeBoard(props: BoardProps) {
       object.position.copy(piecePosition(cell))
       object.position.y = 0
       current.ghostRoot.add(object)
+      current.invalidate()
     })
   }, [props.previewCell, props.previewKind, props.previewOwner, threePieceStyle])
 

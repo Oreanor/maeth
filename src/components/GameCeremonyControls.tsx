@@ -8,6 +8,34 @@ import { PieceIcon } from './PieceIcon'
 import './GameCeremonyControls.css'
 
 const SPIN_MS = 80
+const DIE_FACES = [1, 2, 3, 4, 5, 6]
+
+/** Never twice in a row — a repeat reads as the carousel having stalled. */
+function pickOther<T>(pool: readonly T[], current: T | null): T {
+  const others = pool.filter((value) => value !== current)
+  const from = others.length ? others : pool
+  return from[Math.floor(Math.random() * from.length)]
+}
+
+/**
+ * Advance a carousel roughly every SPIN_MS, driven by frames rather than a
+ * timer. An interval fires whether or not the page is painting: when the main
+ * thread stalls, its callbacks queue up and then run back to back, collapsing
+ * several steps into one frame so some faces are never seen. Gating on frames
+ * means every step is one the player actually sees, and a stall simply resumes.
+ */
+function spin(step: () => void): () => void {
+  let frame = 0
+  let last = performance.now()
+  const tick = (now: number) => {
+    frame = requestAnimationFrame(tick)
+    if (now - last < SPIN_MS) return
+    last = now
+    step()
+  }
+  frame = requestAnimationFrame(tick)
+  return () => cancelAnimationFrame(frame)
+}
 const BOT_STOP_MIN_MS = 500
 const BOT_STOP_JITTER_MS = 500
 const SETTLED_LINGER_MS = 700
@@ -98,18 +126,14 @@ export function GameCeremonyControls({
 
   useEffect(() => {
     if (!dieRunning) return
-    const timer = window.setInterval(() => setDieSpin(1 + Math.floor(Math.random() * 6)), SPIN_MS)
-    return () => window.clearInterval(timer)
+    return spin(() => setDieSpin((face) => pickOther(DIE_FACES, face)))
   }, [dieRunning])
 
   const draftPool = draftPick?.pool
   useEffect(() => {
     if (!draftRunning || !draftPool?.length) return
-    setPieceSpin(draftPool[Math.floor(Math.random() * draftPool.length)] ?? null)
-    const timer = window.setInterval(() => {
-      setPieceSpin(draftPool[Math.floor(Math.random() * draftPool.length)] ?? null)
-    }, SPIN_MS)
-    return () => window.clearInterval(timer)
+    setPieceSpin((kind) => pickOther(draftPool, kind))
+    return spin(() => setPieceSpin((kind) => pickOther(draftPool, kind)))
   }, [draftPool, draftRunning])
 
   // A remote duel request can outlive the network round trip. If the player

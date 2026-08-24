@@ -156,3 +156,15 @@
     animation: none;
   }
 }
+
+/* Over the 3D board the canvas repaints every frame, so anything with a blurred
+   backdrop on top of it has to be re-sampled and re-blurred every frame as well.
+   The die is the worst case: it also carries the infinite "ready" pulse, whose
+   box-shadow keyframes repaint it and invalidate that backdrop again. Trade the
+   blur for a denser fill here — the 2D board's backdrop is static, so it keeps
+   the glass. */
+.screen--game-3d .ceremony-control {
+  background: color-mix(in srgb, var(--card) 93%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

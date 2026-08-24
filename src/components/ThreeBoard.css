@@ -90,9 +90,10 @@
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   color: rgba(255, 255, 255, 0.94);
-  background: rgba(15, 18, 22, 0.82);
+  /* No backdrop-filter: this pill is re-positioned every frame over a canvas
+     that also repaints every frame, which is the worst case for one. */
+  background: rgba(15, 18, 22, 0.94);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;

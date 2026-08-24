@@ -20,6 +20,12 @@
   cursor: pointer;
 }
 
+/* One of your own pieces, which you can pick up — a finger is for everything
+   else you can merely click, including the opponent's pieces. */
+.three-board__canvas--own {
+  cursor: grab;
+}
+
 .three-board__canvas--dragging {
   cursor: grabbing;
 }

@@ -587,7 +587,11 @@ export function ThreeBoard(props: BoardProps) {
       lastHover = null
       activePointers.clear()
       multiTouchGesture = false
-      canvas.classList.remove('three-board__canvas--dragging', 'three-board__canvas--cell')
+      canvas.classList.remove(
+        'three-board__canvas--dragging',
+        'three-board__canvas--cell',
+        'three-board__canvas--own',
+      )
       hoverProbe = null
       hoverRef.current = null
       setHoverCell(null)
@@ -626,6 +630,12 @@ export function ThreeBoard(props: BoardProps) {
           setHoverCell(hovered)
         }
       }
+      const hoveredCell = hoverRef.current
+      canvas.classList.toggle(
+        'three-board__canvas--own',
+        hoveredCell != null && (propsRef.current.movable?.includes(hoveredCell) ?? false),
+      )
+
       const name = nameRef.current
       let named = false
       const placed = new Set<number>()

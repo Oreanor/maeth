@@ -131,7 +131,10 @@
    The shiver is on the icon (not .piece) so leaving hover doesn't restart the
    piece's drop-in animation. */
 .cell--movable {
-  cursor: pointer;
+  cursor: grab;
+}
+.cell--movable:active {
+  cursor: grabbing;
 }
 .cell--movable:hover .piece {
   filter: brightness(1.14);

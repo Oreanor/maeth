@@ -36,8 +36,11 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* No inset: the portrait fills the button to its border. Any padding here
+   lets the button's own surface show through as a second ring inside the
+   coloured one. */
 .ceremony-control--piece {
-  padding: 14px;
+  padding: 0;
 }
 
 .ceremony-control--actionable {
@@ -113,7 +116,7 @@
   }
 
   .ceremony-control--piece {
-    padding: 9px;
+    padding: 0;
   }
 
   .ceremony-control__question {
@@ -129,7 +132,7 @@
   }
 
   .ceremony-control--piece {
-    padding: 14px;
+    padding: 0;
   }
 
   .ceremony-control__question {

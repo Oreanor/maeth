@@ -13,7 +13,15 @@ import {
   markSpent,
   tunePieceMaterial,
 } from '@/three/pieceMaterials'
-import { OWNER_COLOR, edgeArrows } from './ArrowOverlay'
+import { edgeArrows } from './ArrowOverlay'
+import {
+  ARCHER_SHOT_HEX,
+  CAPTURE_HEX,
+  MOVE_HEX,
+  OWNER_COLOR,
+  OWNER_HEX,
+  SELECT_HEX,
+} from '@/palette'
 import { PieceBadge } from './PieceBadge'
 import type { BoardProps } from './Board'
 import './ThreeBoard.css'
@@ -839,13 +847,13 @@ export function ThreeBoard(props: BoardProps) {
       let color = 0xffffff
       let opacity = 0
       if (props.selected === cell) {
-        color = 0xf6c945
+        color = SELECT_HEX
         opacity = 0.45
       } else if (captureTargets.has(cell)) {
-        color = 0xe23b34
+        color = CAPTURE_HEX
         opacity = 0.42
       } else if (props.legalTargets.includes(cell)) {
-        color = 0x3fae5a
+        color = MOVE_HEX
         opacity = 0.34
       }
       // Placement targets are deliberately not tinted: during the draft every
@@ -868,12 +876,12 @@ export function ThreeBoard(props: BoardProps) {
           current.arrowRoot,
           cellPosition(move.from),
           cellPosition(move.to),
-          move.capture ? 0xe23b34 : 0x3fae5a,
+          move.capture ? CAPTURE_HEX : MOVE_HEX,
         )
       }
     } else if (arrowFrom != null && props.previewKind) {
       const previewColor = OWNER_COLOR[props.previewOwner]
-      const previewHex = new THREE.Color(previewColor).getHex()
+      const previewHex = OWNER_HEX[props.previewOwner]
       for (const arrow of edgeArrows(arrowFrom, props.previewKind, previewColor)) {
         const from = cellPosition(arrowFrom)
         const to = from
@@ -886,7 +894,7 @@ export function ThreeBoard(props: BoardProps) {
     // a selection or draft ghost owns the arrows, so the two never overlap.
     const hovered = hoverCell != null ? props.board[hoverCell] : null
     if (hovered && props.selected == null && props.previewCell == null && hoverCell != null) {
-      const color = new THREE.Color(OWNER_COLOR[hovered.color]).getHex()
+      const color = OWNER_HEX[hovered.color]
       for (const arrow of edgeArrows(hoverCell, hovered.kind, OWNER_COLOR[hovered.color])) {
         const from = cellPosition(hoverCell)
         const to = from
@@ -898,7 +906,7 @@ export function ThreeBoard(props: BoardProps) {
 
     const anim = props.anim
     if (anim && isArcher(anim.attacker) && anim.kind === 'capture') {
-      addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), 0xf0b84b)
+      addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), ARCHER_SHOT_HEX)
     }
   }, [
     hoverCell,

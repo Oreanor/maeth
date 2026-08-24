@@ -1166,10 +1166,10 @@
   padding-left: 6px;
 }
 .score__name--white {
-  color: #4a90d9;
+  color: var(--owner-white);
 }
 .score__name--black {
-  color: #d64545;
+  color: var(--owner-black);
 }
 /* opponent presence: red offline · amber online · green in this game */
 .presence-dot {
@@ -1279,11 +1279,11 @@
 }
 
 .score__status--white {
-  color: #4a90d9;
+  color: var(--owner-white);
 }
 
 .score__status--black {
-  color: #d64545;
+  color: var(--owner-black);
 }
 
 .score__status--neutral {
@@ -1308,10 +1308,10 @@
 
 .score__turn--you {
   margin-right: 6px;
-  background: #4a90d9;
+  background: var(--owner-white);
 }
 
 .score__turn--them {
   margin-left: 6px;
-  background: #d64545;
+  background: var(--owner-black);
 }

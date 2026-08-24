@@ -1,5 +1,6 @@
 import { SIZE, colOf, onBoard, rowOf, type Color, type Move } from '@/game/types'
 import { PIECES, dirsFor, isArcher, type PieceKind } from '@/game/pieces'
+import { CAPTURE_COLOR, MOVE_COLOR } from '@/palette'
 
 // Generic arrow overlay drawn over the board grid. Units are board cells
 // (viewBox 0 0 SIZE SIZE). Used for two things:
@@ -9,9 +10,7 @@ import { PIECES, dirsFor, isArcher, type PieceKind } from '@/game/pieces'
 //   • move hints — when a piece is selected, red arrows toward captures and
 //     green arrows toward empty destinations.
 
-export const OWNER_COLOR: Record<Color, string> = { white: '#4a90d9', black: '#d64545' }
-export const CAPTURE_COLOR = '#e23b34'
-export const MOVE_COLOR = '#3fae5a'
+export { OWNER_COLOR } from '@/palette'
 
 /** One arrow: a board-space direction, length in cells, and a colour. */
 export interface ArrowSpec {

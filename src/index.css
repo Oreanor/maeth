@@ -14,6 +14,10 @@
   --card: #1b232d;
   --text: #f2f5f8;
   --muted: #8d9aa8;
+  /* Which side something belongs to. Mirrors OWNER_COLOR in src/palette.ts,
+     which a stylesheet cannot import — keep the two in step. */
+  --owner-white: #4a90d9;
+  --owner-black: #d64545;
   --accent: #4a90d9;
   --accent-text: #ffffff;
   --btn-border: rgba(255, 255, 255, 0.12);
@@ -35,6 +39,8 @@
   --card: #ffffff;
   --text: #16202b;
   --muted: #5b6b7b;
+  --owner-white: #4a90d9;
+  --owner-black: #d64545;
   --accent: #3a7bd5;
   --accent-text: #ffffff;
   --btn-border: rgba(22, 32, 43, 0.18);

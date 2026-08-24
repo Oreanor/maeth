@@ -32,11 +32,11 @@
 }
 
 .gamelog__line--white {
-  color: #4a90d9;
+  color: var(--owner-white);
 }
 
 .gamelog__line--black {
-  color: #d64545;
+  color: var(--owner-black);
 }
 
 .gamelog__line--neutral {

@@ -4,9 +4,8 @@ import { isArcher, type PieceKind } from '@/game/pieces'
 import type { AnimInfo } from '@/game/presentation'
 import { PieceBadge } from './PieceBadge'
 import { PieceIcon } from './PieceIcon'
+import { OWNER_COLOR } from '@/palette'
 import './MoveAnimation.css'
-
-const OWNER_COLOR: Record<Color, string> = { white: '#4a90d9', black: '#d64545' }
 
 /**
  * Plays the move: an arrow is drawn toward the target, then (for a normal move

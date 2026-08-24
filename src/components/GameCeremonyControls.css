@@ -155,3 +155,39 @@
   border-color: #e2655d;
   box-shadow: 0 0 0 5px color-mix(in srgb, #e2655d 22%, transparent), 0 12px 38px rgba(0, 0, 0, 0.3);
 }
+
+/* Grows in from a compressed state and leaves the same way, rather than popping
+   in and vanishing. */
+.ceremony-control {
+  animation: ceremony-in 200ms ease-out;
+}
+
+@keyframes ceremony-in {
+  from {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+}
+
+.ceremony-control--out {
+  animation: ceremony-out 220ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes ceremony-out {
+  to {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Stopped, and being looked at before it closes. Holds the appearance it had
+   while you were acting on it — only the pulse stops. Dimming it here would
+   read as the button leaving before it does. */
+.ceremony-control--settled {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 12px 38px rgba(0, 0, 0, 0.3);
+}

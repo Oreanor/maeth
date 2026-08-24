@@ -8,6 +8,29 @@ import { PieceIcon } from './PieceIcon'
 import './GameCeremonyControls.css'
 
 const SPIN_MS = 80
+/** Matches the ceremony-out animation, so the control finishes shrinking
+ *  before it unmounts. */
+const EXIT_MS = 220
+
+/**
+ * Follows a visibility flag, but lingers for `ms` after it turns off so an
+ * exit animation has something to play on. Holds the last value shown too,
+ * since the state behind it is already gone by then.
+ */
+function useLingering<T>(visible: boolean, value: T, ms: number) {
+  const [mounted, setMounted] = useState(visible)
+  const held = useRef(value)
+  if (visible) held.current = value
+  useEffect(() => {
+    if (visible) {
+      setMounted(true)
+      return
+    }
+    const timer = window.setTimeout(() => setMounted(false), ms)
+    return () => window.clearTimeout(timer)
+  }, [visible, ms])
+  return { mounted, leaving: mounted && !visible, value: visible ? value : held.current }
+}
 const DIE_FACES = [1, 2, 3, 4, 5, 6]
 
 /** Never twice in a row — a repeat reads as the carousel having stalled. */
@@ -214,6 +237,13 @@ export function GameCeremonyControls({
   // that ever changes.
   const diceVisible = duelOpen || lottery != null
   const pieceVisible = !diceVisible && draftPick != null
+  // Resolved, and being looked at before it closes. It keeps the look it had
+  // while you were acting on it, minus the pulse — dimming it the instant it
+  // settles reads as the button leaving early.
+  const dieSettled = Boolean((duel && duelSettled) || (!duelOpen && lottery?.step === 'revealed'))
+  const pieceSettled = Boolean(draftPick?.settled)
+  const die = useLingering(diceVisible, shownDie, EXIT_MS)
+  const piece = useLingering(pieceVisible, shownPiece, EXIT_MS)
   // A ceremony is running but the button is not yours to press: the opponent is
   // the one acting on it.
   const dieOpponent = dieRunning && !dieActionable
@@ -221,33 +251,37 @@ export function GameCeremonyControls({
 
   return (
     <div className="ceremony-controls" aria-live="polite">
-      {diceVisible && (
+      {die.mounted && (
         <button
           type="button"
           className={`ceremony-control${dieActionable ? ' ceremony-control--actionable' : ''}${
-            dieOpponent ? ' ceremony-control--opponent' : ''
+            dieSettled ? ' ceremony-control--settled' : ''
+          }${dieOpponent ? ' ceremony-control--opponent' : ''}${
+            die.leaving ? ' ceremony-control--out' : ''
           }`}
           onClick={onDieClick}
           aria-disabled={!dieActionable}
           aria-label={t('game.dieButton')}
         >
-          <DieFace value={shownDie} />
+          <DieFace value={die.value} />
         </button>
       )}
 
-      {pieceVisible && (
+      {piece.mounted && (
         <button
           type="button"
           className={`ceremony-control ceremony-control--piece${
             draftActionable ? ' ceremony-control--actionable' : ''
-          }${pieceOpponent ? ' ceremony-control--opponent' : ''}`}
+          }${pieceSettled ? ' ceremony-control--settled' : ''}${
+            pieceOpponent ? ' ceremony-control--opponent' : ''
+          }${piece.leaving ? ' ceremony-control--out' : ''}`}
           onClick={draftActionable ? onConfirmDraftPick : undefined}
           aria-disabled={!draftActionable}
           aria-label={t('game.pieceButton')}
         >
-          {shownPiece ? (
+          {piece.value ? (
             <PieceIcon
-              kind={shownPiece}
+              kind={piece.value}
               className="ceremony-control__piece"
               spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
             />

@@ -9,7 +9,7 @@ import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
 import {
   chessMaterial,
-  cloneMaterial,
+  paintedMaterial,
   markSpent,
   tunePieceMaterial,
 } from '@/three/pieceMaterials'
@@ -141,10 +141,10 @@ async function createPiece(
     if (!(object instanceof THREE.Mesh)) return
     object.material = Array.isArray(object.material)
       ? object.material.map((material) =>
-          style === 'painted' ? cloneMaterial(material) : chessMaterial(style, color),
+          style === 'painted' ? paintedMaterial(material) : chessMaterial(style, color),
         )
       : style === 'painted'
-        ? cloneMaterial(object.material)
+        ? paintedMaterial(object.material)
         : chessMaterial(style, color)
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     for (const material of materials) tunePieceMaterial(material, ghost)

@@ -2,14 +2,14 @@
   position: absolute;
   inset: 0;
   z-index: 24;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
 
 .ceremony-control {
   --control-size: 128px;
   appearance: none;
-  position: absolute;
-  bottom: max(18px, env(safe-area-inset-bottom));
   width: var(--control-size);
   height: var(--control-size);
   padding: 17px;
@@ -18,7 +18,7 @@
   background: color-mix(in srgb, var(--card) 78%, transparent);
   color: var(--text);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.25), inset 0 0 0 3px rgba(255, 255, 255, 0.12);
-  opacity: 0.26;
+  opacity: 0.82;
   overflow: hidden;
   pointer-events: auto;
   cursor: default;
@@ -29,18 +29,8 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-.ceremony-control--die {
-  left: max(18px, env(safe-area-inset-left));
-}
-
 .ceremony-control--piece {
-  right: max(18px, env(safe-area-inset-right));
   padding: 9px;
-}
-
-.ceremony-control--visible,
-.ceremony-control--running {
-  opacity: 0.78;
 }
 
 .ceremony-control--actionable {
@@ -111,17 +101,11 @@
 @media (max-width: 720px), (max-height: 680px) {
   .ceremony-control {
     --control-size: 90px;
-    bottom: max(10px, env(safe-area-inset-bottom));
     padding: 12px;
     border-width: 3px;
   }
 
-  .ceremony-control--die {
-    left: max(10px, env(safe-area-inset-left));
-  }
-
   .ceremony-control--piece {
-    right: max(10px, env(safe-area-inset-right));
     padding: 6px;
   }
 
@@ -133,11 +117,6 @@
 @media (max-width: 720px) {
   .ceremony-control {
     --control-size: 128px;
-    bottom: calc(
-      max(10px, env(safe-area-inset-bottom)) +
-      var(--mobile-log-height, 122px) +
-      var(--mobile-hud-gap, 12px)
-    );
     padding: 17px;
     border-width: 4px;
   }

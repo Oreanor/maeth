@@ -194,38 +194,46 @@ export function GameCeremonyControls({
         ? lottery.roll
         : dieSpin
   const shownPiece = draftPick?.settled ?? pieceSpin
+  // One control at a time, centred on the board, and only while a ceremony is
+  // actually running — the two idle corner buttons are gone. A duel or the
+  // lottery cannot coincide with a draft pick, but the die takes precedence if
+  // that ever changes.
   const diceVisible = duelOpen || lottery != null
-  const pieceVisible = draftPick != null
+  const pieceVisible = !diceVisible && draftPick != null
 
   return (
     <div className="ceremony-controls" aria-live="polite">
-      <button
-        type="button"
-        className={`ceremony-control ceremony-control--die${diceVisible ? ' ceremony-control--visible' : ''}${dieRunning ? ' ceremony-control--running' : ''}${dieActionable ? ' ceremony-control--actionable' : ''}`}
-        onClick={onDieClick}
-        aria-disabled={!dieActionable}
-        aria-label="Dice"
-      >
-        <DieFace value={shownDie} />
-      </button>
+      {diceVisible && (
+        <button
+          type="button"
+          className={`ceremony-control${dieActionable ? ' ceremony-control--actionable' : ''}`}
+          onClick={onDieClick}
+          aria-disabled={!dieActionable}
+          aria-label="Dice"
+        >
+          <DieFace value={shownDie} />
+        </button>
+      )}
 
-      <button
-        type="button"
-        className={`ceremony-control ceremony-control--piece${pieceVisible ? ' ceremony-control--visible' : ''}${draftRunning ? ' ceremony-control--running' : ''}${draftActionable ? ' ceremony-control--actionable' : ''}`}
-        onClick={draftActionable ? onConfirmDraftPick : undefined}
-        aria-disabled={!draftActionable}
-        aria-label="Piece"
-      >
-        {shownPiece && pieceVisible ? (
-          <PieceIcon
-            kind={shownPiece}
-            className="ceremony-control__piece"
-            spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
-          />
-        ) : (
-          <span className="ceremony-control__question" aria-hidden="true">?</span>
-        )}
-      </button>
+      {pieceVisible && (
+        <button
+          type="button"
+          className={`ceremony-control ceremony-control--piece${draftActionable ? ' ceremony-control--actionable' : ''}`}
+          onClick={draftActionable ? onConfirmDraftPick : undefined}
+          aria-disabled={!draftActionable}
+          aria-label="Piece"
+        >
+          {shownPiece ? (
+            <PieceIcon
+              kind={shownPiece}
+              className="ceremony-control__piece"
+              spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
+            />
+          ) : (
+            <span className="ceremony-control__question" aria-hidden="true">?</span>
+          )}
+        </button>
+      )}
     </div>
   )
 }

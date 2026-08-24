@@ -134,7 +134,7 @@ function textureEdgeColor(texture: THREE.Texture): THREE.Color | null {
 
 /** Both sides of the classic set share one warm bone tone; facing direction and
  * board position tell the two players apart. Tune the carve here. */
-const CLASSIC_PIECE_COLOR = 0xcbb692
+const CLASSIC_PIECE_COLOR = 0xd0b583
 
 function classicMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
@@ -245,7 +245,7 @@ async function createPiece(
 
 /** How far a spent piece is pushed toward grey, and how far an untextured one
  *  is dimmed instead. */
-const SPENT_GREY = 0.85
+const SPENT_GREY = 1
 const SPENT_DIM = 0.55
 
 /**

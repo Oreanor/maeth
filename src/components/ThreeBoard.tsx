@@ -694,7 +694,12 @@ export function ThreeBoard(props: BoardProps) {
       const step = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 0
       lastFrame = time
 
-      if (!moving && !animation && !flung) {
+      // While a finger is down the loop keeps drawing. Gating on whether the
+      // controls reported movement this frame is enough for a mouse, but a
+      // pinch arrives as a stream of small changes and the gaps between the
+      // ones that register read as the gesture stuttering.
+      const gesturing = activePointers.size > 0
+      if (!moving && !animation && !flung && !gesturing) {
         if (dirtyFrames <= 0) return
         dirtyFrames -= 1
       }

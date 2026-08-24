@@ -501,6 +501,6 @@
   white-space: nowrap;
   /* Lighter and a point smaller than the range beside it: the name identifies
      the piece, the number is the thing being read off the badge. */
-  font-size: 0.92em;
+  font-size: 0.84em;
   font-weight: 500;
 }

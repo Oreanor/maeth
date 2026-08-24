@@ -77,22 +77,28 @@ export function UserMenu({
             <label className="usermenu__item usermenu__item--lang">
               <Globe size={18} />
               <span>{t('lobby.language')}</span>
-              <select
-                className="usermenu__lang"
-                value={lang}
-                onChange={(e) => setLang(e.target.value as Lang)}
-              >
-                {LANGS.map((code) => (
-                  <option key={code} value={code}>
-                    {t(`languages.${code}`)}
-                  </option>
-                ))}
-              </select>
+              <span className="usermenu__tail">
+                <select
+                  className="usermenu__lang"
+                  value={lang}
+                  onChange={(e) => setLang(e.target.value as Lang)}
+                >
+                  {LANGS.map((code) => (
+                    <option key={code} value={code}>
+                      {t(`languages.${code}`)}
+                    </option>
+                  ))}
+                </select>
+                <kbd className="usermenu__shortcut">L</kbd>
+              </span>
             </label>
 
             <button className="usermenu__item" role="menuitem" onClick={toggle}>
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               <span>{t('lobby.theme')}</span>
+              <span className="usermenu__tail">
+                <kbd className="usermenu__shortcut">T</kbd>
+              </span>
             </button>
 
             {!appearanceOnly && (
@@ -104,52 +110,61 @@ export function UserMenu({
                 >
                   {viewMode === '3d' ? <Box size={18} /> : <Grid2X2 size={18} />}
                   <span>{t('lobby.boardView')}</span>
-                  <span className="usermenu__value">
-                    {viewMode === '3d' ? t('lobby.boardView3d') : t('lobby.boardView2d')}
+                  <span className="usermenu__tail">
+                    <span className="usermenu__value">
+                      {viewMode === '3d' ? t('lobby.boardView3d') : t('lobby.boardView2d')}
+                    </span>
+                    <kbd className="usermenu__shortcut">V</kbd>
                   </span>
                 </button>
 
                 <label className="usermenu__item usermenu__item--lang">
                   <Image size={18} />
                   <span>{t('lobby.boardStyle')}</span>
-                  <select
-                    className="usermenu__lang"
-                    value={boardStyle}
-                    onChange={(e) => setBoardStyle(e.target.value as BoardStyle)}
-                  >
-                    {BOARD_STYLES.map((style) => (
-                      <option key={style} value={style}>
-                        {t('lobby.boardNumber', { number: BOARD_STYLE_CONFIG[style].number })}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="usermenu__tail">
+                    <select
+                      className="usermenu__lang"
+                      value={boardStyle}
+                      onChange={(e) => setBoardStyle(e.target.value as BoardStyle)}
+                    >
+                      {BOARD_STYLES.map((style) => (
+                        <option key={style} value={style}>
+                          {t('lobby.boardNumber', { number: BOARD_STYLE_CONFIG[style].number })}
+                        </option>
+                      ))}
+                    </select>
+                    <kbd className="usermenu__shortcut">B</kbd>
+                  </span>
                 </label>
 
                 <label className="usermenu__item usermenu__item--lang">
                   {viewMode === '3d' ? <Circle size={18} /> : <Palette size={18} />}
                   <span>{t('lobby.pieceStyle')}</span>
-                  {viewMode === '3d' ? (
-                    <select
-                      className="usermenu__lang"
-                      value={threePieceStyle}
-                      onChange={(e) => setThreePieceStyle(e.target.value as ThreePieceStyle)}
-                    >
-                      <option value="painted">{t('lobby.pieceStyle3dPainted')}</option>
-                      <option value="classic">{t('lobby.pieceStyle3dClassic')}</option>
-                    </select>
-                  ) : (
-                    <select
-                      className="usermenu__lang"
-                      value={skin}
-                      onChange={(e) => setSkin(e.target.value as Skin)}
-                    >
-                      {SKINS.map((code) => (
-                        <option key={code} value={code}>
-                          {t(SKIN_I18N[code])}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <span className="usermenu__tail">
+                    {viewMode === '3d' ? (
+                      <select
+                        className="usermenu__lang"
+                        value={threePieceStyle}
+                        onChange={(e) => setThreePieceStyle(e.target.value as ThreePieceStyle)}
+                      >
+                        <option value="painted">{t('lobby.pieceStyle3dPainted')}</option>
+                        <option value="classic">{t('lobby.pieceStyle3dClassic')}</option>
+                      </select>
+                    ) : (
+                      <select
+                        className="usermenu__lang"
+                        value={skin}
+                        onChange={(e) => setSkin(e.target.value as Skin)}
+                      >
+                        {SKINS.map((code) => (
+                          <option key={code} value={code}>
+                            {t(SKIN_I18N[code])}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <kbd className="usermenu__shortcut">F</kbd>
+                  </span>
                 </label>
 
                 <button

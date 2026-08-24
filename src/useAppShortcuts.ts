@@ -41,11 +41,13 @@ export function useAppShortcuts(): void {
       const target = event.target as HTMLElement | null
       if (target?.closest('input, textarea, select, [contenteditable]')) return
 
-      switch (event.key.toLowerCase()) {
-        case 'b':
+      // `code` follows the physical key, so shortcuts keep working when the
+      // active keyboard layout produces Cyrillic or any other alphabet.
+      switch (event.code) {
+        case 'KeyB':
           setBoardStyle(next(BOARD_STYLES, boardStyle))
           break
-        case 'f':
+        case 'KeyF':
           // "Pieces" means whichever set the current view actually draws.
           if (viewMode === '3d') {
             setThreePieceStyle(threePieceStyle === 'painted' ? 'classic' : 'painted')
@@ -53,13 +55,13 @@ export function useAppShortcuts(): void {
             setSkin(next(SKINS, skin))
           }
           break
-        case 'v':
+        case 'KeyV':
           setViewMode(viewMode === '3d' ? '2d' : '3d')
           break
-        case 'l':
+        case 'KeyL':
           setLang(next(LANGS, lang))
           break
-        case 't':
+        case 'KeyT':
           toggle()
           break
         default:

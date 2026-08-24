@@ -173,10 +173,6 @@ export function GameView({
         opponentName={opponentName}
         youName={youName}
         opponentPresence={opponentPresence}
-      />
-
-      <GameLog
-        entries={logEntries}
         statusLine={showPlayAgain ? null : (ceremonyStatus ?? logStatus)}
         statusColor={showPlayAgain ? null : logStatusColor}
         statusAction={
@@ -185,6 +181,8 @@ export function GameView({
             : undefined
         }
       />
+
+      <GameLog entries={logEntries} />
 
       <GameBoard
         board={state.board}

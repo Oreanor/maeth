@@ -1,4 +1,5 @@
 import { useI18n } from '@/i18n'
+import type { LogColor } from '@/game/actionLog'
 import type { Color, GameState } from '@/game/types'
 import type { Presence } from '@/lib/api'
 
@@ -10,6 +11,9 @@ export function Scoreboard({
   opponentName,
   youName,
   opponentPresence,
+  statusLine,
+  statusColor,
+  statusAction,
 }: {
   state: GameState
   human: Color
@@ -17,6 +21,12 @@ export function Scoreboard({
   opponentName: string
   youName: string
   opponentPresence?: Presence | null
+  /** What to do next. Sits under the score rather than in the log, which is a
+   *  record of what already happened. */
+  statusLine?: string | null
+  statusColor?: LogColor | null
+  /** Replaces the hint when there is something to press instead. */
+  statusAction?: { label: string; onClick: () => void; disabled?: boolean }
 }) {
   const { t } = useI18n()
   const presenceTitle = opponentPresence
@@ -41,6 +51,20 @@ export function Scoreboard({
         <span className="score__colon">:</span>
         <strong>{state.captures[bot]}</strong>
       </div>
+      {statusAction ? (
+        <button
+          type="button"
+          className="btn btn--primary btn--sm score__action"
+          onClick={statusAction.onClick}
+          disabled={statusAction.disabled}
+        >
+          {statusAction.label}
+        </button>
+      ) : statusLine ? (
+        <div className={`score__status score__status--${statusColor ?? 'neutral'}`} aria-live="polite">
+          {statusLine}
+        </div>
+      ) : null}
     </div>
   )
 }

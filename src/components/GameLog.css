@@ -43,41 +43,6 @@
   color: var(--muted, #6b7280);
 }
 
-.gamelog__status {
-  padding: 8px 20px;
-  border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-  /* The status strip tells you what to do next, so it reads a couple of points
-     larger than the play-by-play entries above it. */
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--muted, #6b7280);
-}
-
-.gamelog__status--only {
-  border-top: 0;
-}
-
-.gamelog__status--white {
-  color: #4a90d9;
-}
-
-.gamelog__status--black {
-  color: #d64545;
-}
-
-.gamelog__status--neutral {
-  color: var(--muted, #6b7280);
-}
-
-.gamelog__status--action {
-  padding: 6px 18px 8px;
-}
-
-.gamelog__action {
-  width: 100%;
-}
-
 @media (max-width: 720px), (max-height: 680px) {
   .screen--game > .gamelog {
     bottom: calc(max(10px, env(safe-area-inset-bottom)) + 45px);
@@ -103,8 +68,4 @@
     min-height: 0;
   }
 
-  .screen--game > .gamelog .gamelog__status {
-    flex: 0 0 auto;
-    margin-top: auto;
-  }
 }

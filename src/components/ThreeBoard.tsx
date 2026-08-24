@@ -441,10 +441,10 @@ export function ThreeBoard(props: BoardProps) {
     const cameraSign = props.orientation === 'white' ? 1 : -1
     camera.position.set(7 * cameraSign, 7.3, 8.2 * cameraSign)
 
-    // No MSAA: it multiplies the cost of every frame, and this scene is
-    // fill-bound — the board and pieces are what fill the screen. Flip back to
-    // true if the silhouettes read as too jagged.
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true })
+    // MSAA stays on: without it the piece silhouettes read as too jagged to
+    // trade for the frame time. The per-pixel savings came from the shadow and
+    // texture work instead.
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.08

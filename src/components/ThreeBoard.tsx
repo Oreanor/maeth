@@ -68,6 +68,9 @@ const SHAKE_WINDOW_MS = 1000
 const SHAKE_STUMBLE = 1.1
 const SHAKE_LIFT = 0.9
 const SHAKE_TOPPLE = 7
+/** How quickly a piece that has come down on the board loses what is left of
+ *  its motion. */
+const LANDED_DAMPING = 0.06
 const BOARD_EDGE_DARKEN = 0.56
 
 /** Large silhouettes need the same modest correction after normalisation. */
@@ -770,6 +773,24 @@ export function ThreeBoard(props: BoardProps) {
           piece.velocity.y -= FLING_GRAVITY * step
           piece.object.position.addScaledVector(piece.velocity, step)
           piece.object.rotateOnWorldAxis(piece.axis, piece.rate * step)
+
+          // A piece is placed with its base on the board's face at y = 0, so
+          // that is the floor — for as long as it is still over the board. One
+          // thrown clear of it goes on falling, which is the point of a flick;
+          // one merely shaken loose has nowhere to go and comes down where it
+          // stood, instead of sinking through.
+          const overBoard =
+            Math.abs(piece.object.position.x) < BOARD_SIZE / 2 &&
+            Math.abs(piece.object.position.z) < BOARD_SIZE / 2
+          if (overBoard && piece.object.position.y <= 0) {
+            piece.object.position.y = 0
+            piece.velocity.set(
+              piece.velocity.x * LANDED_DAMPING,
+              0,
+              piece.velocity.z * LANDED_DAMPING,
+            )
+            piece.rate *= LANDED_DAMPING
+          }
         }
         if (time - flungAt > FLING_SETTLE_MS) {
           flung = null

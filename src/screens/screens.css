@@ -179,38 +179,8 @@
   font-weight: 800;
 }
 
-.screen--login {
-  position: relative;
-  width: min(100vw, calc(100dvh * 4 / 3));
-  max-width: none;
-  height: 100dvh;
-  min-height: 0;
-  --game-top-center: max(42px, calc(env(safe-area-inset-top) + 28px));
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.screen--login > .hero {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-.screen--login > :not(.hero) {
-  position: relative;
-  z-index: 1;
-}
-
-.screen--login > .stack {
-  position: absolute;
-  top: calc(50% + clamp(78px, 13vh, 120px) + 50px);
-  left: 50%;
-  width: min(88vw, 400px);
-  transform: translateX(-50%);
-  gap: 10px;
-}
-
-.screen--login > .login__meta {
+/* Footnote and copyright, inherited from the login screen this absorbed. */
+.screen--lobby > .login__meta {
   position: absolute;
   left: 50%;
   bottom: max(10px, env(safe-area-inset-bottom));
@@ -219,18 +189,10 @@
   transform: translateX(-50%);
 }
 
-.screen--login .login__note,
-.screen--login .screen-copyright,
-.screen--login .login__status {
+.screen--lobby .login__note,
+.screen--lobby .screen-copyright {
   color: rgba(255, 255, 255, 0.78);
   text-shadow: 0 1px 5px rgba(0, 0, 0, 0.9);
-}
-
-.screen--login .btn--ghost {
-  color: var(--text);
-  background: color-mix(in srgb, var(--card) 82%, transparent);
-  border-color: var(--btn-border);
-  backdrop-filter: blur(8px);
 }
 
 .login__status {
@@ -1233,31 +1195,12 @@
   margin-left: auto;
 }
 
-/* On phones the wordmark and the two buttons should read as one block centred
-   in the viewport. Both are already anchored to the viewport centre — the
-   wordmark 50px below it, the buttons a gap further down — so the pair's own
-   centre ends up well below it. One shared lift moves them together, keeping
-   the gap between them untouched. */
-@media (max-width: 720px) {
-  .screen--login {
-    --login-group-lift: 135px;
-  }
-
-  .screen--login .login-hero__logo {
-    transform: translateY(calc(50px - var(--login-group-lift)));
-  }
-
-  .screen--login > .stack {
-    top: calc(50% + clamp(78px, 13vh, 120px) + 50px - var(--login-group-lift));
-  }
-}
-
 /* The footnote and copyright sit on the page background below the artwork, not
    on top of it, so in light theme the light-on-dark treatment above leaves them
    nearly invisible. The status line keeps it — that one does sit over the
    illustration, alongside the buttons. */
-:root[data-theme='light'] .screen--login .login__note,
-:root[data-theme='light'] .screen--login .screen-copyright {
+:root[data-theme='light'] .screen--lobby .login__note,
+:root[data-theme='light'] .screen--lobby .screen-copyright {
   color: var(--muted);
   text-shadow: none;
 }

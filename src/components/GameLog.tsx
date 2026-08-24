@@ -15,16 +15,17 @@ export function GameLog({ entries }: { entries: LogEntry[] }) {
 
   return (
     <GlassPanel className="gamelog">
-      {entries.length > 0 ? (
-        <div className="gamelog__scroll" role="log" aria-live="polite">
-          {entries.map((entry, i) => (
-            <div key={i} className={`gamelog__line gamelog__line--${entry.color}`}>
-              {entry.text}
-            </div>
-          ))}
-          <div ref={endRef} />
-        </div>
-      ) : null}
+      {/* Rendered even while empty. It used to borrow its height from the status
+          strip that has since moved to the scoreboard, so waiting for an
+          opponent collapsed the panel to a line and then jolted it open. */}
+      <div className="gamelog__scroll" role="log" aria-live="polite">
+        {entries.map((entry, i) => (
+          <div key={i} className={`gamelog__line gamelog__line--${entry.color}`}>
+            {entry.text}
+          </div>
+        ))}
+        <div ref={endRef} />
+      </div>
     </GlassPanel>
   )
 }

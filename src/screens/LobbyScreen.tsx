@@ -324,6 +324,16 @@ export function LobbyScreen() {
         )}
       </div>
 
+      {/* Carried over from the login screen this absorbed. */}
+      <div className="login__meta">
+        <p className="login__note muted tiny">
+          <span className="login__note-star" aria-hidden="true">*</span> {t('login.subtitle')}
+        </p>
+        <a className="screen-copyright" href="mailto:oreanormaeth@gmail.com">
+          © 2026 Oreanor Aurgilion
+        </a>
+      </div>
+
       {createOpen && (
         <CreateGameModal
           online={online}

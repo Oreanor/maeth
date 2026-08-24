@@ -213,8 +213,19 @@ export function LobbyScreen() {
       <div className="lobby-hud">
         <img className="lobby-hud__logo" src={logoMaeth} alt="Maeth" />
 
+        {/* Signing in is what unlocks playing anyone but the bot, so it leads
+            while signed out. It is in the settings menu as well. */}
+        {!user && (
+          <button
+            className="btn btn--primary btn--block lobby-hud__signin"
+            onClick={() => void login('google')}
+          >
+            {t('login.google')}
+          </button>
+        )}
+
         <button
-          className="btn btn--primary btn--block btn--icon-text lobby-hud__create"
+          className={`btn ${user ? 'btn--primary ' : ''}btn--block btn--icon-text lobby-hud__create`}
           onClick={() => {
             setCreateError(null)
             setCreateOpen(true)

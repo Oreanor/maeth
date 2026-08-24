@@ -38,7 +38,11 @@ const CELL_HIGHLIGHT_SCALE = 0.82
 // Keep click/highlight cells aligned to the artwork, but gather the physical
 // miniatures a little closer toward the board centre.
 const PIECE_GRID_SCALE = 0.94
-const TOP_Y = BOARD_THICKNESS / 2 + 0.026
+/** The painted face of the board — the surface pieces stand on. */
+const BOARD_FACE_Y = BOARD_THICKNESS / 2 + 0.012
+/** Highlights and arrows ride just above the face so they do not z-fight it.
+ *  Pieces must not: that clearance is what left them hovering. */
+const TOP_Y = BOARD_FACE_Y + 0.014
 // Sink the authored pedestal by only a hair, hiding floating-point gaps without
 // burying its lower moulding in the board.
 const PIECE_SINK_RATIO = 0.003
@@ -163,7 +167,7 @@ async function createPiece(
   const sink = size.y * scale * PIECE_SINK_RATIO
   model.position.set(
     -center.x * scale,
-    TOP_Y - bounds.min.y * scale - sink,
+    BOARD_FACE_Y - bounds.min.y * scale - sink,
     -center.z * scale,
   )
 
@@ -172,7 +176,7 @@ async function createPiece(
   group.add(model)
   // Height of the sculpted figure above the board, so the overlay can park a
   // label just clear of its crown rather than at a guessed fixed height.
-  group.userData.topY = TOP_Y + size.y * scale - sink
+  group.userData.topY = BOARD_FACE_Y + size.y * scale - sink
   return group
 }
 
@@ -412,7 +416,7 @@ export function ThreeBoard(props: BoardProps) {
       topMaterial,
     )
     top.rotation.x = -Math.PI / 2
-    top.position.y = BOARD_THICKNESS / 2 + 0.012
+    top.position.y = BOARD_FACE_Y
     top.receiveShadow = true
     top.visible = false
     scene.add(top)

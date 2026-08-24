@@ -7,7 +7,7 @@
   /* On the panel, not on the scrolling area inside it: padding there would
      leave the scrollbar itself against the edge, since it is drawn inside that
      element's own box. */
-  padding: 14px;
+  padding: 9px;
 }
 
 /* The game log is a bottom HUD element. On the regular 4:3 stage it sits
@@ -26,7 +26,7 @@
   height: calc(4 * 1.45em);
   overflow-y: auto;
   /* Only a gap between the text and the scrollbar; the panel supplies the rest. */
-  padding-right: 10px;
+  padding-right: 7px;
   font-size: 13px;
   line-height: 1.45;
   scrollbar-width: thin;

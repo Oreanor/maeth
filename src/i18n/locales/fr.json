@@ -156,6 +156,8 @@
     "opponentRolling": "L'adversaire lance le dé…",
     "stopPiece": "Appuyez sur le bouton de pièce pour la choisir",
     "opponentChoosingPiece": "L'adversaire choisit une pièce…",
+    "dieButton": "Dé",
+    "pieceButton": "Pièce",
     "errLoadGame": "Impossible de charger la partie",
     "errRefresh": "Impossible d'actualiser la partie",
     "errPlace": "Impossible de placer la pièce",

@@ -156,6 +156,8 @@
     "opponentRolling": "O adversário está lançando o dado…",
     "stopPiece": "Prima o botão da peça para escolhê-la",
     "opponentChoosingPiece": "O adversário está escolhendo uma peça…",
+    "dieButton": "Dado",
+    "pieceButton": "Peça",
     "errLoadGame": "Não foi possível carregar o jogo",
     "errRefresh": "Não foi possível atualizar o jogo",
     "errPlace": "Não foi possível colocar a peça",

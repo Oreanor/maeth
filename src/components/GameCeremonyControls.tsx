@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
+import { useI18n } from '@/i18n'
 import type { DraftPick, DuelEvent } from '@/game/useGame'
 import { opposite, type Color, type LotteryState } from '@/game/types'
 import type { PieceKind } from '@/game/pieces'
@@ -66,6 +67,7 @@ export function GameCeremonyControls({
   onHintChange?: (hint: CeremonyHint) => void
 }) {
   const { viewMode, threePieceStyle } = useBoardView()
+  const { t } = useI18n()
   const [dieSpin, setDieSpin] = useState(1)
   const [pieceSpin, setPieceSpin] = useState<PieceKind | null>(null)
   const [duelStage, setDuelStage] = useState<0 | 1 | 2>(0)
@@ -209,7 +211,7 @@ export function GameCeremonyControls({
           className={`ceremony-control${dieActionable ? ' ceremony-control--actionable' : ''}`}
           onClick={onDieClick}
           aria-disabled={!dieActionable}
-          aria-label="Dice"
+          aria-label={t('game.dieButton')}
         >
           <DieFace value={shownDie} />
         </button>
@@ -221,7 +223,7 @@ export function GameCeremonyControls({
           className={`ceremony-control ceremony-control--piece${draftActionable ? ' ceremony-control--actionable' : ''}`}
           onClick={draftActionable ? onConfirmDraftPick : undefined}
           aria-disabled={!draftActionable}
-          aria-label="Piece"
+          aria-label={t('game.pieceButton')}
         >
           {shownPiece ? (
             <PieceIcon

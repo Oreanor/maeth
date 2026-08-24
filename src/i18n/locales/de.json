@@ -156,6 +156,8 @@
     "opponentRolling": "Der Gegner würfelt…",
     "stopPiece": "Drücke die Figurentaste, um deine Figur zu wählen",
     "opponentChoosingPiece": "Der Gegner wählt eine Figur…",
+    "dieButton": "Würfel",
+    "pieceButton": "Figur",
     "errLoadGame": "Spiel konnte nicht geladen werden",
     "errRefresh": "Spiel konnte nicht aktualisiert werden",
     "errPlace": "Figur konnte nicht gesetzt werden",

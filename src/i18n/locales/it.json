@@ -156,6 +156,8 @@
     "opponentRolling": "L'avversario sta lanciando il dado…",
     "stopPiece": "Premi il pulsante della pedina per sceglierla",
     "opponentChoosingPiece": "L'avversario sta scegliendo una pedina…",
+    "dieButton": "Dado",
+    "pieceButton": "Pezzo",
     "errLoadGame": "Impossibile caricare la partita",
     "errRefresh": "Impossibile aggiornare la partita",
     "errPlace": "Impossibile posizionare la pedina",

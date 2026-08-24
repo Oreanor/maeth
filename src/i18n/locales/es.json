@@ -156,6 +156,8 @@
     "opponentRolling": "El rival está tirando el dado…",
     "stopPiece": "Pulsa el botón de pieza para elegirla",
     "opponentChoosingPiece": "El rival está eligiendo una pieza…",
+    "dieButton": "Dado",
+    "pieceButton": "Pieza",
     "errLoadGame": "No se pudo cargar la partida",
     "errRefresh": "No se pudo actualizar la partida",
     "errPlace": "No se pudo colocar la pieza",

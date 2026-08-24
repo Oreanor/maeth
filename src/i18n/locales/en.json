@@ -156,6 +156,8 @@
     "opponentRolling": "Opponent is rolling the dice…",
     "stopPiece": "Press the piece button to choose your piece",
     "opponentChoosingPiece": "Opponent is choosing a piece…",
+    "dieButton": "Dice",
+    "pieceButton": "Piece",
     "errLoadGame": "Could not load the game",
     "errRefresh": "Could not refresh the game",
     "errPlace": "Could not place the piece",

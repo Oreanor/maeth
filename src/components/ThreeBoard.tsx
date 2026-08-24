@@ -317,7 +317,6 @@ export function ThreeBoard(props: BoardProps) {
   // Label elements are positioned imperatively every frame, so they are held by
   // ref rather than re-rendered as the camera moves.
   const badgeRefs = useRef(new Map<number, HTMLDivElement>())
-  const nameRef = useRef<HTMLDivElement>(null)
   const hoverRef = useRef<number | null>(null)
   const { boardStyle, threePieceStyle } = useBoardView()
   const { t } = useI18n()
@@ -605,8 +604,6 @@ export function ThreeBoard(props: BoardProps) {
         hoveredCell != null && (propsRef.current.movable?.includes(hoveredCell) ?? false),
       )
 
-      const name = nameRef.current
-      let named = false
       const placed = new Set<number>()
       for (const piece of pieceRoot.children) {
         const cell = piece.userData.cell
@@ -615,15 +612,10 @@ export function ThreeBoard(props: BoardProps) {
         const top = (piece.userData.topY as number | undefined) ?? 1
         const badge = badgeRefs.current.get(cell)
         if (badge) placeLabel(badge, piece.position.x, top, piece.position.z, 0.12)
-        if (name && cell === hoverRef.current) {
-          placeLabel(name, piece.position.x, top, piece.position.z, 0.52)
-          named = true
-        }
       }
       for (const [cell, badge] of badgeRefs.current) {
         if (!placed.has(cell)) badge.style.opacity = '0'
       }
-      if (name && !named) name.style.opacity = '0'
     }
 
     // Nothing on this board moves by itself, so the loop draws only while the
@@ -937,7 +929,6 @@ export function ThreeBoard(props: BoardProps) {
     props.selectedMoves,
   ])
 
-  const hoveredPiece = hoverCell != null ? props.board[hoverCell] : null
 
   return (
     <div ref={hostRef} className="three-board-shell" aria-label={t('board.threeView')}>
@@ -956,13 +947,10 @@ export function ThreeBoard(props: BoardProps) {
                 else badgeRefs.current.delete(cell)
               }}
             >
-              <PieceBadge kind={piece.kind} roseSize={16} />
+              <PieceBadge kind={piece.kind} roseSize={16} name={pieceName(piece.kind, t)} />
             </div>
           ) : null,
         )}
-        <div ref={nameRef} className="three-label three-label--name">
-          {hoveredPiece ? pieceName(hoveredPiece.kind, t) : ''}
-        </div>
       </div>
     </div>
   )

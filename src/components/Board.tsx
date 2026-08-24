@@ -139,9 +139,6 @@ export function Board({
                 <PieceBadge kind={previewKind} />
               </span>
             )}
-            {hoverCell === i && piece && (
-              <span className="cell__name">{pieceName(piece.kind, t)}</span>
-            )}
             {piece && (
               <span
                 className={[

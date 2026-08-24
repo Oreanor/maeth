@@ -92,17 +92,3 @@
   color: #fff;
 }
 
-.three-label--name {
-  padding: 3px 9px;
-  border: 1px solid var(--surface-border);
-  border-radius: 999px;
-  /* Follows the theme like every other panel, but stays opaque and keeps no
-     backdrop-filter: this pill is repositioned every frame over a canvas that
-     also repaints every frame, which is the worst case for one. */
-  background: var(--card);
-  color: var(--text);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}

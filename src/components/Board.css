@@ -491,23 +491,13 @@
   height: auto;
 }
 
-/* Hover-to-inspect name pill, mirroring the 3D board's. Sits above the piece
-   and never takes the pointer, so it cannot break the hover that summoned it. */
-.cell__name {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  z-index: 6;
-  transform: translateX(-50%);
-  margin-bottom: 2px;
-  padding: 3px 9px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.94);
-  background: rgba(15, 18, 22, 0.94);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
-  font-size: 12px;
-  font-weight: 600;
+
+/* The piece's name, ahead of how it moves. Only the floating 3D labels pass one
+   — a 2D cell has no room for it. */
+.piece__badge-name {
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  pointer-events: none;
+  font-weight: 700;
 }

@@ -34,6 +34,16 @@ export {
   type ThreePieceStyle,
 } from './config'
 
+/** Held onto so the browser cannot drop a request that nothing references yet. */
+const preloaded = new Map<string, HTMLImageElement>()
+
+function preloadImage(src: string): void {
+  if (preloaded.has(src)) return
+  const image = new Image()
+  image.src = src
+  preloaded.set(src, image)
+}
+
 const VIEW_STORAGE_KEY = 'maeth.boardView'
 const LEGACY_STYLE_STORAGE_KEY = 'maeth.boardStyle'
 const STYLE_2D_STORAGE_KEY = 'maeth.boardStyle2d'
@@ -102,7 +112,12 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
     const config = BOARD_STYLE_CONFIG[boardStyle]
     document.documentElement.setAttribute('data-board-style', boardStyle)
     document.documentElement.style.setProperty('--board-top-url', `url('${config.top}')`)
-  }, [boardStyle])
+    // Fetch the artwork now, from the lobby, so the 3D board is textured the
+    // moment it mounts. The 2D board shows the top image as its background too;
+    // only the underside is exclusive to 3D.
+    preloadImage(config.top)
+    if (viewMode === '3d') preloadImage(config.bottom)
+  }, [boardStyle, viewMode])
 
   useEffect(() => {
     localStorage.setItem(THREE_PIECE_STYLE_STORAGE_KEY, threePieceStyle)

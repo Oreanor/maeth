@@ -211,6 +211,8 @@ interface ThreeScene {
   arrowRoot: THREE.Group
   hitCells: THREE.Mesh[]
   highlights: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[]
+  /** Body, face and underside — hidden until the artwork for them arrives. */
+  boardParts: THREE.Mesh[]
   topMaterial: THREE.MeshStandardMaterial
   bottomMaterial: THREE.MeshStandardMaterial
   sideMaterial: THREE.MeshStandardMaterial
@@ -400,6 +402,9 @@ export function ThreeBoard(props: BoardProps) {
     )
     body.castShadow = true
     body.receiveShadow = true
+    // The board stays hidden until its textures land: an untextured slab
+    // appearing first and repainting a moment later reads as a glitch.
+    body.visible = false
     scene.add(body)
 
     const top = new THREE.Mesh(
@@ -409,6 +414,7 @@ export function ThreeBoard(props: BoardProps) {
     top.rotation.x = -Math.PI / 2
     top.position.y = BOARD_THICKNESS / 2 + 0.012
     top.receiveShadow = true
+    top.visible = false
     scene.add(top)
 
     const bottom = new THREE.Mesh(
@@ -417,6 +423,7 @@ export function ThreeBoard(props: BoardProps) {
     )
     bottom.rotation.x = Math.PI / 2
     bottom.position.y = -BOARD_THICKNESS / 2 - 0.012
+    bottom.visible = false
     scene.add(bottom)
 
     const pieceRoot = new THREE.Group()
@@ -466,6 +473,7 @@ export function ThreeBoard(props: BoardProps) {
       camera,
       renderer,
       // replaced below, once the loop owns the dirty flag
+      boardParts: [body, top, bottom],
       invalidate: () => {},
       controls,
       pieceRoot,
@@ -702,11 +710,17 @@ export function ThreeBoard(props: BoardProps) {
         if (sampledSide) current.sideMaterial.color.copy(sampledSide)
         current.topMaterial.needsUpdate = true
         current.bottomMaterial.needsUpdate = true
+        for (const part of current.boardParts) part.visible = true
         current.renderer.shadowMap.needsUpdate = true
         current.invalidate()
         setLoading(false)
       },
-      () => setLoading(false),
+      () => {
+        // Better an untextured board than none at all.
+        for (const part of current.boardParts) part.visible = true
+        current.invalidate()
+        setLoading(false)
+      },
     )
     return () => {
       active = false

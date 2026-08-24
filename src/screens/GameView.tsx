@@ -165,7 +165,13 @@ export function GameView({
         name={userName}
         onHelp={() => setRulesOpen(true)}
         onStats={() => setStatsOpen(true)}
-        onLogout={onLogout}
+        onLogout={() => {
+          onLogout()
+          // Back to the start screen. The online routes would bounce there on
+          // their own once the account goes, but a local game against the bot
+          // is not guarded and would otherwise carry on underneath.
+          navigate('/')
+        }}
         onExit={() => navigate('/')}
         className="game-topbar"
       />

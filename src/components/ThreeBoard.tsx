@@ -324,14 +324,20 @@ function pointerPieceCell(
   return null
 }
 
+// Both ends stop short of a cell centre: the tail so it emerges from under the
+// piece's base rather than through it, the head so it points at the target
+// square instead of landing on it.
+const ARROW_TAIL_GAP = 0.3
+const ARROW_HEAD_GAP = 0.09
+
 function addArrow(root: THREE.Group, from: THREE.Vector3, to: THREE.Vector3, color: number) {
   const delta = to.clone().sub(from)
   const length = delta.length()
   if (length < 0.01) return
   const direction = delta.normalize()
-  const start = from.clone().addScaledVector(direction, 0.3)
+  const start = from.clone().addScaledVector(direction, ARROW_TAIL_GAP)
   start.y = TOP_Y + 0.13
-  const arrowLength = Math.max(0.15, length - 0.48)
+  const arrowLength = Math.max(0.15, length - ARROW_TAIL_GAP - ARROW_HEAD_GAP)
   const headLength = Math.min(0.2, arrowLength * 0.45)
   const shaftLength = Math.max(0.01, arrowLength - headLength)
   // ArrowHelper uses a one-pixel WebGL line whose linewidth is ignored by most

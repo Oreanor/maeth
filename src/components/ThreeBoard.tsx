@@ -692,6 +692,17 @@ export function ThreeBoard(props: BoardProps) {
       dirtyFrames = 2
     }
 
+    // The controls announce every camera change, whatever caused it. This is
+    // the one signal that covers a trackpad pinch: that arrives as a wheel
+    // event, so no pointer handler here sees it — and OrbitControls calls
+    // update() itself when it does, so by the time the loop calls update() the
+    // move has already been applied and it reports nothing to draw. The camera
+    // moved, nothing was drawn, and the change only showed when something else
+    // asked for a frame.
+    controls.addEventListener('change', () => {
+      dirtyFrames = 2
+    })
+
     const render = (time: number) => {
       threeScene.frame = requestAnimationFrame(render)
       const moving = controls.update()

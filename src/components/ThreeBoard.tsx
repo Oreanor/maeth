@@ -20,7 +20,6 @@ import {
   MOVE_HEX,
   OWNER_COLOR,
   OWNER_HEX,
-  SELECT_HEX,
 } from '@/palette'
 import { PieceBadge } from './PieceBadge'
 import type { BoardProps } from './Board'
@@ -34,7 +33,6 @@ const BOARD_CORNER_RADIUS = 0.07
 const BOARD_TEXTURE_SIZE = BOARD_SIZE - 0.12
 const PLAYFIELD_SIZE = 4.24
 const CELL_SIZE = PLAYFIELD_SIZE / 4
-const CELL_HIGHLIGHT_SCALE = 0.82
 // Keep click/highlight cells aligned to the artwork, but gather the physical
 // miniatures a little closer toward the board centre.
 const PIECE_GRID_SCALE = 0.94
@@ -231,7 +229,6 @@ interface ThreeScene {
   ghostRoot: THREE.Group
   arrowRoot: THREE.Group
   hitCells: THREE.Mesh[]
-  highlights: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[]
   /** Body, face and underside — hidden until the artwork for them arrives. */
   boardParts: THREE.Mesh[]
   topMaterial: THREE.MeshStandardMaterial
@@ -454,7 +451,6 @@ export function ThreeBoard(props: BoardProps) {
     scene.add(pieceRoot, ghostRoot, arrowRoot)
 
     const hitCells: THREE.Mesh[] = []
-    const highlights: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = []
     for (let cell = 0; cell < 16; cell++) {
       const position = cellPosition(cell)
       const hit = new THREE.Mesh(
@@ -467,27 +463,6 @@ export function ThreeBoard(props: BoardProps) {
       hit.userData.cell = cell
       scene.add(hit)
       hitCells.push(hit)
-
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      })
-      const highlight = new THREE.Mesh(
-        new THREE.PlaneGeometry(
-          CELL_SIZE * CELL_HIGHLIGHT_SCALE,
-          CELL_SIZE * CELL_HIGHLIGHT_SCALE,
-        ),
-        material,
-      )
-      highlight.rotation.x = -Math.PI / 2
-      highlight.position.copy(position)
-      highlight.position.y += 0.045
-      highlight.visible = false
-      scene.add(highlight)
-      highlights.push(highlight)
     }
 
     const threeScene: ThreeScene = {
@@ -502,7 +477,6 @@ export function ThreeBoard(props: BoardProps) {
       ghostRoot,
       arrowRoot,
       hitCells,
-      highlights,
       topMaterial,
       bottomMaterial,
       sideMaterial,
@@ -567,6 +541,9 @@ export function ThreeBoard(props: BoardProps) {
         flung = throwPieces(Math.sign(spinSpeed))
         if (flung) {
           flungAt = performance.now()
+          // The move hints point at squares that, for the moment, have nothing
+          // standing on them. Both effects put them back on restore.
+          arrowRoot.visible = false
           threeScene.invalidate()
         }
       }
@@ -965,37 +942,11 @@ export function ThreeBoard(props: BoardProps) {
     })
   }, [props.previewCell, props.previewKind, props.previewOwner, threePieceStyle])
 
-  // Cell highlights: colour/opacity writes on materials that already exist.
-  useEffect(() => {
-    const current = sceneRef.current
-    if (!current) return
-    const captureTargets = new Set(props.selectedMoves.filter((move) => move.capture).map((move) => move.to))
-    for (let cell = 0; cell < 16; cell++) {
-      const material = current.highlights[cell].material
-      let color = 0xffffff
-      let opacity = 0
-      if (props.selected === cell) {
-        color = SELECT_HEX
-        opacity = 0.45
-      } else if (captureTargets.has(cell)) {
-        color = CAPTURE_HEX
-        opacity = 0.42
-      } else if (props.legalTargets.includes(cell)) {
-        color = MOVE_HEX
-        opacity = 0.34
-      }
-      // Placement targets are deliberately not tinted: during the draft every
-      // empty square is one, so marking them all says nothing.
-      material.color.setHex(color)
-      material.opacity = opacity
-      current.highlights[cell].visible = opacity > 0
-    }
-  }, [props.legalTargets, props.selected, props.selectedMoves])
-
   // Arrows: cheap line rebuilds, including the archer's shot during a capture.
   useEffect(() => {
     const current = sceneRef.current
     if (!current) return
+    current.arrowRoot.visible = true
     clearGroup(current.arrowRoot)
     const arrowFrom = props.selected ?? props.previewCell
     if (props.selected != null) {
@@ -1045,6 +996,7 @@ export function ThreeBoard(props: BoardProps) {
     props.previewOwner,
     props.selected,
     props.selectedMoves,
+    restoreToken,
   ])
 
 

@@ -24,9 +24,6 @@ export const CAPTURE_COLOR = '#e23b34'
 /** A move to an empty square. */
 export const MOVE_COLOR = '#3fae5a'
 
-/** The square a piece is picked up from. */
-export const SELECT_COLOR = '#f6c945'
-
 /** An archer's shot, which travels without the piece following it. */
 export const ARCHER_SHOT_COLOR = '#f0b84b'
 
@@ -39,5 +36,4 @@ export const OWNER_HEX: Record<Color, number> = {
 }
 export const CAPTURE_HEX = hex(CAPTURE_COLOR)
 export const MOVE_HEX = hex(MOVE_COLOR)
-export const SELECT_HEX = hex(SELECT_COLOR)
 export const ARCHER_SHOT_HEX = hex(ARCHER_SHOT_COLOR)

@@ -916,15 +916,14 @@ export function ThreeBoard(props: BoardProps) {
       } else if (props.legalTargets.includes(cell)) {
         color = 0x3fae5a
         opacity = 0.34
-      } else if (props.placementTargets.includes(cell)) {
-        color = 0x4a90d9
-        opacity = 0.27
       }
+      // Placement targets are deliberately not tinted: during the draft every
+      // empty square is one, so marking them all says nothing.
       material.color.setHex(color)
       material.opacity = opacity
       current.highlights[cell].visible = opacity > 0
     }
-  }, [props.legalTargets, props.placementTargets, props.selected, props.selectedMoves])
+  }, [props.legalTargets, props.selected, props.selectedMoves])
 
   // Arrows: cheap line rebuilds, including the archer's shot during a capture.
   useEffect(() => {

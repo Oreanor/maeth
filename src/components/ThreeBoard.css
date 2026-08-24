@@ -54,3 +54,46 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ── floating labels over the 3D board ── */
+
+/* A pass-through layer: the canvas underneath keeps every pointer gesture, so
+   labels can never swallow a click or a camera drag. */
+.three-board__labels {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Positioned imperatively from the render loop (transform + opacity only, so
+   moving the camera never triggers layout). */
+.three-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform;
+}
+
+/* The badge is the 2D component, which anchors itself into a cell corner —
+   inside a label it has to sit in the normal flow instead. */
+.three-label--badge .piece__badge {
+  position: static;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.three-label--name {
+  padding: 3px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(15, 18, 22, 0.82);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

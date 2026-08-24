@@ -5,10 +5,11 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { BOARD_STYLE_CONFIG, useBoardView, type ThreePieceStyle } from '@/boardView'
 import { useI18n } from '@/i18n'
 import { useTheme } from '@/theme'
-import { isArcher, type PieceKind } from '@/game/pieces'
+import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
-import { edgeArrows } from './ArrowOverlay'
+import { OWNER_COLOR, edgeArrows } from './ArrowOverlay'
+import { PieceBadge } from './PieceBadge'
 import type { BoardProps } from './Board'
 import './ThreeBoard.css'
 
@@ -217,6 +218,9 @@ async function createPiece(
   const group = new THREE.Group()
   group.rotation.y = color === 'white' ? 0 : Math.PI
   group.add(model)
+  // Height of the sculpted figure above the board, so the overlay can park a
+  // label just clear of its crown rather than at a guessed fixed height.
+  group.userData.topY = TOP_Y + PIECE_BASE_HEIGHT + size.y * scale - sink
 
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: ghost ? 0x729caf : color === 'white' ? 0x2d679b : 0x983b3b,
@@ -297,6 +301,29 @@ function pointerCell(
   return typeof hit?.object.userData.cell === 'number' ? hit.object.userData.cell : null
 }
 
+function pointerPieceCell(
+  clientX: number,
+  clientY: number,
+  canvas: HTMLCanvasElement,
+  camera: THREE.Camera,
+  pieceRoot: THREE.Group,
+): number | null {
+  const rect = canvas.getBoundingClientRect()
+  const pointer = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  )
+  const raycaster = new THREE.Raycaster()
+  raycaster.setFromCamera(pointer, camera)
+  for (const hit of raycaster.intersectObjects(pieceRoot.children, true)) {
+    for (let node: THREE.Object3D | null = hit.object; node; node = node.parent) {
+      if (typeof node.userData.cell === 'number') return node.userData.cell
+      if (node === pieceRoot) break
+    }
+  }
+  return null
+}
+
 function addArrow(root: THREE.Group, from: THREE.Vector3, to: THREE.Vector3, color: number) {
   const delta = to.clone().sub(from)
   const length = delta.length()
@@ -339,10 +366,16 @@ export function ThreeBoard(props: BoardProps) {
   const propsRef = useRef(props)
   const syncIdRef = useRef(0)
   const ghostIdRef = useRef(0)
+  // Label elements are positioned imperatively every frame, so they are held by
+  // ref rather than re-rendered as the camera moves.
+  const badgeRefs = useRef(new Map<number, HTMLDivElement>())
+  const nameRef = useRef<HTMLDivElement>(null)
+  const hoverRef = useRef<number | null>(null)
   const { boardStyle, threePieceStyle } = useBoardView()
   const { theme } = useTheme()
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
+  const [hoverCell, setHoverCell] = useState<number | null>(null)
   propsRef.current = props
 
   useEffect(() => {
@@ -505,6 +538,7 @@ export function ThreeBoard(props: BoardProps) {
     window.addEventListener('resize', resize)
 
     let pointerStart: { x: number; y: number } | null = null
+    let hoverProbe: { x: number; y: number } | null = null
     let lastHover: number | null = null
     const activePointers = new Set<number>()
     let multiTouchGesture = false
@@ -521,7 +555,11 @@ export function ThreeBoard(props: BoardProps) {
     }
     const onPointerMove = (event: PointerEvent) => {
       const current = propsRef.current
-      if (!current.interactive || pointerStart) return
+      if (pointerStart) return
+      // Inspecting a piece works whoever's turn it is, so hover is tracked
+      // before the interactivity gate that guards the draft preview.
+      hoverProbe = { x: event.clientX, y: event.clientY }
+      if (!current.interactive) return
       const cell = pointerCell(event, canvas, camera, hitCells)
       canvas.classList.toggle('three-board__canvas--cell', cell != null)
       if (cell != null && cell !== lastHover) {
@@ -550,6 +588,9 @@ export function ThreeBoard(props: BoardProps) {
       activePointers.clear()
       multiTouchGesture = false
       canvas.classList.remove('three-board__canvas--dragging', 'three-board__canvas--cell')
+      hoverProbe = null
+      hoverRef.current = null
+      setHoverCell(null)
       // A touch pointer stops existing the instant the finger lifts, firing
       // leave right after the tap that set the draft preview. Only a real
       // cursor travelling off the board should clear that preview.
@@ -560,6 +601,51 @@ export function ThreeBoard(props: BoardProps) {
     canvas.addEventListener('pointerup', onPointerUp)
     canvas.addEventListener('pointercancel', onPointerLeave)
     canvas.addEventListener('pointerleave', onPointerLeave)
+
+    // Labels are HTML so they match the 2D badge exactly; each frame their
+    // anchor point is projected from world space to canvas pixels.
+    const labelAnchor = new THREE.Vector3()
+    const placeLabel = (el: HTMLElement, x: number, y: number, z: number, lift: number) => {
+      labelAnchor.set(x, y + lift, z).project(camera)
+      if (labelAnchor.z > 1) {
+        el.style.opacity = '0'
+        return
+      }
+      const px = (labelAnchor.x * 0.5 + 0.5) * canvas.clientWidth
+      const py = (-labelAnchor.y * 0.5 + 0.5) * canvas.clientHeight
+      el.style.transform = `translate(-50%, -100%) translate(${px}px, ${py}px)`
+      el.style.opacity = '1'
+    }
+
+    const positionLabels = () => {
+      if (hoverProbe) {
+        const hovered = pointerPieceCell(hoverProbe.x, hoverProbe.y, canvas, camera, pieceRoot)
+        hoverProbe = null
+        if (hovered !== hoverRef.current) {
+          hoverRef.current = hovered
+          setHoverCell(hovered)
+        }
+      }
+      const name = nameRef.current
+      let named = false
+      const placed = new Set<number>()
+      for (const piece of pieceRoot.children) {
+        const cell = piece.userData.cell
+        if (typeof cell !== 'number') continue
+        placed.add(cell)
+        const top = (piece.userData.topY as number | undefined) ?? 1
+        const badge = badgeRefs.current.get(cell)
+        if (badge) placeLabel(badge, piece.position.x, top, piece.position.z, 0.12)
+        if (name && cell === hoverRef.current) {
+          placeLabel(name, piece.position.x, top, piece.position.z, 0.52)
+          named = true
+        }
+      }
+      for (const [cell, badge] of badgeRefs.current) {
+        if (!placed.has(cell)) badge.style.opacity = '0'
+      }
+      if (name && !named) name.style.opacity = '0'
+    }
 
     const render = (time: number) => {
       threeScene.frame = requestAnimationFrame(render)
@@ -572,6 +658,7 @@ export function ThreeBoard(props: BoardProps) {
         if (animation.victim) animation.victim.scale.setScalar(Math.max(0.001, 1 - eased))
       }
       renderer.render(scene, camera)
+      positionLabels()
     }
     threeScene.frame = requestAnimationFrame(render)
 
@@ -688,6 +775,7 @@ export function ThreeBoard(props: BoardProps) {
               }
             }
           })
+          object.userData.cell = cell
           current.pieceRoot.add(object)
         }),
       )
@@ -819,15 +907,61 @@ export function ThreeBoard(props: BoardProps) {
         addArrow(current.arrowRoot, from, to, 0x4a90d9)
       }
     }
+    // Hovering shows how a piece moves, in its owner's colour. Held back while
+    // a selection or draft ghost owns the arrows, so the two never overlap.
+    const hovered = hoverCell != null ? props.board[hoverCell] : null
+    if (hovered && props.selected == null && props.previewCell == null && hoverCell != null) {
+      const color = new THREE.Color(OWNER_COLOR[hovered.color]).getHex()
+      for (const arrow of edgeArrows(hoverCell, hovered.kind, OWNER_COLOR[hovered.color])) {
+        const from = cellPosition(hoverCell)
+        const to = from
+          .clone()
+          .add(new THREE.Vector3(arrow.dc * arrow.len * CELL_SIZE, 0, arrow.dr * arrow.len * CELL_SIZE))
+        addArrow(current.arrowRoot, from, to, color)
+      }
+    }
+
     const anim = props.anim
     if (anim && isArcher(anim.attacker) && anim.kind === 'capture') {
       addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), 0xf0b84b)
     }
-  }, [props.anim, props.previewCell, props.previewKind, props.selected, props.selectedMoves])
+  }, [
+    hoverCell,
+    props.anim,
+    props.board,
+    props.previewCell,
+    props.previewKind,
+    props.selected,
+    props.selectedMoves,
+  ])
+
+  const hoveredPiece = hoverCell != null ? props.board[hoverCell] : null
 
   return (
     <div ref={hostRef} className="three-board-shell" aria-label={t('board.threeView')}>
       {loading && <div className="three-board__loading">{t('board.loading3d')}</div>}
+
+      {/* Labels ride above the canvas as HTML so the move badge is literally the
+          same component the 2D board draws. The render loop positions them. */}
+      <div className="three-board__labels" aria-hidden>
+        {props.board.map((piece, cell) =>
+          piece ? (
+            <div
+              key={cell}
+              className="three-label three-label--badge"
+              ref={(el) => {
+                if (el) badgeRefs.current.set(cell, el)
+                else badgeRefs.current.delete(cell)
+              }}
+            >
+              <PieceBadge kind={piece.kind} roseSize={12} />
+            </div>
+          ) : null,
+        )}
+        <div ref={nameRef} className="three-label three-label--name">
+          {hoveredPiece ? pieceName(hoveredPiece.kind, t) : ''}
+        </div>
+      </div>
     </div>
   )
 }

@@ -46,6 +46,20 @@ const TOP_Y = BOARD_FACE_Y + 0.014
 // Sink the authored pedestal by only a hair, hiding floating-point gaps without
 // burying its lower moulding in the board.
 const PIECE_SINK_RATIO = 0.003
+
+// ── easter egg ──────────────────────────────────────────────────────────────
+// Let go of the board while it is really spinning and the pieces are thrown off
+// it. The board coasts to a stop on OrbitControls' own damping, and once it has
+// settled the same pieces are put back where they were.
+/** Radians per frame at the moment of release that count as a flick. */
+const FLING_RELEASE_SPEED = 0.07
+/** How long the pieces stay off the board before it is set up again. */
+const FLING_SETTLE_MS = 2300
+const FLING_GRAVITY = 9
+/** Outward, and along the direction of the spin. */
+const FLING_OUTWARD = 3.4
+const FLING_TANGENT = 2.6
+const FLING_LIFT = 3.2
 const BOARD_EDGE_DARKEN = 0.56
 
 /** Large silhouettes need the same modest correction after normalisation. */
@@ -322,6 +336,8 @@ export function ThreeBoard(props: BoardProps) {
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
+  /** Bumped to rebuild the board after the pieces have been thrown off it. */
+  const [restoreToken, setRestoreToken] = useState(0)
 
   // Every effect below mutates the scene imperatively, so rather than have each
   // remember to ask for a frame, any render at all buys one. Async model and
@@ -542,6 +558,15 @@ export function ThreeBoard(props: BoardProps) {
         if (activePointers.size === 0) multiTouchGesture = false
         return
       }
+      // Released mid-spin: throw the pieces off. Checked before the click paths
+      // below, which a flick never reaches — it is a drag, not a tap.
+      if (!flung && Math.abs(spinSpeed) > FLING_RELEASE_SPEED) {
+        flung = flingPieces(Math.sign(spinSpeed))
+        if (flung) {
+          flungAt = performance.now()
+          threeScene.invalidate()
+        }
+      }
       const start = pointerStart
       pointerStart = null
       if (!start || !propsRef.current.interactive) return
@@ -622,6 +647,42 @@ export function ThreeBoard(props: BoardProps) {
     // camera is moving, a piece is animating, or something asked it to. A canvas
     // that is dirty every frame is not only its own cost: the browser has to
     // recomposite it and recompute any blurred backdrop above it just as often.
+    interface FlungPiece {
+      object: THREE.Object3D
+      velocity: THREE.Vector3
+      spin: THREE.Vector3
+    }
+    let flung: FlungPiece[] | null = null
+    let flungAt = 0
+    let azimuth = controls.getAzimuthalAngle()
+    let spinSpeed = 0
+    let lastFrame = 0
+
+    const flingPieces = (direction: number) => {
+      const thrown: FlungPiece[] = []
+      for (const piece of pieceRoot.children) {
+        if (typeof piece.userData.cell !== 'number') continue
+        const outward = new THREE.Vector3(piece.position.x, 0, piece.position.z)
+        // A piece sitting dead centre has no outward direction of its own.
+        if (outward.lengthSq() < 1e-6) outward.set(Math.random() - 0.5, 0, Math.random() - 0.5)
+        outward.normalize()
+        const tangent = new THREE.Vector3(-outward.z, 0, outward.x).multiplyScalar(direction)
+        thrown.push({
+          object: piece,
+          velocity: outward
+            .multiplyScalar(FLING_OUTWARD * (0.8 + Math.random() * 0.5))
+            .addScaledVector(tangent, FLING_TANGENT * (0.7 + Math.random() * 0.6))
+            .setY(FLING_LIFT * (0.7 + Math.random() * 0.7)),
+          spin: new THREE.Vector3(
+            (Math.random() - 0.5) * 9,
+            (Math.random() - 0.5) * 9,
+            (Math.random() - 0.5) * 9,
+          ),
+        })
+      }
+      return thrown.length ? thrown : null
+    }
+
     let dirtyFrames = 2
     threeScene.invalidate = () => {
       dirtyFrames = 2
@@ -631,9 +692,37 @@ export function ThreeBoard(props: BoardProps) {
       threeScene.frame = requestAnimationFrame(render)
       const moving = controls.update()
       const animation = threeScene.animation
-      if (!moving && !animation) {
+
+      const nextAzimuth = controls.getAzimuthalAngle()
+      let turned = nextAzimuth - azimuth
+      if (turned > Math.PI) turned -= 2 * Math.PI
+      else if (turned < -Math.PI) turned += 2 * Math.PI
+      azimuth = nextAzimuth
+      // Smoothed, so one jittery frame cannot pass for a flick.
+      spinSpeed = spinSpeed * 0.6 + turned * 0.4
+
+      const step = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 0
+      lastFrame = time
+
+      if (!moving && !animation && !flung) {
         if (dirtyFrames <= 0) return
         dirtyFrames -= 1
+      }
+
+      if (flung) {
+        // The pieces are moving, so their shadows have to move with them.
+        renderer.shadowMap.needsUpdate = true
+        for (const piece of flung) {
+          piece.velocity.y -= FLING_GRAVITY * step
+          piece.object.position.addScaledVector(piece.velocity, step)
+          piece.object.rotation.x += piece.spin.x * step
+          piece.object.rotation.y += piece.spin.y * step
+          piece.object.rotation.z += piece.spin.z * step
+        }
+        if (time - flungAt > FLING_SETTLE_MS) {
+          flung = null
+          setRestoreToken((token) => token + 1)
+        }
       }
       if (animation) {
         // Pieces are moving, so the shadows have to follow them.
@@ -823,7 +912,7 @@ export function ThreeBoard(props: BoardProps) {
         setLoading(false)
       })
     }
-  }, [props.anim, props.board, threePieceStyle])
+  }, [props.anim, props.board, restoreToken, threePieceStyle])
 
   // The draft ghost lives in its own group, so following the cursor rebuilds
   // one piece instead of the whole board.

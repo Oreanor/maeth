@@ -4,7 +4,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { BOARD_STYLE_CONFIG, useBoardView, type ThreePieceStyle } from '@/boardView'
 import { useI18n } from '@/i18n'
-import { useTheme } from '@/theme'
 import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
@@ -279,7 +278,6 @@ interface ThreeScene {
   topMaterial: THREE.MeshStandardMaterial
   bottomMaterial: THREE.MeshStandardMaterial
   sideMaterial: THREE.MeshStandardMaterial
-  groundMaterial: THREE.MeshStandardMaterial
   animation: ActiveThreeAnimation | null
   frame: number
 }
@@ -372,7 +370,6 @@ export function ThreeBoard(props: BoardProps) {
   const nameRef = useRef<HTMLDivElement>(null)
   const hoverRef = useRef<number | null>(null)
   const { boardStyle, threePieceStyle } = useBoardView()
-  const { theme } = useTheme()
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
@@ -393,7 +390,16 @@ export function ThreeBoard(props: BoardProps) {
     renderer.toneMappingExposure = 1.08
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
+    // The shadow map is a 2048² depth pass. three re-renders it every frame by
+    // default, but this scene only changes when a piece appears, moves or the
+    // board is restyled — so it is refreshed on demand instead.
+    renderer.shadowMap.autoUpdate = false
+    renderer.shadowMap.needsUpdate = true
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    // Nothing is drawn behind the board, so the canvas clears to nothing and the
+    // shell's gradient shows through — a backdrop the compositor paints once,
+    // rather than geometry the GPU shades every frame.
+    renderer.setClearAlpha(0)
     renderer.domElement.className = 'three-board__canvas'
     renderer.domElement.setAttribute('aria-hidden', 'true')
     host.prepend(renderer.domElement)
@@ -459,13 +465,6 @@ export function ThreeBoard(props: BoardProps) {
     bottom.position.y = -BOARD_THICKNESS / 2 - 0.012
     scene.add(bottom)
 
-    const groundMaterial = new THREE.MeshStandardMaterial({ roughness: 0.94, metalness: 0 })
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(18, 96), groundMaterial)
-    ground.rotation.x = -Math.PI / 2
-    ground.position.y = -0.42
-    ground.receiveShadow = true
-    scene.add(ground)
-
     const pieceRoot = new THREE.Group()
     const ghostRoot = new THREE.Group()
     const arrowRoot = new THREE.Group()
@@ -521,7 +520,6 @@ export function ThreeBoard(props: BoardProps) {
       topMaterial,
       bottomMaterial,
       sideMaterial,
-      groundMaterial,
       animation: null,
       frame: 0,
     }
@@ -662,6 +660,8 @@ export function ThreeBoard(props: BoardProps) {
       controls.update()
       const animation = threeScene.animation
       if (animation) {
+        // Pieces are moving, so the shadows have to follow them.
+        renderer.shadowMap.needsUpdate = true
         const progress = Math.min(1, (time - animation.started) / animation.duration)
         const eased = 1 - (1 - progress) ** 3
         if (animation.attacker) animation.attacker.position.lerpVectors(animation.from, animation.to, eased)
@@ -695,19 +695,11 @@ export function ThreeBoard(props: BoardProps) {
       topMaterial.dispose()
       bottomMaterial.dispose()
       sideMaterial.dispose()
-      groundMaterial.dispose()
       renderer.dispose()
       canvas.remove()
       sceneRef.current = null
     }
   }, [props.orientation])
-
-  useEffect(() => {
-    const current = sceneRef.current
-    if (!current) return
-    current.renderer.setClearColor(theme === 'dark' ? 0x080d14 : 0xd9e1eb, 1)
-    current.groundMaterial.color.set(theme === 'dark' ? 0x111923 : 0xc8d1dc)
-  }, [theme])
 
   useEffect(() => {
     const current = sceneRef.current
@@ -738,6 +730,7 @@ export function ThreeBoard(props: BoardProps) {
         if (sampledSide) current.sideMaterial.color.copy(sampledSide)
         current.topMaterial.needsUpdate = true
         current.bottomMaterial.needsUpdate = true
+        current.renderer.shadowMap.needsUpdate = true
         setLoading(false)
       },
       () => setLoading(false),
@@ -824,6 +817,7 @@ export function ThreeBoard(props: BoardProps) {
       }
       void Promise.all(tasks).then(() => {
         if (syncId !== syncIdRef.current) return
+        current.renderer.shadowMap.needsUpdate = true
         const from = piecePosition(anim.from)
         const to = piecePosition(anim.to)
         from.y = 0
@@ -839,7 +833,9 @@ export function ThreeBoard(props: BoardProps) {
       })
     } else {
       void Promise.all(tasks).then(() => {
-        if (syncId === syncIdRef.current) setLoading(false)
+        if (syncId !== syncIdRef.current) return
+        current.renderer.shadowMap.needsUpdate = true
+        setLoading(false)
       })
     }
   }, [props.anim, props.board, threePieceStyle])

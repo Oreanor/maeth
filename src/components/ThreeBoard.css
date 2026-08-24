@@ -3,7 +3,15 @@
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: var(--bg);
+  /* The board floats with nothing behind it, so the backdrop is a gradient the
+     compositor paints once — not geometry the GPU would shade every frame.
+     Derived from --bg, so it follows the theme on its own. */
+  background: radial-gradient(
+    circle at 50% 44%,
+    color-mix(in srgb, var(--bg) 82%, #ffffff),
+    var(--bg) 58%,
+    color-mix(in srgb, var(--bg) 90%, #000000)
+  );
   touch-action: none;
   pointer-events: auto;
 }

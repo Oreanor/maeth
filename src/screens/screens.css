@@ -94,9 +94,10 @@
   margin: 0;
 }
 
+/* No border: the row already sits inside the panel's own surface, so outlining
+   each one just draws a frame inside a frame. */
 .lobby-panel .list__item {
   background: color-mix(in srgb, var(--card) 58%, transparent);
-  border: 1px solid var(--surface-border);
   backdrop-filter: blur(8px);
 }
 

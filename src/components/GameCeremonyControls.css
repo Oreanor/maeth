@@ -7,6 +7,13 @@
   pointer-events: none;
 }
 
+/* All controls share one cell. A control lingers while it shrinks away, so it
+   can briefly overlap the next one — and as separate grid items the two would
+   form two rows, throwing the leaving one upward on its way out. */
+.ceremony-controls > * {
+  grid-area: 1 / 1;
+}
+
 .ceremony-control {
   --control-size: 192px;
   appearance: none;

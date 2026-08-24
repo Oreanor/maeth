@@ -236,8 +236,38 @@ async function createPiece(
   base.castShadow = !ghost
   base.receiveShadow = true
   base.userData.sharedGeometry = true
+  base.userData.isBase = true
   group.add(base)
   return group
+}
+
+/** How far a spent piece is pushed toward grey. */
+const SPENT_GREY = 0.85
+
+/**
+ * Grey out a piece that has already moved this turn.
+ *
+ * Its colour comes from the model's texture, so tinting the material cannot
+ * desaturate it — the mix has to happen after shading, which is what this patch
+ * does. Bails out rather than producing a broken shader if the anchor chunk
+ * ever moves.
+ */
+function markSpent(material: THREE.Material) {
+  material.onBeforeCompile = (shader) => {
+    const anchor = '#include <dithering_fragment>'
+    if (!shader.fragmentShader.includes(anchor)) return
+    shader.fragmentShader = shader.fragmentShader.replace(
+      anchor,
+      `${anchor}
+      float spentLuma = dot( gl_FragColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );
+      gl_FragColor.rgb = mix( gl_FragColor.rgb, vec3( spentLuma ), ${SPENT_GREY.toFixed(2)} );`,
+    )
+  }
+  // three keys its program cache on material properties, which say nothing about
+  // onBeforeCompile — without a key of its own a spent piece would be handed the
+  // program compiled for a fresh one.
+  material.customProgramCacheKey = () => 'spent'
+  material.needsUpdate = true
 }
 
 function disposeObject(object: THREE.Object3D) {
@@ -803,15 +833,15 @@ export function ThreeBoard(props: BoardProps) {
           }
           object.position.copy(piecePosition(cell))
           object.position.y = 0
-          if (piece.moved) object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
+          // A spent piece greys out instead of fading, and keeps its coloured
+          // base — that disc is what says whose piece it is.
+          if (piece.moved) {
+            object.traverse((child) => {
+              if (!(child instanceof THREE.Mesh) || child.userData.isBase) return
               const materials = Array.isArray(child.material) ? child.material : [child.material]
-              for (const material of materials) {
-                material.transparent = true
-                material.opacity *= 0.58
-              }
-            }
-          })
+              for (const material of materials) markSpent(material)
+            })
+          }
           object.userData.cell = cell
           current.pieceRoot.add(object)
         }),

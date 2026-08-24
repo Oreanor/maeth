@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
+import { useAppShortcuts } from '@/useAppShortcuts'
 import { LoginScreen } from '@/screens/LoginScreen'
 import { LobbyScreen } from '@/screens/LobbyScreen'
 import { FriendsScreen } from '@/screens/FriendsScreen'
@@ -15,6 +16,8 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 export function App() {
   const { user, loading } = useAuth()
   const { t } = useI18n()
+
+  useAppShortcuts()
 
   if (loading) {
     return (

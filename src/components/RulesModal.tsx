@@ -61,18 +61,18 @@ export function RulesModal({ onClose }: { onClose: () => void }) {
               <div className="rules-pieces" role="table">
                 <div className="rules-pieces__head" role="row">
                   <span role="columnheader">{t('rules.colPiece')}</span>
-                  <span role="columnheader">{t('rules.colRange')}</span>
                   <span role="columnheader">{t('rules.colDirections')}</span>
+                  <span role="columnheader">{t('rules.colRange')}</span>
                   <span role="columnheader">{t('rules.colArcher')}</span>
                 </div>
                 {RULES_SORTED_KINDS.map((kind: PieceKind) => (
                   <div key={kind} className="rules-pieces__row" role="row">
                     <span role="cell">{pieceName(kind, t)}</span>
-                    <span className="rules-pieces__range" role="cell">
-                      {PIECES[kind].range}
-                    </span>
                     <span className="rules-pieces__dirs" role="cell">
                       <MoveCompass kind={kind} />
+                    </span>
+                    <span className="rules-pieces__range" role="cell">
+                      {PIECES[kind].range}
                     </span>
                     <span className="rules-pieces__archer" role="cell">
                       {isArcher(kind) ? '•' : ''}

@@ -8,13 +8,13 @@ export function PieceBadge({ kind, roseSize = 13 }: { kind: PieceKind; roseSize?
   const def = PIECES[kind]
   return (
     <span className="piece__badge">
-      <span className="piece__badge-range">{def.range}</span>
       <PatternRose
         pattern={def.pattern}
         dashed={isArcher(kind)}
         size={roseSize}
         className="piece__badge-rose"
       />
+      <span className="piece__badge-range">{def.range}</span>
     </span>
   )
 }

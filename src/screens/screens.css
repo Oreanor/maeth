@@ -1330,3 +1330,11 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* No keyboard, no point naming the keys. Keyed on the pointer rather than the
+   width: a narrow desktop window still has a keyboard and keeps the hints. */
+@media (hover: none) and (pointer: coarse) {
+  .usermenu__shortcut {
+    display: none;
+  }
+}

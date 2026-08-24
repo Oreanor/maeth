@@ -161,32 +161,12 @@
     "errPlace": "Impossibile posizionare la pedina",
     "errMove": "Impossibile eseguire la mossa"
   },
-  "draft": {
-    "picking": "Estrazione di una pedina",
-    "choose": "Scegli",
-    "tapToChoose": "Tocca per scegliere",
-    "opponentPicking": "{name} sta scegliendo…",
-    "yourPiece": "La tua pedina",
-    "oppPiece": "Pedina di {name}"
-  },
   "presence": {
     "inGame": "In partita",
     "online": "Online",
     "offline": "Offline"
   },
   "lottery": {
-    "title": "Prima mossa",
-    "opponentJoined": "Il tuo avversario si è unito",
-    "rollPrompt": "Lancia il dado per decidere chi inizia.",
-    "okButton": "OK",
-    "rollButton": "Sorteggiare la prima mossa",
-    "waitingRoll": "In attesa del lancio dell'host…",
-    "rule": "Dispari — primo giocatore\nPari — secondo giocatore",
-    "rolled": "Uscito {value}",
-    "spinning": "Lancio…",
-    "firstTurnLabel": "Muove per primo",
-    "startButton": "Inizia",
-    "waitingStart": "In attesa che il primo giocatore inizi…",
     "status": "Sorteggio della prima mossa",
     "statusAwaitRoll": "Sorteggiare la prima mossa",
     "statusRevealed": "Prima mossa decisa — in attesa dell'inizio",
@@ -194,13 +174,8 @@
     "errStart": "Impossibile avviare la partita"
   },
   "duel": {
-    "title": "⚔️ Duello",
     "attack": "{name} · attacco",
-    "defense": "{name} · difesa",
-    "success": "Colpo a segno!",
-    "miss": "Mancato!",
-    "rolling": "lancio dei dadi…",
-    "tapToClose": "Tocca per continuare"
+    "success": "Colpo a segno!"
   },
   "result": {
     "draw": "🤝 Pareggio",

@@ -161,32 +161,12 @@
     "errPlace": "Figur konnte nicht gesetzt werden",
     "errMove": "Zug konnte nicht ausgeführt werden"
   },
-  "draft": {
-    "picking": "Figur wird gezogen",
-    "choose": "Wählen",
-    "tapToChoose": "Tippen zum Wählen",
-    "opponentPicking": "{name} wählt…",
-    "yourPiece": "Deine Figur",
-    "oppPiece": "Figur von {name}"
-  },
   "presence": {
     "inGame": "Im Spiel",
     "online": "Online",
     "offline": "Offline"
   },
   "lottery": {
-    "title": "Erster Zug",
-    "opponentJoined": "Dein Gegner ist beigetreten",
-    "rollPrompt": "Würfle, um zu bestimmen, wer beginnt.",
-    "okButton": "OK",
-    "rollButton": "Ersten Zug auslosen",
-    "waitingRoll": "Warten auf den Wurf des Gastgebers…",
-    "rule": "Ungerade — erster Spieler\nGerade — zweiter Spieler",
-    "rolled": "Gewürfelt: {value}",
-    "spinning": "Würfeln…",
-    "firstTurnLabel": "Beginnt",
-    "startButton": "Start",
-    "waitingStart": "Warten, bis der erste Spieler startet…",
     "status": "Zugauslosung",
     "statusAwaitRoll": "Ersten Zug auslosen",
     "statusRevealed": "Erster Zug festgelegt — warten auf Start",
@@ -194,13 +174,8 @@
     "errStart": "Spiel konnte nicht gestartet werden"
   },
   "duel": {
-    "title": "⚔️ Duell",
     "attack": "{name} · Angriff",
-    "defense": "{name} · Verteidigung",
-    "success": "Treffer!",
-    "miss": "Daneben!",
-    "rolling": "würfeln…",
-    "tapToClose": "Tippen zum Fortfahren"
+    "success": "Treffer!"
   },
   "result": {
     "draw": "🤝 Unentschieden",

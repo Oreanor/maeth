@@ -647,13 +647,6 @@
   display: block;
   color: var(--accent);
 }
-.pick-modal__badge-line {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px;
-}
 .pick-modal__badge-line .piece__badge {
   position: static;
   font-size: 13px;
@@ -1053,107 +1046,11 @@
 .modal.rules-modal {
   width: min(92vw, 480px);
 }
-.duel-modal:not(.turn-lottery-modal) {
-  min-height: 318px;
-  box-sizing: border-box;
-}
-.duel-modal__title {
-  font-size: 20px;
-  font-weight: 800;
-}
-/* player names under the title, aligned over their die below */
-.duel-modal__players {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  align-self: stretch;
-}
-.duel-modal__player {
-  flex: 1;
-  text-align: center;
-  font-weight: 700;
-  font-size: 14px;
-  overflow-wrap: anywhere;
-}
-.duel-modal__dice {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  align-self: stretch;
-}
-.die-box {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  text-align: center;
-}
-/* flat die: a single square face showing pips */
-.die3d {
-  width: 64px;
-  height: 64px;
-  display: grid;
-  place-items: center;
-}
-.die3d__face {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: #f5f5fa;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-}
-.die3d--idle {
-  opacity: 0.4;
-}
-.pips {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 3px;
-  width: 32px;
-  height: 32px;
-}
 .pip {
   border-radius: 50%;
 }
 .pip--on {
   background: #1b1b2f;
-}
-.duel-modal__vs {
-  color: var(--muted);
-  font-weight: 700;
-}
-/* Fixed footer slots so height stays stable from roll through result. */
-.duel-modal__footer {
-  min-height: 96px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  align-self: stretch;
-}
-
-/* draft pick modal */
-.pick-modal {
-  gap: 12px;
-  padding: 18px 20px 16px;
-}
-.pick-modal__title {
-  font-size: 19px;
-  font-weight: 800;
-  margin-bottom: 9px;
-}
-.pick-portrait {
-  width: 104px;
-  height: 104px;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  box-shadow: none;
 }
 
 .pick-portrait .piece {
@@ -1177,47 +1074,6 @@
 .pick-portrait--settled .piece {
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
 }
-.pick-modal__name {
-  font-weight: 700;
-  min-height: 20px;
-}
-/* Reserve just enough footer height for the one-line caption so the modal
-   doesn't jump when it clears on settle. */
-.pick-modal__footer {
-  min-height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: stretch;
-}
-.pick-modal--tappable {
-  cursor: pointer;
-}
-/* On close the window collapses almost to a point, then unmounts. */
-.pick-modal--closing,
-.modal--closing {
-  animation: pick-collapse 0.3s ease-in-out forwards;
-  pointer-events: none;
-}
-@keyframes pick-collapse {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(0.04);
-    opacity: 0;
-  }
-}
-.modal-backdrop--closing {
-  animation: backdrop-fade 0.3s ease-in-out forwards;
-}
-@keyframes backdrop-fade {
-  to {
-    background: rgba(0, 0, 0, 0);
-    backdrop-filter: blur(0);
-  }
-}
 
 /* result modal */
 .result-modal {
@@ -1229,98 +1085,6 @@
 }
 .result-modal .btn {
   width: 100%;
-}
-.duel-modal__result {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.duel-modal__result--rolling {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--muted);
-}
-.duel-modal__result--good {
-  color: #3fae5a;
-}
-.duel-modal__result--bad {
-  color: #e23b34;
-}
-.modal-backdrop--dismissible {
-  cursor: pointer;
-}
-.duel-modal--done {
-  cursor: pointer;
-}
-.duel-modal__dismiss {
-  width: 100%;
-  margin-top: 0;
-  font-size: 13px;
-  visibility: hidden;
-  pointer-events: none;
-}
-.duel-modal__dismiss--visible {
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.turn-lottery-modal {
-  gap: 0;
-  min-height: 0;
-}
-
-.turn-lottery-modal .duel-modal__footer {
-  min-height: 0;
-}
-
-.modal-content-sizer {
-  overflow: hidden;
-  width: 100%;
-}
-
-.modal-content-sizer--animate {
-  transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.modal-content-sizer__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-}
-
-.turn-lottery-modal__name--white {
-  color: #4a90d9;
-}
-.turn-lottery-modal__name--black {
-  color: #d64545;
-}
-.turn-lottery-modal__result {
-  text-align: center;
-  font-size: 22px;
-  font-weight: 800;
-}
-.turn-lottery-modal__first-turn {
-  margin-bottom: 4px;
-}
-.turn-lottery-modal__hint {
-  margin: 0 0 16px;
-  text-align: center;
-}
-.turn-lottery-modal__rule {
-  margin: 0 0 12px;
-  text-align: center;
-  min-height: 1.2em;
-  white-space: pre-line;
-}
-.turn-lottery-modal__dice {
-  justify-content: center;
 }
 .turn-lottery-modal .btn {
   width: 100%;
@@ -1444,9 +1208,9 @@
 .lobby-hud__logo {
   flex: 0 0 auto;
   align-self: center;
-  width: min(320px, 100%);
+  width: min(400px, 100%);
   height: auto;
-  margin-bottom: 4px;
+  margin-bottom: 22px;
 }
 
 /* Keep the settings menu against the right edge even when the header has no

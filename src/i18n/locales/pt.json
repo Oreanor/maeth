@@ -161,32 +161,12 @@
     "errPlace": "Não foi possível colocar a peça",
     "errMove": "Não foi possível fazer o lance"
   },
-  "draft": {
-    "picking": "Sorteando uma peça",
-    "choose": "Escolher",
-    "tapToChoose": "Toque para escolher",
-    "opponentPicking": "{name} está escolhendo…",
-    "yourPiece": "Sua peça",
-    "oppPiece": "Peça de {name}"
-  },
   "presence": {
     "inGame": "No jogo",
     "online": "Online",
     "offline": "Offline"
   },
   "lottery": {
-    "title": "Primeiro lance",
-    "opponentJoined": "Seu oponente entrou",
-    "rollPrompt": "Role o dado para decidir quem começa.",
-    "okButton": "OK",
-    "rollButton": "Sortear primeiro lance",
-    "waitingRoll": "Aguardando o lançamento do anfitrião…",
-    "rule": "Ímpar — primeiro jogador\nPar — segundo jogador",
-    "rolled": "Saiu {value}",
-    "spinning": "Rolando…",
-    "firstTurnLabel": "Joga primeiro",
-    "startButton": "Começar",
-    "waitingStart": "Aguardando o primeiro jogador começar…",
     "status": "Sorteio do primeiro lance",
     "statusAwaitRoll": "Sortear primeiro lance",
     "statusRevealed": "Primeiro lance definido — aguardando início",
@@ -194,13 +174,8 @@
     "errStart": "Não foi possível iniciar a partida"
   },
   "duel": {
-    "title": "⚔️ Duelo",
     "attack": "{name} · ataque",
-    "defense": "{name} · defesa",
-    "success": "Golpe certeiro!",
-    "miss": "Errou!",
-    "rolling": "rolando os dados…",
-    "tapToClose": "Toque para continuar"
+    "success": "Golpe certeiro!"
   },
   "result": {
     "draw": "🤝 Empate",

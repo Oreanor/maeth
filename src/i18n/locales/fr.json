@@ -161,32 +161,12 @@
     "errPlace": "Impossible de placer la pièce",
     "errMove": "Impossible d'effectuer le coup"
   },
-  "draft": {
-    "picking": "Tirage d'une pièce",
-    "choose": "Choisir",
-    "tapToChoose": "Touchez pour choisir",
-    "opponentPicking": "{name} choisit…",
-    "yourPiece": "Votre pièce",
-    "oppPiece": "Pièce de {name}"
-  },
   "presence": {
     "inGame": "Dans la partie",
     "online": "En ligne",
     "offline": "Hors ligne"
   },
   "lottery": {
-    "title": "Premier coup",
-    "opponentJoined": "Votre adversaire a rejoint la partie",
-    "rollPrompt": "Lancez le dé pour décider qui commence.",
-    "okButton": "OK",
-    "rollButton": "Tirer au sort le premier coup",
-    "waitingRoll": "En attente du lancer de l'hôte…",
-    "rule": "Impair — premier joueur\nPair — second joueur",
-    "rolled": "Résultat : {value}",
-    "spinning": "Lancer…",
-    "firstTurnLabel": "Joue en premier",
-    "startButton": "Commencer",
-    "waitingStart": "En attente du démarrage par le premier joueur…",
     "status": "Tirage au sort du premier coup",
     "statusAwaitRoll": "Tirer au sort le premier coup",
     "statusRevealed": "Premier coup décidé — en attente du départ",
@@ -194,13 +174,8 @@
     "errStart": "Impossible de démarrer la partie"
   },
   "duel": {
-    "title": "⚔️ Duel",
     "attack": "{name} · attaque",
-    "defense": "{name} · défense",
-    "success": "Coup réussi !",
-    "miss": "Raté !",
-    "rolling": "lancer des dés…",
-    "tapToClose": "Appuyez pour continuer"
+    "success": "Coup réussi !"
   },
   "result": {
     "draw": "🤝 Égalité",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/components/AppHeader'
 import { AppStage } from '@/components/AppStage'
 import { GameBoard } from '@/components/GameBoard'
@@ -128,6 +129,7 @@ export function GameView({
   againBusy,
 }: GameViewProps) {
   const { t } = useI18n()
+  const navigate = useNavigate()
   const { viewMode } = useBoardView()
   const [rulesOpen, setRulesOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
@@ -158,6 +160,7 @@ export function GameView({
         onHelp={() => setRulesOpen(true)}
         onStats={() => setStatsOpen(true)}
         onLogout={onLogout}
+        onExit={() => navigate('/')}
         className="game-topbar"
       />
 

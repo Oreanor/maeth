@@ -6,6 +6,7 @@ import {
   Globe,
   Grid2X2,
   HelpCircle,
+  Home,
   Image,
   LogOut,
   Moon,
@@ -31,6 +32,7 @@ export function UserMenu({
   onHelp,
   onStats,
   appearanceOnly = false,
+  onExit,
 }: {
   name?: string
   onLogout?: () => void
@@ -38,6 +40,8 @@ export function UserMenu({
   onStats?: () => void
   /** Login screen: use the identical menu shell but keep only language and theme. */
   appearanceOnly?: boolean
+  /** Supplied by the game screen only — the lobby is already the way out. */
+  onExit?: () => void
 }) {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
@@ -171,6 +175,20 @@ export function UserMenu({
                   <HelpCircle size={18} />
                   <span>{t('lobby.help')}</span>
                 </button>
+
+                {onExit && (
+                  <button
+                    className="usermenu__item"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpen(false)
+                      onExit()
+                    }}
+                  >
+                    <Home size={18} />
+                    <span>{t('game.exit')}</span>
+                  </button>
+                )}
 
                 <button
                   className="usermenu__item usermenu__item--danger"

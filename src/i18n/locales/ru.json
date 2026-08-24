@@ -161,32 +161,12 @@
     "errPlace": "Не удалось поставить фигуру",
     "errMove": "Не удалось сделать ход"
   },
-  "draft": {
-    "picking": "Выбор фигуры",
-    "choose": "Выбрать",
-    "tapToChoose": "Тапните, чтобы выбрать",
-    "opponentPicking": "{name} выбирает…",
-    "yourPiece": "Ваша фигура",
-    "oppPiece": "Фигура: {name}"
-  },
   "presence": {
     "inGame": "В игре",
     "online": "На сайте",
     "offline": "Не в сети"
   },
   "lottery": {
-    "title": "Розыгрыш хода",
-    "opponentJoined": "Второй игрок присоединился",
-    "rollPrompt": "Бросьте кубик, чтобы определить, кто ходит первым.",
-    "okButton": "OK",
-    "rollButton": "Розыгрыш хода",
-    "waitingRoll": "Ожидание броска от создателя игры…",
-    "rule": "Нечёт — первый игрок\nЧёт — второй игрок",
-    "rolled": "Выпало {value}",
-    "spinning": "Бросок…",
-    "firstTurnLabel": "Первым ходит",
-    "startButton": "Начать",
-    "waitingStart": "Ожидание — первый игрок нажмёт «Начать»…",
     "status": "Розыгрыш хода",
     "statusAwaitRoll": "Розыгрыш первого хода",
     "statusRevealed": "Ход определён — ждём начала",
@@ -194,13 +174,8 @@
     "errStart": "Не удалось начать игру"
   },
   "duel": {
-    "title": "⚔️ Дуэль",
     "attack": "{name} · атака",
-    "defense": "{name} · защита",
-    "success": "Удар прошёл!",
-    "miss": "Мимо!",
-    "rolling": "бросаем кубики…",
-    "tapToClose": "Нажмите, чтобы продолжить"
+    "success": "Удар прошёл!"
   },
   "result": {
     "draw": "🤝 Ничья",

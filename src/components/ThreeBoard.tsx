@@ -385,7 +385,11 @@ export function ThreeBoard(props: BoardProps) {
     controls.enablePan = false
     controls.enableZoom = true
     controls.touches.ONE = THREE.TOUCH.ROTATE
-    controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE
+    // Two fingers zoom and nothing else. DOLLY_ROTATE has them rotate as well,
+    // and rotation is damped while the dolly is applied immediately — the two
+    // pulling against each other is what made a pinch feel jerky and behind the
+    // fingers. Panning is off, so DOLLY_PAN is a plain dolly.
+    controls.touches.TWO = THREE.TOUCH.DOLLY_PAN
     controls.minDistance = 7.2
     controls.maxDistance = 16
     controls.minPolarAngle = 0.22
@@ -517,7 +521,9 @@ export function ThreeBoard(props: BoardProps) {
       if (pointerStart) return
       // Inspecting a piece works whoever's turn it is, so hover is tracked
       // before the interactivity gate that guards the draft preview.
-      hoverProbe = { x: event.clientX, y: event.clientY }
+      // Not during a pinch: there is nothing to hover, and the pick is a
+      // raycast against every piece on the board.
+      if (activePointers.size < 2) hoverProbe = { x: event.clientX, y: event.clientY }
       threeScene.invalidate()
       if (!current.interactive) return
       const cell = pointerCell(event, canvas, camera, hitCells)

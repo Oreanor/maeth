@@ -107,7 +107,10 @@
   pointer-events: none;
 }
 
-.screen--game-3d > :where(:not(.three-board-shell, .three-board-a11y, .modal-backdrop, .ceremony-controls)) {
+.screen--game-3d
+  > :where(
+    :not(.three-board-shell, .three-board-a11y, .modal-backdrop, .ceremony-controls, .fps-meter)
+  ) {
   position: relative;
   z-index: 5;
   pointer-events: auto;

@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { useBoardView } from '@/boardView'
+import { FpsMeter } from './FpsMeter'
 
 /** Shared 4:3 application stage used by both the lobby and an active game. */
 export function AppStage({
@@ -17,5 +18,10 @@ export function AppStage({
     .filter(Boolean)
     .join(' ')
 
-  return <main className={classes}>{children}</main>
+  return (
+    <main className={classes}>
+      {children}
+      <FpsMeter />
+    </main>
+  )
 }

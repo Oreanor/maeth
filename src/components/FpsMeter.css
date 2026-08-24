@@ -1,0 +1,31 @@
+/* Sits in the top-left corner, which the game header left free when it dropped
+   the wordmark. Never takes the pointer, so it cannot block the board or the
+   camera drag underneath it. */
+.fps-meter {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  z-index: 200;
+  padding: 2px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(15, 18, 22, 0.72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.fps-meter--good {
+  color: #6fd18a;
+}
+
+.fps-meter--fair {
+  color: #f1b50a;
+}
+
+.fps-meter--poor {
+  color: #e2655d;
+}

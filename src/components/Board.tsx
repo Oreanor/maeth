@@ -173,7 +173,8 @@ export function Board({
         />
       ) : (
         hoverCell != null &&
-        hoveredPiece && (
+        hoveredPiece &&
+        !hoveredPiece.moved && (
           <ArrowOverlay
             cell={hoverCell}
             arrows={edgeArrows(hoverCell, hoveredPiece.kind, OWNER_COLOR[hoveredPiece.color])}

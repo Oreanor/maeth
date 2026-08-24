@@ -971,8 +971,16 @@ export function ThreeBoard(props: BoardProps) {
     }
     // Hovering shows how a piece moves, in its owner's colour. Held back while
     // a selection or draft ghost owns the arrows, so the two never overlap.
+    // A piece that has already moved is shown greyed out; drawing its reach
+    // would offer moves it cannot make this turn.
     const hovered = hoverCell != null ? props.board[hoverCell] : null
-    if (hovered && props.selected == null && props.previewCell == null && hoverCell != null) {
+    if (
+      hovered &&
+      !hovered.moved &&
+      props.selected == null &&
+      props.previewCell == null &&
+      hoverCell != null
+    ) {
       const color = OWNER_HEX[hovered.color]
       for (const arrow of edgeArrows(hoverCell, hovered.kind, OWNER_COLOR[hovered.color])) {
         const from = cellPosition(hoverCell)

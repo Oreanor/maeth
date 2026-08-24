@@ -52,7 +52,7 @@ const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   rohanWarrior: 1.5,
   balrog: 1.5,
   shelob: 1.5,
-  ent: 1.5,
+  ent: 1.4,
 }
 
 function cellPosition(cell: number): THREE.Vector3 {

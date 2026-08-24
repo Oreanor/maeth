@@ -16,12 +16,14 @@ type Dict = typeof ru
 const DICTS: Record<Lang, Dict> = { ru, en, fr, de, pt, es, it } as Record<Lang, Dict>
 
 const STORAGE_KEY = 'maeth.lang'
+const DEFAULT_LANG: Lang = 'en'
 
+/** The player's choice, else the browser's locale if we speak it, else English. */
 function detectLang(): Lang {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored && (LANGS as string[]).includes(stored)) return stored as Lang
   const nav = navigator.language.slice(0, 2).toLowerCase()
-  return (LANGS as string[]).includes(nav) ? (nav as Lang) : 'en'
+  return (LANGS as string[]).includes(nav) ? (nav as Lang) : DEFAULT_LANG
 }
 
 /** Resolve a dotted key like "lobby.create" against a dictionary. */

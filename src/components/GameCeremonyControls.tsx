@@ -202,13 +202,19 @@ export function GameCeremonyControls({
   // that ever changes.
   const diceVisible = duelOpen || lottery != null
   const pieceVisible = !diceVisible && draftPick != null
+  // A ceremony is running but the button is not yours to press: the opponent is
+  // the one acting on it.
+  const dieOpponent = dieRunning && !dieActionable
+  const pieceOpponent = draftRunning && !draftActionable
 
   return (
     <div className="ceremony-controls" aria-live="polite">
       {diceVisible && (
         <button
           type="button"
-          className={`ceremony-control${dieActionable ? ' ceremony-control--actionable' : ''}`}
+          className={`ceremony-control${dieActionable ? ' ceremony-control--actionable' : ''}${
+            dieOpponent ? ' ceremony-control--opponent' : ''
+          }`}
           onClick={onDieClick}
           aria-disabled={!dieActionable}
           aria-label={t('game.dieButton')}
@@ -220,7 +226,9 @@ export function GameCeremonyControls({
       {pieceVisible && (
         <button
           type="button"
-          className={`ceremony-control ceremony-control--piece${draftActionable ? ' ceremony-control--actionable' : ''}`}
+          className={`ceremony-control ceremony-control--piece${
+            draftActionable ? ' ceremony-control--actionable' : ''
+          }${pieceOpponent ? ' ceremony-control--opponent' : ''}`}
           onClick={draftActionable ? onConfirmDraftPick : undefined}
           aria-disabled={!draftActionable}
           aria-label={t('game.pieceButton')}

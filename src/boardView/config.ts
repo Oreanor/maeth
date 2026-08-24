@@ -61,7 +61,7 @@ export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
   classic: SKIN_SPRITE_URL.chess,
 }
 
-export const DEFAULT_BOARD_VIEW: BoardViewMode = '2d'
+export const DEFAULT_BOARD_VIEW: BoardViewMode = '3d'
 export const DEFAULT_BOARD_STYLE: BoardStyle = 'board-1'
 export const DEFAULT_THREE_PIECE_STYLE: ThreePieceStyle = 'painted'
 

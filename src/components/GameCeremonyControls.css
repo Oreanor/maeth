@@ -147,3 +147,11 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+/* The opponent is acting on this control. Red ring, no pulse: the pulse means
+   "your move", and an animated box-shadow over the live 3D canvas is exactly
+   the repaint the die roll was slowed down by. */
+.ceremony-control--opponent {
+  border-color: #e2655d;
+  box-shadow: 0 0 0 5px color-mix(in srgb, #e2655d 22%, transparent), 0 12px 38px rgba(0, 0, 0, 0.3);
+}

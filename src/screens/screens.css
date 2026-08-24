@@ -1102,7 +1102,9 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  width: min(var(--game-column-w), max(160px, calc(100% - 180px)));
+  /* Clear of the settings button on either side; nothing sits opposite it
+     since the game header dropped its logo. */
+  width: min(var(--game-column-w), max(160px, calc(100% - 120px)));
 }
 .score__names {
   display: flex;
@@ -1184,23 +1186,6 @@
   padding: 0 8px;
 }
 
-/* On phones the gap between the logo and the settings button only has room for
-   the compact tally, which is why the names were being squeezed there. Keep the
-   tally on the header row and give the names their own full-width row below. */
-@media (max-width: 720px) {
-  .score {
-    top: calc(var(--game-top-center) - 20px);
-  }
-
-  .score__names {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    width: min(var(--game-column-w), calc(100vw - 20px));
-    margin-top: 2px;
-    transform: translateX(-50%);
-  }
-}
 
 
 /* The lobby carries the wordmark over its HUD rather than in the header corner,

@@ -75,8 +75,8 @@
   padding: 9px 12px;
   border: 1px solid var(--surface-border);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--card) 72%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
   text-align: center;
 }
 
@@ -94,11 +94,10 @@
   margin: 0;
 }
 
-/* No border: the row already sits inside the panel's own surface, so outlining
-   each one just draws a frame inside a frame. */
+/* Rows sit directly on the panel: no surface of their own, no border, and no
+   second backdrop blur over the one the panel already applies. */
 .lobby-panel .list__item {
-  background: color-mix(in srgb, var(--card) 58%, transparent);
-  backdrop-filter: blur(8px);
+  background: none;
 }
 
 /* In 3D mode the renderer owns the viewport; the existing game UI becomes a
@@ -992,7 +991,10 @@
 }
 .modal {
   width: min(90vw, 340px);
-  background: var(--card);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
   border-radius: 18px;
   padding: 22px 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -1216,7 +1218,7 @@
   padding: 6px 14px;
   border: 1px solid var(--surface-border);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--card) 62%, transparent);
+  background: var(--surface);
   font-size: 17px;
   font-weight: 600;
   line-height: 1.3;

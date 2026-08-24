@@ -23,6 +23,11 @@
   --btn-border: rgba(255, 255, 255, 0.12);
   --btn-bg: #1b232d;
   --surface-border: rgba(255, 255, 255, 0.08);
+  /* Every panel in the app is this surface: the log, the lobby panels, the
+     settings menu, modals and the hint pill. Defined once so they cannot drift
+     to four different opacities again. */
+  --surface: color-mix(in srgb, var(--card) 66%, transparent);
+  --surface-blur: blur(12px) saturate(1.08);
   --bg-gradient: linear-gradient(
     180deg,
     #0a0e14 0%,
@@ -46,6 +51,8 @@
   --btn-border: rgba(22, 32, 43, 0.18);
   --btn-bg: #e8eef4;
   --surface-border: rgba(22, 32, 43, 0.12);
+  --surface: color-mix(in srgb, var(--card) 72%, transparent);
+  --surface-blur: blur(12px) saturate(1.08);
   --bg-gradient: linear-gradient(
     180deg,
     #e4eaf1 0%,

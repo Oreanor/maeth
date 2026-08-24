@@ -60,14 +60,6 @@ const FLING_GRAVITY = 9
 const FLING_OUTWARD = 3.4
 const FLING_TANGENT = 2.6
 const FLING_LIFT = 3.2
-/** Jerking it back and forth instead pulls the ground from under them: they
- *  barely leave their squares, and fall over rather than fly. */
-const SHAKE_REVERSAL_SPEED = 0.045
-const SHAKE_REVERSALS_NEEDED = 4
-const SHAKE_WINDOW_MS = 1000
-const SHAKE_STUMBLE = 1.1
-const SHAKE_LIFT = 0.9
-const SHAKE_TOPPLE = 7
 /** How quickly a piece that has come down on the board loses what is left of
  *  its motion. */
 const LANDED_DAMPING = 0.06
@@ -572,7 +564,7 @@ export function ThreeBoard(props: BoardProps) {
       // Released mid-spin: throw the pieces off. Checked before the click paths
       // below, which a flick never reaches — it is a drag, not a tap.
       if (!flung && Math.abs(spinSpeed) > FLING_RELEASE_SPEED) {
-        flung = throwPieces('flick', Math.sign(spinSpeed))
+        flung = throwPieces(Math.sign(spinSpeed))
         if (flung) {
           flungAt = performance.now()
           threeScene.invalidate()
@@ -658,8 +650,7 @@ export function ThreeBoard(props: BoardProps) {
     // camera is moving, a piece is animating, or something asked it to. A canvas
     // that is dirty every frame is not only its own cost: the browser has to
     // recomposite it and recompute any blurred backdrop above it just as often.
-    /** A piece in the air. The axis is explicit so a piece can be made to keel
-     *  over rather than spin like a top. */
+    /** A piece in the air, turning about its own axis as it goes. */
     interface FlungPiece {
       object: THREE.Object3D
       velocity: THREE.Vector3
@@ -671,9 +662,6 @@ export function ThreeBoard(props: BoardProps) {
     let azimuth = controls.getAzimuthalAngle()
     let spinSpeed = 0
     let lastFrame = 0
-    let shakeDirection = 0
-    let shakeReversals = 0
-    let shakeSince = 0
 
     /**
      * Throws the pieces off the board.
@@ -683,7 +671,8 @@ export function ThreeBoard(props: BoardProps) {
      * them, so they barely leave their squares and topple, turning about a
      * horizontal axis across their fall rather than spinning on the spot.
      */
-    const throwPieces = (kind: 'flick' | 'shake', direction: number) => {
+    /** Throws the pieces off the board, outward and around with the spin. */
+    const throwPieces = (direction: number) => {
       const thrown: FlungPiece[] = []
       for (const piece of pieceRoot.children) {
         if (typeof piece.userData.cell !== 'number') continue
@@ -692,34 +681,16 @@ export function ThreeBoard(props: BoardProps) {
         if (outward.lengthSq() < 1e-6) outward.set(Math.random() - 0.5, 0, Math.random() - 0.5)
         outward.normalize()
         const tangent = new THREE.Vector3(-outward.z, 0, outward.x).multiplyScalar(direction)
-
-        if (kind === 'flick') {
-          thrown.push({
-            object: piece,
-            velocity: outward
-              .clone()
-              .multiplyScalar(FLING_OUTWARD * (0.8 + Math.random() * 0.5))
-              .addScaledVector(tangent, FLING_TANGENT * (0.7 + Math.random() * 0.6))
-              .setY(FLING_LIFT * (0.7 + Math.random() * 0.7)),
-            axis: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
-              .normalize(),
-            rate: (6 + Math.random() * 6) * (Math.random() < 0.5 ? -1 : 1),
-          })
-          continue
-        }
-
-        // Which way this one happens to fall, mostly with the jolt.
-        const fall = tangent
-          .clone()
-          .multiplyScalar(SHAKE_STUMBLE * (0.6 + Math.random() * 0.8))
-          .addScaledVector(outward, SHAKE_STUMBLE * (Math.random() - 0.3))
         thrown.push({
           object: piece,
-          velocity: fall.clone().setY(SHAKE_LIFT * (0.5 + Math.random() * 0.6)),
-          // Across the fall and level with the board, which is what tips a
-          // standing piece over instead of turning it where it stands.
-          axis: new THREE.Vector3(-fall.z, 0, fall.x).normalize(),
-          rate: SHAKE_TOPPLE * (0.7 + Math.random() * 0.6),
+          velocity: outward
+            .clone()
+            .multiplyScalar(FLING_OUTWARD * (0.8 + Math.random() * 0.5))
+            .addScaledVector(tangent, FLING_TANGENT * (0.7 + Math.random() * 0.6))
+            .setY(FLING_LIFT * (0.7 + Math.random() * 0.7)),
+          axis: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
+            .normalize(),
+          rate: (6 + Math.random() * 6) * (Math.random() < 0.5 ? -1 : 1),
         })
       }
       return thrown.length ? thrown : null
@@ -742,21 +713,6 @@ export function ThreeBoard(props: BoardProps) {
       azimuth = nextAzimuth
       // Smoothed, so one jittery frame cannot pass for a flick.
       spinSpeed = spinSpeed * 0.6 + turned * 0.4
-
-      const jolt = Math.abs(spinSpeed) > SHAKE_REVERSAL_SPEED ? Math.sign(spinSpeed) : 0
-      if (jolt !== 0) {
-        if (shakeDirection !== 0 && jolt !== shakeDirection) {
-          if (time - shakeSince > SHAKE_WINDOW_MS) shakeReversals = 0
-          if (shakeReversals === 0) shakeSince = time
-          shakeReversals += 1
-        }
-        shakeDirection = jolt
-      }
-      if (!flung && shakeReversals >= SHAKE_REVERSALS_NEEDED) {
-        flung = throwPieces('shake', shakeDirection)
-        shakeReversals = 0
-        if (flung) flungAt = time
-      }
 
       const step = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 0
       lastFrame = time

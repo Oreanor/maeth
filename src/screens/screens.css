@@ -1237,3 +1237,13 @@
     top: calc(50% + clamp(78px, 13vh, 120px) + 50px - var(--login-group-lift));
   }
 }
+
+/* The footnote and copyright sit on the page background below the artwork, not
+   on top of it, so in light theme the light-on-dark treatment above leaves them
+   nearly invisible. The status line keeps it — that one does sit over the
+   illustration, alongside the buttons. */
+:root[data-theme='light'] .screen--login .login__note,
+:root[data-theme='light'] .screen--login .screen-copyright {
+  color: var(--muted);
+  text-shadow: none;
+}

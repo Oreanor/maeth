@@ -4,9 +4,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
+import { createPortal } from 'react-dom'
+import { useI18n } from '@/i18n'
 import {
   BOARD_STYLE_CONFIG,
   DEFAULT_BOARD_STYLE,
@@ -34,14 +37,27 @@ export {
   type ThreePieceStyle,
 } from './config'
 
-/** Held onto so the browser cannot drop a request that nothing references yet. */
-const preloaded = new Map<string, HTMLImageElement>()
+/** Held onto so the browser cannot drop a request that nothing references yet,
+ *  and so a second request for the same artwork joins the first. */
+const preloaded = new Map<string, Promise<void>>()
 
-function preloadImage(src: string): void {
-  if (preloaded.has(src)) return
-  const image = new Image()
-  image.src = src
-  preloaded.set(src, image)
+function preloadImage(src: string): Promise<void> {
+  const started = preloaded.get(src)
+  if (started) return started
+  const done = new Promise<void>((resolve) => {
+    const image = new Image()
+    // A failed load resolves too: the board should still switch, just bare.
+    image.onload = () => resolve()
+    image.onerror = () => resolve()
+    image.src = src
+    if (image.complete) resolve()
+  })
+  preloaded.set(src, done)
+  return done
+}
+
+function isPreloaded(src: string): boolean {
+  return preloaded.has(src)
 }
 
 const VIEW_STORAGE_KEY = 'maeth.boardView'
@@ -77,6 +93,7 @@ const storedThreePieceStyle = (): ThreePieceStyle => {
 }
 
 export function BoardViewProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const [viewMode, setViewMode] = useState<BoardViewMode>(storedView)
   const [boardStyle2d, setBoardStyle2d] = useState<BoardStyle>(() =>
     storedStyle(STYLE_2D_STORAGE_KEY),
@@ -86,13 +103,34 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
   )
   const [threePieceStyle, setThreePieceStyle] =
     useState<ThreePieceStyle>(storedThreePieceStyle)
+  const [boardLoading, setBoardLoading] = useState(false)
+  const loadIdRef = useRef(0)
   const boardStyle = viewMode === '2d' ? boardStyle2d : boardStyle3d
+
   const setBoardStyle = useCallback(
     (style: BoardStyle) => {
-      if (viewMode === '2d') setBoardStyle2d(style)
-      else setBoardStyle3d(style)
+      if (style === boardStyle) return
+      const apply = () => {
+        if (viewMode === '2d') setBoardStyle2d(style)
+        else setBoardStyle3d(style)
+      }
+      // Hold the board we are looking at until the next one can replace it in
+      // one step. Swapping first would show a bare board while it downloads.
+      const config = BOARD_STYLE_CONFIG[style]
+      const needed = viewMode === '3d' ? [config.top, config.bottom] : [config.top]
+      if (needed.every(isPreloaded)) {
+        apply()
+        return
+      }
+      const loadId = ++loadIdRef.current
+      setBoardLoading(true)
+      void Promise.all(needed.map(preloadImage)).finally(() => {
+        if (loadIdRef.current !== loadId) return
+        apply()
+        setBoardLoading(false)
+      })
     },
-    [viewMode],
+    [boardStyle, viewMode],
   )
 
   useEffect(() => {
@@ -136,7 +174,23 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
     [boardStyle, setBoardStyle, threePieceStyle, viewMode],
   )
 
-  return <BoardViewContext.Provider value={value}>{children}</BoardViewContext.Provider>
+  return (
+    <BoardViewContext.Provider value={value}>
+      {children}
+      {/* Same overlay the 2D skins use, for the same reason: the board on screen
+          stays until its replacement is ready to appear in one step. */}
+      {boardLoading &&
+        createPortal(
+          <div className="skin-loading" role="status" aria-live="polite" aria-busy="true">
+            <div className="skin-loading__card">
+              <div className="skin-loading__spinner" aria-hidden />
+              <span>{t('lobby.styleLoading')}</span>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </BoardViewContext.Provider>
+  )
 }
 
 export function useBoardView(): BoardViewContextValue {

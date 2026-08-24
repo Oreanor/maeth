@@ -47,6 +47,8 @@
     "help": "Spielanleitung",
     "settings": "Einstellungen",
     "theme": "Design",
+    "themeDark": "Dunkel",
+    "themeLight": "Hell",
     "language": "Sprache",
     "style": "Stil",
     "pieceStyle": "Figuren",

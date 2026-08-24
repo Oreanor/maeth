@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { useI18n } from '@/i18n'
-import { useAppShortcuts } from '@/useAppShortcuts'
+import { AppShortcuts } from '@/components/AppShortcuts'
 import { LobbyScreen } from '@/screens/LobbyScreen'
 import { FriendsScreen } from '@/screens/FriendsScreen'
 import { GameScreen } from '@/screens/GameScreen'
@@ -18,8 +18,6 @@ export function App() {
   const { loading } = useAuth()
   const { t } = useI18n()
 
-  useAppShortcuts()
-
   if (loading) {
     return (
       <div className="screen screen--center">
@@ -29,7 +27,9 @@ export function App() {
   }
 
   return (
-    <Routes>
+    <>
+      <AppShortcuts />
+      <Routes>
       {/* The lobby absorbed the login screen: signing in is an option there,
           not a gate in front of it. */}
       <Route path="/login" element={<Navigate to="/" replace />} />
@@ -53,6 +53,7 @@ export function App() {
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   )
 }

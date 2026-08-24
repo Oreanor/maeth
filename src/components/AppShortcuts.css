@@ -1,0 +1,50 @@
+/* Centred confirmation of what a shortcut just changed. Fades away on its own
+   and never takes the pointer, so it cannot block the board underneath. */
+.shortcut-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 300;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 22px;
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.34);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: shortcut-toast 1.1s ease-out forwards;
+}
+
+.shortcut-toast__label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.shortcut-toast__value {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Arrives at once and leaves by fading, so the value is readable for most of
+   its life rather than only at the peak. */
+@keyframes shortcut-toast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  12%,
+  62% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

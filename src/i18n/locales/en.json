@@ -47,6 +47,8 @@
     "help": "How to play",
     "settings": "Settings",
     "theme": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
     "language": "Language",
     "style": "Style",
     "pieceStyle": "Pieces",

@@ -47,6 +47,8 @@
     "help": "Как играть",
     "settings": "Настройки",
     "theme": "Тема",
+    "themeDark": "Тёмная",
+    "themeLight": "Светлая",
     "language": "Язык",
     "style": "Стиль",
     "pieceStyle": "Фигуры",

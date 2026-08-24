@@ -47,6 +47,8 @@
     "help": "Como jogar",
     "settings": "Configurações",
     "theme": "Tema",
+    "themeDark": "Escuro",
+    "themeLight": "Claro",
     "language": "Idioma",
     "style": "Estilo",
     "pieceStyle": "Peças",

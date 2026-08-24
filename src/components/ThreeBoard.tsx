@@ -25,27 +25,10 @@ const CELL_HIGHLIGHT_SCALE = 0.82
 // miniatures a little closer toward the board centre.
 const PIECE_GRID_SCALE = 0.94
 const TOP_Y = BOARD_THICKNESS / 2 + 0.026
-const PIECE_BASE_THICKNESS_SCALE = 1.5
-const PIECE_BASE_HEIGHT = 0.108 * PIECE_BASE_THICKNESS_SCALE
-// A GLB's bounding box bottoms out a little below the sculpted feet, so a model
-// seated exactly on the base reads as hovering. Sink each piece by a fraction of
-// its own height to close that gap.
-const PIECE_SINK_RATIO = 0.02
+// Sink the authored pedestal by only a hair, hiding floating-point gaps without
+// burying its lower moulding in the board.
+const PIECE_SINK_RATIO = 0.003
 const BOARD_EDGE_DARKEN = 0.56
-
-const PIECE_BASE_GEOMETRY = new THREE.LatheGeometry(
-  [
-    new THREE.Vector2(0, 0),
-    new THREE.Vector2(0.37, 0),
-    new THREE.Vector2(0.397, 0.014 * PIECE_BASE_THICKNESS_SCALE),
-    new THREE.Vector2(0.405, 0.026 * PIECE_BASE_THICKNESS_SCALE),
-    new THREE.Vector2(0.405, 0.082 * PIECE_BASE_THICKNESS_SCALE),
-    new THREE.Vector2(0.397, 0.094 * PIECE_BASE_THICKNESS_SCALE),
-    new THREE.Vector2(0.37, PIECE_BASE_HEIGHT),
-    new THREE.Vector2(0, PIECE_BASE_HEIGHT),
-  ],
-  48,
-)
 
 /** Per-model visual corrections after normalising GLB bounds. */
 const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
@@ -53,11 +36,6 @@ const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   balrog: 1.5,
   shelob: 1.5,
   ent: 1.4,
-}
-
-/** Extra seating depth for models whose accessories extend below their feet. */
-const MODEL_SINK_RATIO: Partial<Record<PieceKind, number>> = {
-  tomBombadil: 0.05,
 }
 
 function cellPosition(cell: number): THREE.Vector3 {
@@ -367,10 +345,10 @@ async function createPiece(
     Math.min(0.88 / horizontal, 1.02 / Math.max(size.y, 0.001)) *
     (MODEL_SCALE[kind] ?? 1)
   model.scale.setScalar(scale)
-  const sink = size.y * scale * (MODEL_SINK_RATIO[kind] ?? PIECE_SINK_RATIO)
+  const sink = size.y * scale * PIECE_SINK_RATIO
   model.position.set(
     -center.x * scale,
-    TOP_Y + PIECE_BASE_HEIGHT - bounds.min.y * scale - sink,
+    TOP_Y - bounds.min.y * scale - sink,
     -center.z * scale,
   )
 
@@ -379,25 +357,7 @@ async function createPiece(
   group.add(model)
   // Height of the sculpted figure above the board, so the overlay can park a
   // label just clear of its crown rather than at a guessed fixed height.
-  group.userData.topY = TOP_Y + PIECE_BASE_HEIGHT + size.y * scale - sink
-
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: ghost ? 0x729caf : color === 'white' ? 0x2d679b : 0x983b3b,
-    emissive: ghost ? 0x284655 : color === 'white' ? 0x071b2c : 0x2d0909,
-    emissiveIntensity: ghost ? 0.32 : 0.18,
-    roughness: 0.64,
-    metalness: 0.045,
-    transparent: false,
-    opacity: 1,
-    depthWrite: true,
-  })
-  const base = new THREE.Mesh(PIECE_BASE_GEOMETRY, baseMaterial)
-  base.position.y = TOP_Y + 0.004
-  base.castShadow = !ghost
-  base.receiveShadow = true
-  base.userData.sharedGeometry = true
-  base.userData.isBase = true
-  group.add(base)
+  group.userData.topY = TOP_Y + size.y * scale - sink
   return group
 }
 
@@ -1006,11 +966,11 @@ export function ThreeBoard(props: BoardProps) {
           }
           object.position.copy(piecePosition(cell))
           object.position.y = 0
-          // A spent piece greys out instead of fading, and keeps its coloured
-          // base — that disc is what says whose piece it is.
+          // A spent miniature greys out as one authored object. Side ownership
+          // now lives on its floating marker rather than on a synthetic base.
           if (piece.moved) {
             object.traverse((child) => {
-              if (!(child instanceof THREE.Mesh) || child.userData.isBase) return
+              if (!(child instanceof THREE.Mesh)) return
               const materials = Array.isArray(child.material) ? child.material : [child.material]
               for (const material of materials) markSpent(material)
             })
@@ -1193,13 +1153,13 @@ export function ThreeBoard(props: BoardProps) {
           piece ? (
             <div
               key={cell}
-              className="three-label three-label--badge"
+              className={`three-label three-label--badge three-label--${piece.color}`}
               ref={(el) => {
                 if (el) badgeRefs.current.set(cell, el)
                 else badgeRefs.current.delete(cell)
               }}
             >
-              <PieceBadge kind={piece.kind} roseSize={12} />
+              <PieceBadge kind={piece.kind} roseSize={16} />
             </div>
           ) : null,
         )}

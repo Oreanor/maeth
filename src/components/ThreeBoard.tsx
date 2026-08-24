@@ -500,6 +500,11 @@ export function ThreeBoard(props: BoardProps) {
     resize()
     window.addEventListener('resize', resize)
 
+    /** When the canvas was last touched at all. While a gesture is anywhere
+     *  near, the loop draws unconditionally: whether a frame is needed is not
+     *  worth deciding from three separate flags, and getting it wrong looks
+     *  like the camera freezing and then jumping to catch up. */
+    let interactedAt = 0
     let pointerStart: { x: number; y: number } | null = null
     let hoverProbe: { x: number; y: number } | null = null
     let lastHover: number | null = null
@@ -507,6 +512,7 @@ export function ThreeBoard(props: BoardProps) {
     let multiTouchGesture = false
     const canvas = renderer.domElement
     const onPointerDown = (event: PointerEvent) => {
+      interactedAt = performance.now()
       activePointers.add(event.pointerId)
       if (activePointers.size > 1) {
         multiTouchGesture = true
@@ -518,6 +524,7 @@ export function ThreeBoard(props: BoardProps) {
     }
     const onPointerMove = (event: PointerEvent) => {
       const current = propsRef.current
+      interactedAt = performance.now()
       if (pointerStart) return
       // Inspecting a piece works whoever's turn it is, so hover is tracked
       // before the interactivity gate that guards the draft preview.
@@ -534,6 +541,7 @@ export function ThreeBoard(props: BoardProps) {
       }
     }
     const onPointerUp = (event: PointerEvent) => {
+      interactedAt = performance.now()
       canvas.classList.remove('three-board__canvas--dragging')
       activePointers.delete(event.pointerId)
       if (multiTouchGesture) {
@@ -704,7 +712,7 @@ export function ThreeBoard(props: BoardProps) {
       // controls reported movement this frame is enough for a mouse, but a
       // pinch arrives as a stream of small changes and the gaps between the
       // ones that register read as the gesture stuttering.
-      const gesturing = activePointers.size > 0
+      const gesturing = performance.now() - interactedAt < 400
       if (!moving && !animation && !flung && !gesturing) {
         if (dirtyFrames <= 0) return
         dirtyFrames -= 1

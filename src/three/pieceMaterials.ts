@@ -7,10 +7,6 @@ import type { Color } from '@/game/types'
 // treatment for a piece that has already moved. Kept out of ThreeBoard, which
 // is about the scene, in the same way piece loading is.
 
-export function cloneMaterial(material: THREE.Material): THREE.Material {
-  return material.clone()
-}
-
 /** How far the painted sets are pushed away from grey. Above 1 saturates. */
 const PAINTED_SATURATION = 1.22
 /** The lacquer over them: a thin, fairly sharp coat, like a varnished figure. */

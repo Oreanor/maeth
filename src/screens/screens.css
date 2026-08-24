@@ -303,7 +303,7 @@
   margin: 0 auto 6px;
 }
 :root:not([data-theme='light']) .hero__wordmark:not(.hero__wordmark--overlay),
-:root:not([data-theme='light']) .topbar__logo {
+:root:not([data-theme='light']) .lobby-hud__logo {
   filter: invert(1) brightness(1.08);
 }
 .hero h1 {
@@ -373,21 +373,6 @@
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-}
-/* Tengwar wordmark in the header — sized to sit about as tall as the old user
-   label it replaced. */
-.topbar__logo {
-  height: 36px;
-  width: auto;
-  display: block;
-}
-.topbar__logo-btn {
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
 }
 .screen__title {
   margin: 0;
@@ -493,10 +478,6 @@
   right: max(18px, env(safe-area-inset-right));
   width: auto;
   z-index: 30;
-}
-
-.game-topbar .topbar__logo {
-  height: 45px;
 }
 
 .game-topbar .usermenu__trigger,
@@ -1457,3 +1438,19 @@
   }
 }
 
+
+/* The lobby carries the wordmark over its HUD rather than in the header corner,
+   so it reads as the screen's title. */
+.lobby-hud__logo {
+  flex: 0 0 auto;
+  align-self: center;
+  width: min(320px, 100%);
+  height: auto;
+  margin-bottom: 4px;
+}
+
+/* Keep the settings menu against the right edge even when the header has no
+   logo to sit opposite (space-between would otherwise pull it left). */
+.topbar__right {
+  margin-left: auto;
+}

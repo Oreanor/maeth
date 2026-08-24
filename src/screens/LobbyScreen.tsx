@@ -14,6 +14,7 @@ import { InvitePopup } from '@/components/InvitePopup'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { createGame, deleteGame, joinGame, listGames, type ApiGameListItem, type ApiIncomingInvite } from '@/lib/api'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import logoMaeth from '@/assets/logo-maeth.png'
 import './screens.css'
 
 export function LobbyScreen() {
@@ -207,6 +208,8 @@ export function LobbyScreen() {
       <EmptyGameBoard />
 
       <div className="lobby-hud">
+        <img className="lobby-hud__logo" src={logoMaeth} alt="Maeth" />
+
         <button
           className="btn btn--primary btn--block btn--icon-text lobby-hud__create"
           onClick={() => {

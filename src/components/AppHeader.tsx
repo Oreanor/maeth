@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router-dom'
 import { UserMenu } from './UserMenu'
-import logoMaeth from '@/assets/logo-maeth.png'
 
-/** The single app header: logo (click → lobby) and the settings menu. */
+/** The single app header. The lobby carries the wordmark over its own HUD, and
+ *  the game screen shows none, so all that remains up here is the settings menu. */
 export function AppHeader({
   name,
   onLogout,
@@ -16,12 +15,8 @@ export function AppHeader({
   onStats: () => void
   className?: string
 }) {
-  const navigate = useNavigate()
   return (
     <header className={`topbar${className ? ` ${className}` : ''}`}>
-      <button className="topbar__logo-btn" onClick={() => navigate('/')} aria-label="Maeth" title="Maeth">
-        <img className="topbar__logo" src={logoMaeth} alt="Maeth" />
-      </button>
       <div className="topbar__right">
         <UserMenu name={name} onLogout={onLogout} onHelp={onHelp} onStats={onStats} />
       </div>

@@ -30,12 +30,12 @@ const TOP_Y = BOARD_THICKNESS / 2 + 0.026
 const PIECE_SINK_RATIO = 0.003
 const BOARD_EDGE_DARKEN = 0.56
 
-/** Per-model visual corrections after normalising GLB bounds. */
+/** Large silhouettes need the same modest correction after normalisation. */
 const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
-  rohanWarrior: 1.5,
-  balrog: 1.5,
-  shelob: 1.5,
-  ent: 1.4,
+  rohanWarrior: 1.2,
+  balrog: 1.2,
+  shelob: 1.2,
+  ent: 1.2,
 }
 
 function cellPosition(cell: number): THREE.Vector3 {

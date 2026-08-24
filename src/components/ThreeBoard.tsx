@@ -67,8 +67,8 @@ const BOARD_EDGE_DARKEN = 0.56
 
 /** Large silhouettes need the same modest correction after normalisation. */
 const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
-  rohanWarrior: 1.2,
-  balrog: 1.2,
+  rohanWarrior: 1.38,
+  balrog: 1.32,
   shelob: 1.2,
   ent: 1.2,
 }

@@ -1315,3 +1315,19 @@
   margin-left: 6px;
   background: var(--owner-black);
 }
+
+/* Centre the 2D board in the viewport rather than hanging it below a fixed top
+   padding. The scoreboard above it grows and shrinks — the hint pill wraps to
+   two lines on a phone — so any fixed offset is either an overlap or a gap.
+   Centring clears the block on its own, and leaves the same room below for the
+   log and the ceremony control.
+
+   The board is the only thing in the stage's flow, so taking it out costs
+   nothing. The lobby is excluded on purpose: that element carries both classes,
+   and this selector would otherwise outrank its own layout. */
+:root[data-board-view='2d'] .screen--game:not(.screen--lobby) > .board {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

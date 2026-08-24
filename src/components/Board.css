@@ -450,7 +450,13 @@
    painted frame surrounds a transparent 4x4 interaction grid. */
 :root[data-board-view='2d'] .board {
   gap: 0;
-  padding: 14.4%;
+  /* Width of the texture's painted frame, as a fraction of the board. The grid
+     and the arrow overlay both derive their inset from this one length, so they
+     cannot drift apart — they previously did, because percentage padding
+     resolves against the containing block's width while an absolutely
+     positioned element's percentage inset resolves against .board itself. */
+  --board-frame: calc(var(--game-column-w) * 0.125);
+  padding: var(--board-frame);
   border: 0;
   border-radius: 3.2%;
   overflow: hidden;
@@ -481,7 +487,28 @@
 }
 
 :root[data-board-view='2d'] .board > .arrow-overlay {
-  inset: 14.4%;
+  inset: var(--board-frame);
   width: auto;
   height: auto;
+}
+
+/* Hover-to-inspect name pill, mirroring the 3D board's. Sits above the piece
+   and never takes the pointer, so it cannot break the hover that summoned it. */
+.cell__name {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 6;
+  transform: translateX(-50%);
+  margin-bottom: 2px;
+  padding: 3px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(15, 18, 22, 0.94);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
 }

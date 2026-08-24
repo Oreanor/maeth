@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useI18n } from '@/i18n'
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
 import { isArcher, pieceBadgeAria, pieceName, type PieceKind } from '@/game/pieces'
@@ -54,6 +55,10 @@ export function Board({
   interactive,
 }: BoardProps) {
   const { t } = useI18n()
+  // Hover-to-inspect, matching the 3D board: works on either side's pieces and
+  // whoever's turn it is, so it is deliberately not gated on `interactive`.
+  const [hoverCell, setHoverCell] = useState<number | null>(null)
+  const hoveredPiece = hoverCell != null ? board[hoverCell] : null
   const order = [...board.keys()]
   const cells = orientation === 'white' ? order : order.slice().reverse()
 
@@ -70,7 +75,9 @@ export function Board({
     <div
       className={`board ${interactive ? '' : 'board--locked'}`}
       onPointerLeave={(event) => {
-        if (event.pointerType === 'mouse') onBoardLeave?.()
+        if (event.pointerType !== 'mouse') return
+        setHoverCell(null)
+        onBoardLeave?.()
       }}
     >
       {cells.map((i) => {
@@ -117,7 +124,9 @@ export function Board({
               // A tap synthesises enter just before click; letting it set the
               // preview would make the first tap confirm the placement outright.
               // Only a hovering cursor previews — touch previews via onCell.
-              if (interactive && event.pointerType === 'mouse') onCellEnter?.(i)
+              if (event.pointerType !== 'mouse') return
+              setHoverCell(i)
+              if (interactive) onCellEnter?.(i)
             }}
             aria-label={t('board.cell', { square, content: cellState })}
             aria-pressed={isSel}
@@ -130,6 +139,9 @@ export function Board({
                 <PieceBadge kind={previewKind} />
               </span>
             )}
+            {hoveredPiece === piece && piece && (
+              <span className="cell__name">{pieceName(piece.kind, t)}</span>
+            )}
             {piece && (
               <span
                 className={[
@@ -139,7 +151,6 @@ export function Board({
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                title={`${pieceName(piece.kind, t)} (${pieceBadgeAria(piece.kind, t)})`}
               >
                 <PieceIcon kind={piece.kind} className="piece__icon" />
                 <PieceBadge kind={piece.kind} />
@@ -157,12 +168,18 @@ export function Board({
           arrows={edgeArrows(previewCell, previewKind, OWNER_COLOR[previewOwner])}
           orientation={orientation}
         />
+      ) : selected != null && selectedMoves.length > 0 ? (
+        <ArrowOverlay
+          cell={selected}
+          arrows={moveArrows(selected, selectedMoves, board[selected]!.kind)}
+          orientation={orientation}
+        />
       ) : (
-        selected != null &&
-        selectedMoves.length > 0 && (
+        hoverCell != null &&
+        hoveredPiece && (
           <ArrowOverlay
-            cell={selected}
-            arrows={moveArrows(selected, selectedMoves, board[selected]!.kind)}
+            cell={hoverCell}
+            arrows={edgeArrows(hoverCell, hoveredPiece.kind, OWNER_COLOR[hoveredPiece.color])}
             orientation={orientation}
           />
         )

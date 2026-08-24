@@ -51,12 +51,12 @@ describe('turn lottery', () => {
   })
 
   it('lets the roller start on odd values and the opponent on even values', () => {
-    expect(firstTurnFromRoll(1)).toBe('white')
-    expect(firstTurnFromRoll(3)).toBe('white')
-    expect(firstTurnFromRoll(5)).toBe('white')
-    expect(firstTurnFromRoll(2)).toBe('black')
-    expect(firstTurnFromRoll(4)).toBe('black')
-    expect(firstTurnFromRoll(6)).toBe('black')
+    expect(firstTurnFromRoll(1, 'white')).toBe('white')
+    expect(firstTurnFromRoll(3, 'white')).toBe('white')
+    expect(firstTurnFromRoll(5, 'white')).toBe('white')
+    expect(firstTurnFromRoll(2, 'white')).toBe('black')
+    expect(firstTurnFromRoll(4, 'white')).toBe('black')
+    expect(firstTurnFromRoll(6, 'white')).toBe('black')
     expect(firstTurnFromRoll(1, 'black')).toBe('black')
     expect(firstTurnFromRoll(2, 'black')).toBe('white')
   })

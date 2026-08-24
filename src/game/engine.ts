@@ -57,7 +57,7 @@ export function createLotteryState(): GameState {
 }
 
 /** The roller starts on odd values; their opponent starts on even values. */
-export function firstTurnFromRoll(roll: number, roller: Color = 'white'): Color {
+export function firstTurnFromRoll(roll: number, roller: Color): Color {
   return roll % 2 === 1 ? roller : opposite(roller)
 }
 

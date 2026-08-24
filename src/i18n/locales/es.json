@@ -132,7 +132,6 @@
     "exit": "Salir del juego",
     "waitingPlayer": "Esperando al segundo jugador…",
     "placePiece": "Coloca tu pieza: {piece}",
-    "yourDraft": "Tu turno — saca una pieza",
     "inviteTitle": "Invitación",
     "inviteHint": "Envía el enlace a un amigo. La partida empieza cuando entre con Google.",
     "copyLink": "Copiar enlace",

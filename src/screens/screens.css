@@ -1351,3 +1351,36 @@
   /* Room for the scrollbar so it never sits on top of a row's buttons. */
   padding-right: 2px;
 }
+
+
+/* GameBoard renders the 3D shell's placeholder and the screen-reader mirror of
+   the board eagerly, while ThreeBoard itself is loaded lazily. These two rules
+   therefore cannot live in ThreeBoard.css: until that chunk arrived, the mirror
+   had no styles and drew itself full size — the flash of an old-looking 2D board
+   before the canvas appeared. */
+.three-board-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  /* The board floats with nothing behind it, so the backdrop is a gradient the
+     compositor paints once — not geometry the GPU would shade every frame.
+     Derived from --bg, so it follows the theme on its own. */
+  background: radial-gradient(
+    circle at 50% 44%,
+    color-mix(in srgb, var(--bg) 82%, #ffffff),
+    var(--bg) 58%,
+    color-mix(in srgb, var(--bg) 90%, #000000)
+  );
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.three-board-a11y {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

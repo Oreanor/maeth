@@ -26,7 +26,7 @@ import type { BoardProps } from './Board'
 import './ThreeBoard.css'
 
 const BOARD_SIZE = 6
-const BOARD_THICKNESS = 0.56
+const BOARD_THICKNESS = 0.42
 // Keep only a hairline of the body visible around the artwork. The compact
 // bevel still softens the board without producing a wide dark picture frame.
 const BOARD_CORNER_RADIUS = 0.07

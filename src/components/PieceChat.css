@@ -45,6 +45,9 @@
 
 .speech-bubble {
   max-width: 100%;
+  /* Everything said on this board is said in capitals — it is a comic, and the
+     lines are short enough that shouting stays readable. */
+  text-transform: uppercase;
   padding: 7px 11px;
   border: 1px solid rgba(22, 32, 43, 0.14);
   border-radius: 13px;
@@ -183,6 +186,10 @@
 .piece-chat {
   display: flex;
   flex-direction: column;
+  /* The player's half of the conversation is written the same way — the input
+     included, placeholder and all. The value typed is untouched: only its
+     drawing is capitalised, so the model still reads ordinary words. */
+  text-transform: uppercase;
   gap: 7px;
   padding: 9px 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -262,6 +269,9 @@
 .piece-chat__input {
   flex: 1 1 auto;
   min-width: 0;
+  /* Spelled out rather than inherited: the browser resets this one on form
+     controls, so the panel around it shouting has no effect here. */
+  text-transform: uppercase;
   padding: 8px 11px;
   border: 1px solid rgba(22, 32, 43, 0.16);
   border-radius: 10px;

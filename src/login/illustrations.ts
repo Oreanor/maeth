@@ -3,10 +3,11 @@
  *
  * Each illustration is drawn four times — for a wide screen, a squarer one, a
  * phone held upright, and a tall phone — and the one nearest the shape of the
- * window is chosen. Nothing is ever cropped: what does not fit the frame is
- * left as empty margin, because these are pictures with a subject in the middle
- * rather than textures. The cut is re-chosen when the window changes shape, so
- * turning a phone over swaps the artwork rather than stretching it.
+ * window is chosen, and it fills the window. Choosing the nearest shape first is
+ * what makes that safe: there is a sliver to crop rather than half the picture,
+ * and no black bars either side of it. The cut is re-chosen when the window
+ * changes shape, so turning a phone over swaps the artwork rather than
+ * stretching it.
  */
 
 /** The shapes the art is drawn at, by the ratio of each. */

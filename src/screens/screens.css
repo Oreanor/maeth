@@ -37,12 +37,17 @@
 
 /* Lobby is the same game stage with an empty board. Its controls form one
    centred HUD instead of a separate document-like page. */
+/* The lobby is a picture, not a board: it takes the whole window. The 4:3
+   stage exists to keep the game HUD in proportion, and the artwork — which has
+   a cut of its own for every screen shape — needs no such help. */
 .screen--lobby {
   padding: 0;
+  width: 100vw;
+  max-width: none;
 }
 
 /* The lobby absorbed the login screen, so it wears the same backdrop: one of
-   the illustrations, contained rather than cropped. */
+   the illustrations, filling the window. */
 .screen--lobby > .hero {
   position: absolute;
   inset: 0;
@@ -208,8 +213,8 @@
 
 .login-settings {
   position: absolute !important;
-  top: calc(var(--game-top-center) - 20px);
-  right: max(18px, env(safe-area-inset-right));
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
   z-index: 100 !important;
 }
 
@@ -225,7 +230,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   filter: brightness(0.78);
   pointer-events: none;
   user-select: none;
@@ -469,24 +474,24 @@
 /* Game corners belong to the global 4:3 stage, independently of board width. */
 .game-topbar {
   position: absolute;
-  top: calc(var(--game-top-center) - 22.5px);
-  left: max(18px, env(safe-area-inset-left));
-  right: max(18px, env(safe-area-inset-right));
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
   width: auto;
   z-index: 30;
 }
 
 .game-topbar .usermenu__trigger,
 .login-settings .usermenu__trigger {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
 }
 
 .game-topbar .usermenu__trigger svg,
 .login-settings .usermenu__trigger svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 /* Opening the menu must only raise the game header, not pull it back into the

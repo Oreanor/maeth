@@ -132,7 +132,7 @@
   },
   "chat": {
     "talk": "Mit dieser Figur sprechen",
-    "placeholder": "Frag sie etwas…",
+    "placeholder": "Schreib deine Zeile …",
     "send": "Senden",
     "ally": "Verbündeter",
     "enemy": "Feind",

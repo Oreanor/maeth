@@ -132,7 +132,7 @@
   },
   "chat": {
     "talk": "Falar com esta peça",
-    "placeholder": "Pergunte-lhe algo…",
+    "placeholder": "Escreva a sua fala…",
     "send": "Enviar",
     "ally": "aliado",
     "enemy": "inimigo",

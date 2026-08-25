@@ -132,7 +132,7 @@
   },
   "chat": {
     "talk": "Parler à cette pièce",
-    "placeholder": "Posez-lui une question…",
+    "placeholder": "Écrivez votre réplique…",
     "send": "Envoyer",
     "ally": "allié",
     "enemy": "ennemi",

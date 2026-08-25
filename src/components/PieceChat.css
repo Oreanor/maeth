@@ -1,9 +1,9 @@
-/* Everything the pieces say — and everything said back to them — is written in
-   a comic hand: this is a board of characters bantering, not a system panel.
-   The stack falls back through the usual comic faces and then to any casual
-   handwriting the machine has. */
+/* Everything the pieces say — and everything you say back — is written in a
+   comic hand: this is a board of characters bantering, not a system panel. The
+   panel around the field is furniture, though, and keeps the interface font;
+   only what is actually spoken is in the other hand. */
 .speech-bubble,
-.piece-chat {
+.piece-chat__input {
   font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', 'Marker Felt', cursive;
 }
 
@@ -278,6 +278,7 @@
   background: rgba(255, 255, 255, 0.82);
   color: #1d2733;
   font: inherit;
+  font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', 'Marker Felt', cursive;
   font-size: 13px;
 }
 

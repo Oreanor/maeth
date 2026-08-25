@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MessageCircle, Send, X } from 'lucide-react'
 import { useI18n } from '@/i18n'
+import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
 import { pieceName, type PieceKind } from '@/game/pieces'
 import { SIZE, type Board, type Color } from '@/game/types'
 import { cellAtDisplay, displayCell } from './boardGeometry'
@@ -270,6 +271,9 @@ export function BoardChatLayer({
  */
 export function PieceChatBar({ chat }: { chat: PieceChat }) {
   const { t } = useI18n()
+  // The same artwork the draft carousel deals from, so the piece you are
+  // talking to looks like the piece you were handed.
+  const { viewMode, threePieceStyle } = useBoardView()
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const cell = chat.cell
@@ -305,7 +309,11 @@ export function PieceChatBar({ chat }: { chat: PieceChat }) {
       }}
     >
       <div className="piece-chat__who">
-        <PieceIcon kind={kind} className="piece-chat__icon" />
+        <PieceIcon
+          kind={kind}
+          className="piece-chat__icon"
+          spriteUrl={viewMode === '3d' ? THREE_PIECE_SPRITE_URL[threePieceStyle] : undefined}
+        />
         <span className="piece-chat__name">{pieceName(kind as PieceKind, t)}</span>
         <span
           className={`piece-chat__side piece-chat__side--${chat.hostile ? 'enemy' : 'ally'}`}

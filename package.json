@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "generate:favicon": "tsx scripts/generate-favicon.mts",
-    "sim:bots": "tsx scripts/sim-bots.mts"
+    "sim:bots": "tsx scripts/sim-bots.mts",
+    "pic:cuts": "tsx scripts/pic-cuts.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",

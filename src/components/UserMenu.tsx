@@ -11,6 +11,8 @@ import {
   Image,
   LogOut,
   Moon,
+  MessageCircle,
+  MessageCircleOff,
   Palette,
   Settings,
   Sun,
@@ -25,6 +27,7 @@ import {
   type BoardStyle,
   type ThreePieceStyle,
 } from '@/boardView'
+import { useChatSettings } from '@/chat/ChatSettings'
 
 /** Settings button that opens theme, style, language and sign-out. */
 export function UserMenu({
@@ -59,6 +62,7 @@ export function UserMenu({
     threePieceStyle,
     setThreePieceStyle,
   } = useBoardView()
+  const { chatEnabled, toggleChat } = useChatSettings()
   const [open, setOpen] = useState(false)
 
   return (
@@ -189,6 +193,17 @@ export function UserMenu({
                     <kbd className="usermenu__shortcut">F</kbd>
                   </span>
                 </label>
+
+                <button className="usermenu__item" role="menuitem" onClick={toggleChat}>
+                  {chatEnabled ? <MessageCircle size={18} /> : <MessageCircleOff size={18} />}
+                  <span>{t('lobby.aiChat')}</span>
+                  <span className="usermenu__tail">
+                    <span className="usermenu__value">
+                      {t(chatEnabled ? 'lobby.aiChatOn' : 'lobby.aiChatOff')}
+                    </span>
+                    <kbd className="usermenu__shortcut">C</kbd>
+                  </span>
+                </button>
 
                 {onStats && (
                 <button

@@ -109,39 +109,72 @@ function search(state: GameState, depth: number, alpha: number, beta: number): n
   }
 }
 
-/** Pick the best move at a fixed depth; ties broken randomly. */
-function chooseAtDepth(state: GameState, moves: Move[], depth: number): Move {
-  const maximizing = state.turn === 'white'
-  let bestVal = maximizing ? -Infinity : Infinity
-  let pool: Move[] = [moves[0]]
-  for (const m of moves) {
-    const v = moveValue(state, m, depth, -Infinity, Infinity)
-    const better = maximizing ? v > bestVal + 1e-9 : v < bestVal - 1e-9
-    const equal = Math.abs(v - bestVal) <= 1e-9
-    if (better) {
-      bestVal = v
-      pool = [m]
-    } else if (equal) {
-      pool.push(m)
-    }
-  }
-  return pool[Math.floor(Math.random() * pool.length)]
+/** Every root move with what the search thinks it is worth, at a fixed depth. */
+function valuesAtDepth(state: GameState, moves: Move[], depth: number): ScoredMove[] {
+  return moves.map((move) => ({ move, value: moveValue(state, move, depth, -Infinity, Infinity) }))
 }
 
-/** Best move for the side to move, via time-budgeted iterative-deepening
- *  expectiminimax. Keeps the choice from the last depth that finished in time. */
-export function searchBestMove(state: GameState): Move | null {
+/** A root move and its value, from White's point of view as ever. */
+export interface ScoredMove {
+  move: Move
+  value: number
+}
+
+/**
+ * Between moves the search cannot tell apart, take the enemy that has NOT moved
+ * yet.
+ *
+ * Every capture is worth the same single point, so once a line is searched out
+ * to the end both often come to exactly the same number and the choice was a
+ * coin toss — which reads as nonsense to anyone watching: a piece that has
+ * already had its move can never hurt you again, and one that has not is still
+ * owed a blow. Taking the live one denies that blow. It is a tie-break rather
+ * than an evaluation term on purpose: it must never talk the search out of a
+ * line it actually calculated.
+ */
+function preferLiveTargets(board: GameState['board'], pool: Move[]): Move[] {
+  const rank = (move: Move): number => {
+    const victim = move.capture ? board[move.to] : null
+    if (!victim) return 0
+    return victim.moved ? 1 : 2
+  }
+  let top = -Infinity
+  for (const move of pool) top = Math.max(top, rank(move))
+  return pool.filter((move) => rank(move) === top)
+}
+
+/** Every legal move for the side to move, best first, via time-budgeted
+ *  iterative-deepening expectiminimax. Keeps the values from the last depth
+ *  that finished in time. */
+export function rankRootMoves(state: GameState): ScoredMove[] {
   const moves = ordered(allLegalMoves(state))
-  if (moves.length === 0) return null
+  if (moves.length === 0) return []
 
   deadline = performance.now() + TIME_BUDGET_MS
-  let best = moves[0]
+  let ranked = valuesAtDepth(state, moves, 1)
   for (let depth = 2; depth <= MAX_DEPTH; depth++) {
     aborted = false
-    const choice = chooseAtDepth(state, moves, depth)
+    const deeper = valuesAtDepth(state, moves, depth)
     if (aborted) break // ran out of time mid-search → keep the previous depth
-    best = choice
+    ranked = deeper
     if (performance.now() >= deadline) break
   }
-  return best
+  const sign = state.turn === 'white' ? -1 : 1
+  return ranked.slice().sort((a, b) => sign * (a.value - b.value))
+}
+
+/** The move it would play, plus the ones it weighed against it. */
+export function bestMoveWithContext(
+  state: GameState,
+): { move: Move; ranked: ScoredMove[]; tied: Move[] } | null {
+  const ranked = rankRootMoves(state)
+  if (ranked.length === 0) return null
+  const top = ranked[0]!.value
+  const tied = ranked.filter((entry) => Math.abs(entry.value - top) <= 1e-9).map((e) => e.move)
+  const finalists = preferLiveTargets(state.board, tied)
+  return { move: finalists[Math.floor(Math.random() * finalists.length)]!, ranked, tied }
+}
+
+export function searchBestMove(state: GameState): Move | null {
+  return bestMoveWithContext(state)?.move ?? null
 }

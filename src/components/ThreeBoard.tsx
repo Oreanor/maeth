@@ -23,7 +23,12 @@ import {
 } from '@/palette'
 import { PieceBadge } from './PieceBadge'
 import type { BoardProps } from './Board'
+import { ChatCloudButton, SpeechBubble, useCloudTarget } from './PieceChat'
 import './ThreeBoard.css'
+import './BoardCoords.css'
+
+/** The four edges the coordinate ring is drawn along. */
+const COORD_SIDES = ['top', 'bottom', 'left', 'right'] as const
 
 const BOARD_SIZE = 6
 const BOARD_THICKNESS = 0.42
@@ -331,6 +336,14 @@ export function ThreeBoard(props: BoardProps) {
   // Label elements are positioned imperatively every frame, so they are held by
   // ref rather than re-rendered as the camera moves.
   const badgeRefs = useRef(new Map<number, HTMLDivElement>())
+  /** The cloud on the hovered piece and the bubble over the speaker, both
+   *  positioned by the same loop that places the badges. */
+  const cloudRef = useRef<HTMLDivElement | null>(null)
+  const bubbleRef = useRef<HTMLDivElement | null>(null)
+  /** The piece whose cloud is up, read by the render loop that places it. */
+  const cloudCellRef = useRef<number | null>(null)
+  /** A–D and 1–4 floating off each edge, placed by the same loop. */
+  const coordRefs = useRef(new Map<string, HTMLDivElement>())
   const hoverRef = useRef<number | null>(null)
   const { boardStyle, threePieceStyle } = useBoardView()
   const { t } = useI18n()
@@ -338,6 +351,10 @@ export function ThreeBoard(props: BoardProps) {
   const [hoverCell, setHoverCell] = useState<number | null>(null)
   /** Bumped to rebuild the board after the pieces have been thrown off it. */
   const [restoreToken, setRestoreToken] = useState(0)
+  const { cell: cloudTarget, hold: cloudHold } = useCloudTarget(
+    hoverCell != null && props.board[hoverCell] ? hoverCell : null,
+  )
+  cloudCellRef.current = cloudTarget
 
   // Every effect below mutates the scene imperatively, so rather than have each
   // remember to ask for a frame, any render at all buys one. Async model and
@@ -584,7 +601,14 @@ export function ThreeBoard(props: BoardProps) {
     // Labels are HTML so they match the 2D badge exactly; each frame their
     // anchor point is projected from world space to canvas pixels.
     const labelAnchor = new THREE.Vector3()
-    const placeLabel = (el: HTMLElement, x: number, y: number, z: number, lift: number) => {
+    const placeLabel = (
+      el: HTMLElement,
+      x: number,
+      y: number,
+      z: number,
+      lift: number,
+      centred = false,
+    ) => {
       labelAnchor.set(x, y + lift, z).project(camera)
       if (labelAnchor.z > 1) {
         el.style.opacity = '0'
@@ -592,7 +616,8 @@ export function ThreeBoard(props: BoardProps) {
       }
       const px = (labelAnchor.x * 0.5 + 0.5) * canvas.clientWidth
       const py = (-labelAnchor.y * 0.5 + 0.5) * canvas.clientHeight
-      el.style.transform = `translate(-50%, -100%) translate(${px}px, ${py}px)`
+      const anchor = centred ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)'
+      el.style.transform = `${anchor} translate(${px}px, ${py}px)`
       el.style.opacity = '1'
     }
 
@@ -611,17 +636,55 @@ export function ThreeBoard(props: BoardProps) {
         hoveredCell != null && (propsRef.current.movable?.includes(hoveredCell) ?? false),
       )
 
-      const placed = new Set<number>()
+      const placed = new Map<number, { x: number; z: number; top: number }>()
       for (const piece of pieceRoot.children) {
         const cell = piece.userData.cell
         if (typeof cell !== 'number') continue
-        placed.add(cell)
         const top = (piece.userData.topY as number | undefined) ?? 1
+        placed.set(cell, { x: piece.position.x, z: piece.position.z, top })
         const badge = badgeRefs.current.get(cell)
         if (badge) placeLabel(badge, piece.position.x, top, piece.position.z, 0.12)
       }
       for (const [cell, badge] of badgeRefs.current) {
         if (!placed.has(cell)) badge.style.opacity = '0'
+      }
+
+      // The coordinate ring: the same squares the pieces name out loud, hanging
+      // in the air a little beyond each edge of the playfield.
+      for (const [key, el] of coordRefs.current) {
+        const [side, index] = key.split(':')
+        const i = Number(index)
+        const along = (i - 1.5) * CELL_SIZE
+        const beyond = BOARD_SIZE / 2 + 0.3
+        const spot =
+          side === 'top'
+            ? { x: along, z: -beyond }
+            : side === 'bottom'
+              ? { x: along, z: beyond }
+              : side === 'left'
+                ? { x: -beyond, z: along }
+                : { x: beyond, z: along }
+        placeLabel(el, spot.x, BOARD_FACE_Y, spot.z, 0, true)
+      }
+
+      // The cloud rides over whatever is under the cursor, the bubble over
+      // whoever is talking — both above the badge, in that order.
+      const chat = propsRef.current.chat
+      const cloud = cloudRef.current
+      const cloudCell = cloudCellRef.current
+      if (cloud) {
+        const at = cloudCell != null && cloudCell !== chat?.cell ? placed.get(cloudCell) : undefined
+        // Beside the head, not over it: the badge already sits just above the
+        // piece, and the cloud steps aside for it in CSS.
+        if (at) placeLabel(cloud, at.x, at.top, at.z, 0.05)
+        else cloud.style.opacity = '0'
+      }
+      const bubble = bubbleRef.current
+      if (bubble) {
+        const speaking = chat?.speech?.cell ?? propsRef.current.ambient?.cell ?? null
+        const at = speaking != null ? placed.get(speaking) : undefined
+        if (at) placeLabel(bubble, at.x, at.top, at.z, 0.52)
+        else bubble.style.opacity = '0'
       }
     }
 
@@ -1022,7 +1085,13 @@ export function ThreeBoard(props: BoardProps) {
 
 
   return (
-    <div ref={hostRef} className="three-board-shell" aria-label={t('board.threeView')}>
+    <div
+      ref={hostRef}
+      className={`three-board-shell${
+        props.claimedBy ? ` board--claimed board--claimed-${props.claimedBy}` : ''
+      }`}
+      aria-label={t('board.threeView')}
+    >
       {loading && <div className="three-board__loading">{t('board.loading3d')}</div>}
 
       {/* Labels ride above the canvas as HTML so the move badge is literally the
@@ -1043,6 +1112,48 @@ export function ThreeBoard(props: BoardProps) {
           ) : null,
         )}
       </div>
+
+      <div className="three-board__labels" aria-hidden>
+        {COORD_SIDES.flatMap((side) =>
+          Array.from({ length: 4 }, (_, i) => {
+            const flipped = props.orientation === 'white' ? i : 3 - i
+            const text = side === 'top' || side === 'bottom' ? 'ABCD'[flipped] : String(flipped + 1)
+            const key = `${side}:${i}`
+            return (
+              <div
+                key={key}
+                className="three-label three-label--coord"
+                ref={(el) => {
+                  if (el) coordRefs.current.set(key, el)
+                  else coordRefs.current.delete(key)
+                }}
+              >
+                {text}
+              </div>
+            )
+          }),
+        )}
+      </div>
+
+      {props.chat?.available && (
+        <div className="three-board__labels">
+          {cloudTarget != null && cloudTarget !== props.chat.cell && (
+            <div className="three-label three-label--cloud" ref={cloudRef} {...cloudHold}>
+              <ChatCloudButton onClick={() => props.chat?.open(cloudTarget)} title={t('chat.talk')} />
+            </div>
+          )}
+          {(props.chat.speech ?? props.ambient) && (
+            <div className="three-label three-label--bubble" ref={bubbleRef}>
+              <SpeechBubble
+                text={(props.chat.speech ?? props.ambient)!.text}
+                thinking={(props.chat.speech ?? props.ambient)!.thinking === true}
+                hostile={(props.chat.speech ?? props.ambient)!.hostile}
+                tail="inside"
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { searchBestMove } from '../search'
+import { rankRootMoves, searchBestMove } from '../search'
 import { allLegalMoves } from '../engine'
 import { emptyBoard, piece, playState } from './kit'
 
@@ -53,5 +53,31 @@ describe('searchBestMove', () => {
     const move = searchBestMove(playState(b, 'white'))
     expect(move).not.toBeNull()
     expect(allLegalMoves(playState(b, 'white'))).toContainEqual(move)
+  })
+})
+
+describe('choosing between equal captures', () => {
+  // Both captures score the same single point and the game ends level either
+  // way, so the search itself cannot separate them. The tie-break must: a piece
+  // that has already moved can never strike again, while one that has not is
+  // still owed a blow.
+  const twoTargets = () => {
+    const b = emptyBoard()
+    b[5] = piece('rohanWarrior', 'white') // ortho, range 2 — reaches both
+    b[4] = piece('hobbit', 'black', true) // already moved: harmless
+    b[6] = piece('farmer', 'black') // has not moved yet
+    return playState(b, 'white')
+  }
+
+  it('takes the enemy that can still move, not the spent one', () => {
+    for (let i = 0; i < 20; i++) {
+      expect(searchBestMove(twoTargets())).toMatchObject({ from: 5, to: 6, capture: true })
+    }
+  })
+
+  it('ranks every legal move, best first', () => {
+    const ranked = rankRootMoves(twoTargets())
+    expect(ranked.length).toBe(allLegalMoves(twoTargets()).length)
+    expect(ranked[0]!.value).toBeGreaterThanOrEqual(ranked[ranked.length - 1]!.value)
   })
 })

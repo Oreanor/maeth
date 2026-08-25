@@ -1,4 +1,5 @@
 import { SIZE, colOf, onBoard, rowOf, type Color, type Move } from '@/game/types'
+import { displayCell, displayStep } from './boardGeometry'
 import { PIECES, dirsFor, isArcher, type PieceKind } from '@/game/pieces'
 import { CAPTURE_COLOR, MOVE_COLOR } from '@/palette'
 
@@ -88,27 +89,20 @@ interface Props {
 }
 
 export function ArrowOverlay({ cell, arrows, orientation }: Props) {
-  const row = rowOf(cell)
-  const col = colOf(cell)
-  const dRow = orientation === 'white' ? row : SIZE - 1 - row
-  const dCol = orientation === 'white' ? col : SIZE - 1 - col
+  const { row: dRow, col: dCol } = displayCell(cell, orientation)
   const cx = dCol + 0.5
   const cy = dRow + 0.5
 
   return (
     <svg className="arrow-overlay" viewBox={`0 0 ${SIZE} ${SIZE}`}>
       {arrows.map((a, n) => {
-        const sdr = orientation === 'white' ? a.dr : -a.dr
-        const sdc = orientation === 'white' ? a.dc : -a.dc
+        const { dr: sdr, dc: sdc } = displayStep(a.dr, a.dc, orientation)
         let ex: number
         let ey: number
         if (a.to != null) {
-          const tr = rowOf(a.to)
-          const tc = colOf(a.to)
-          const dtr = orientation === 'white' ? tr : SIZE - 1 - tr
-          const dtc = orientation === 'white' ? tc : SIZE - 1 - tc
-          ex = dtc + 0.5
-          ey = dtr + 0.5
+          const target = displayCell(a.to, orientation)
+          ex = target.col + 0.5
+          ey = target.row + 0.5
         } else {
           ex = cx + sdc * a.len
           ey = cy + sdr * a.len

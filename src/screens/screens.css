@@ -29,7 +29,10 @@
   position: relative;
   align-items: center;
   gap: 12px;
-  padding-top: 104px;
+  /* The scoreboard and its status pill sit here; the header above them is
+     positioned absolutely and does not move. The twelve pixels given up are
+     the line the board's top coordinates stand on. */
+  padding-top: 84px;
 }
 
 /* Lobby is the same game stage with an empty board. Its controls form one
@@ -46,6 +49,9 @@
   z-index: 0;
 }
 
+/* The HUD itself never scrolls, whatever ends up inside it: a scrollbar down
+   the middle of the artwork looks like a mistake, and the panels have their own
+   scrolling lists to give ground with. They shrink; the column stays put. */
 .lobby-hud {
   position: absolute !important;
   top: 50%;
@@ -56,11 +62,10 @@
   gap: 12px;
   width: var(--game-column-w);
   max-height: calc(100dvh - 180px);
+  min-height: 0;
   padding: 4px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
   transform: translate(-50%, -50%);
-  scrollbar-width: thin;
   pointer-events: auto;
 }
 
@@ -81,7 +86,9 @@
 }
 
 .lobby-panel {
-  flex: 0 0 auto;
+  /* Shrinkable down to its empty height: on a short window the panel gives
+     ground through its list rather than pushing the column off the screen. */
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1290,7 +1297,10 @@
    screen has to fit without scrolling, so a long list must not push the panel
    below it off the bottom. Four rows of 56px plus their gaps. */
 .lobby-panel .list {
-  max-height: calc(4 * 56px + 3 * 8px);
+  /* Four rows at most, and fewer when the window is short — the panel is
+     allowed to shrink, and this is the part that gives. */
+  max-height: min(calc(4 * 56px + 3 * 8px), 100%);
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;

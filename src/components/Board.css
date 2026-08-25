@@ -491,6 +491,15 @@
   height: auto;
 }
 
+/* The clouds and speech bubbles sit in the same coordinate system as the
+   arrows, so they take the same inset — otherwise a bubble points at the
+   painted frame instead of at the piece. */
+:root[data-board-view='2d'] .board > .board-chat {
+  inset: var(--board-frame);
+  width: auto;
+  height: auto;
+}
+
 
 /* The piece's name, ahead of how it moves. Only the floating 3D labels pass one
    — a 2D cell has no room for it. */
@@ -503,4 +512,38 @@
      the piece, the number is the thing being read off the badge. */
   font-size: 0.84em;
   font-weight: 500;
+}
+
+/* The coin has just named who moves first, and the board says so for as long as
+   the answer is up: a ring in that player's colour, breathing once. It rides on
+   the outline so it sits outside the artwork rather than over it, and works the
+   same on the 3D shell, which has no frame of its own to tint. */
+.board--claimed {
+  outline: 4px solid var(--claimed-colour);
+  outline-offset: 5px;
+  border-radius: 14px;
+  animation: board-claimed 2.2s ease-out;
+}
+
+.board--claimed-white {
+  --claimed-colour: var(--owner-white);
+}
+
+.board--claimed-black {
+  --claimed-colour: var(--owner-black);
+}
+
+@keyframes board-claimed {
+  0% {
+    outline-color: transparent;
+    box-shadow: 0 0 0 0 var(--claimed-colour);
+  }
+  22% {
+    outline-color: var(--claimed-colour);
+    box-shadow: 0 0 34px 6px color-mix(in srgb, var(--claimed-colour) 55%, transparent);
+  }
+  100% {
+    outline-color: var(--claimed-colour);
+    box-shadow: 0 0 18px 0 color-mix(in srgb, var(--claimed-colour) 22%, transparent);
+  }
 }

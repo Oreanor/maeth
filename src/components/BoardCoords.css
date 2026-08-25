@@ -1,0 +1,68 @@
+/* Hidden wherever the board is decoration rather than a game — the lobby's
+   empty board and the screen-reader mirror. The game screen turns it on and
+   gives it the board's own geometry. */
+.board-coords {
+  display: none;
+  pointer-events: none;
+  z-index: 4;
+  font-size: clamp(10px, 2.6vmin, 15px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  /* Quiet on purpose: a reference, not part of the game. Standing on the page
+     rather than on the artwork, they take the theme's own muted ink — dark on a
+     light page, light on a dark one. */
+  color: var(--muted);
+  opacity: 0.9;
+}
+
+.board-coords__mark {
+  position: absolute;
+}
+
+/* A hair off each edge — close enough to belong to the board, clear of the
+   painted frame so nothing has to read through carving. */
+.board-coords__mark--top {
+  top: 0;
+  transform: translate(-50%, -125%);
+}
+
+.board-coords__mark--bottom {
+  bottom: 0;
+  transform: translate(-50%, 125%);
+}
+
+.board-coords__mark--left {
+  left: 0;
+  transform: translate(-190%, -50%);
+}
+
+.board-coords__mark--right {
+  right: 0;
+  transform: translate(190%, -50%);
+}
+
+/* Laid over the same square the board occupies, so a mark hung off one of its
+   edges lands beside the board on the page. */
+:root[data-board-view='2d'] .screen--game:not(.screen--lobby) > .board-coords {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--game-column-w);
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+}
+
+/* ── the same ring around the 3D board ── */
+
+/* Positioned every frame by the render loop, like the badges. */
+.three-label--coord {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.85;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}

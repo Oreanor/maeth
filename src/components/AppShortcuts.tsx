@@ -4,6 +4,7 @@ import { BOARD_STYLES, THREE_PIECE_STYLES, useBoardView } from '@/boardView'
 import { LANGS, useI18n } from '@/i18n'
 import { SKINS, SKIN_I18N, useSkin } from '@/skin'
 import { useTheme } from '@/theme'
+import { useChatSettings } from '@/chat/ChatSettings'
 import './AppShortcuts.css'
 
 /** How long the confirmation stays before fading. */
@@ -44,7 +45,7 @@ function next<T>(values: readonly T[], current: T): T {
  * board, and the confirmation each one shows:
  *
  *   B  board style        F  pieces        V  2D / 3D
- *   L  language           T  theme
+ *   L  language           T  theme          C  talking pieces
  *
  * Every one is also in the settings menu — this is a faster path to the same
  * state, not a second source of truth.
@@ -61,6 +62,7 @@ export function AppShortcuts() {
   const { t, lang, setLang } = useI18n()
   const { skin, setSkin } = useSkin()
   const { theme, toggle } = useTheme()
+  const { chatEnabled, toggleChat } = useChatSettings()
 
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const idRef = useRef(0)
@@ -121,6 +123,11 @@ export function AppShortcuts() {
           announce('lobby.language', `languages.${nextLang}`)
           break
         }
+        case 'KeyC': {
+          toggleChat()
+          announce('lobby.aiChat', chatEnabled ? 'lobby.aiChatOff' : 'lobby.aiChatOn')
+          break
+        }
         case 'KeyT': {
           toggle()
           announce('lobby.theme', theme === 'dark' ? 'lobby.themeLight' : 'lobby.themeDark')
@@ -137,6 +144,8 @@ export function AppShortcuts() {
   }, [
     announce,
     boardStyle,
+    chatEnabled,
+    toggleChat,
     lang,
     setBoardStyle,
     setLang,
@@ -154,7 +163,7 @@ export function AppShortcuts() {
 
   return createPortal(
     <div className="shortcut-toast" role="status" aria-live="polite">
-      <span className="shortcut-toast__label">{t(announcement.labelKey)}</span>
+      <span className="shortcut-toast__label">{t(announcement.labelKey)}:</span>
       <span className="shortcut-toast__value">
         {t(announcement.valueKey, announcement.valueVars)}
       </span>

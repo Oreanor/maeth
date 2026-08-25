@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { SIZE, colOf, opposite, rowOf, type Color } from '@/game/types'
+import { SIZE, opposite, type Color } from '@/game/types'
+import { displayCell } from './boardGeometry'
 import { isArcher, type PieceKind } from '@/game/pieces'
 import type { AnimInfo } from '@/game/presentation'
 import { PieceBadge } from './PieceBadge'
@@ -14,21 +15,16 @@ import './MoveAnimation.css'
  * duel modal; your own duels skip the pre-roll arrow.
  */
 export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientation: Color }) {
-  const disp = (i: number) => {
-    const r = rowOf(i)
-    const c = colOf(i)
-    return orientation === 'white' ? { r, c } : { r: SIZE - 1 - r, c: SIZE - 1 - c }
-  }
-  const f = disp(anim.from)
-  const t = disp(anim.to)
-  const dx = t.c - f.c
-  const dy = t.r - f.r
+  const f = displayCell(anim.from, orientation)
+  const t = displayCell(anim.to, orientation)
+  const dx = t.col - f.col
+  const dy = t.row - f.row
   const cell = 100 / SIZE // percent of the board per cell
 
-  const fcx = f.c + 0.5
-  const fcy = f.r + 0.5
-  const tcx = t.c + 0.5
-  const tcy = t.r + 0.5
+  const fcx = f.col + 0.5
+  const fcy = f.row + 0.5
+  const tcx = t.col + 0.5
+  const tcy = t.row + 0.5
   const lineLen = Math.hypot(tcx - fcx, tcy - fcy)
   const color = OWNER_COLOR[anim.owner]
   const archer = isArcher(anim.attacker)
@@ -70,7 +66,7 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
         <div
           className="anim-attacker anim-attacker--move"
           style={
-            { ...box(f.r, f.c), ['--dx' as string]: dx, ['--dy' as string]: dy } as CSSProperties
+            { ...box(f.row, f.col), ['--dx' as string]: dx, ['--dy' as string]: dy } as CSSProperties
           }
         >
           {animPiece(anim.attacker, anim.owner)}
@@ -80,7 +76,7 @@ export function MoveAnimation({ anim, orientation }: { anim: AnimInfo; orientati
       {anim.kind === 'capture' && anim.victim && (
         <div
           className={`anim-victim ${archerShot ? 'anim-victim--archer' : ''}`.trim()}
-          style={box(t.r, t.c)}
+          style={box(t.row, t.col)}
         >
           {animPiece(anim.victim, opposite(anim.owner))}
         </div>

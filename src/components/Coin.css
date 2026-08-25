@@ -1,0 +1,101 @@
+/* A disc with a real edge, built out of flat elements in 3D space: two faces a
+   thickness apart, and a ring of thin strips stood on edge between them. With
+   `preserve-3d` that is a solid coin, and turning it about its vertical axis is
+   a real spin — no renderer involved. */
+.coin {
+  --coin-d: 150px;
+  --coin-radius: calc(var(--coin-d) / 2);
+  --coin-thickness: 12px;
+  /* One slice per 1/28 of the circumference, plus a hair so the strips overlap
+     rather than showing daylight between them. */
+  --coin-slices: 28;
+  position: relative;
+  display: block;
+  width: var(--coin-d);
+  height: var(--coin-d);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.coin__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: center / cover no-repeat;
+  backface-visibility: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 80, 20, 0.35),
+    inset 0 6px 14px rgba(255, 240, 190, 0.3),
+    inset 0 -8px 16px rgba(90, 55, 10, 0.28);
+}
+
+/* One pip up: the side that means the first player. */
+.coin__face--one {
+  background-image: url('/coin1.jpg');
+  transform: translateZ(calc(var(--coin-thickness) / 2));
+}
+
+/* Two: the other side goes first. Half a turn round, so it faces out when the
+   coin lands on it. */
+.coin__face--two {
+  background-image: url('/coin2.jpg');
+  transform: rotateY(180deg) translateZ(calc(var(--coin-thickness) / 2));
+}
+
+.coin__rim {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.coin__rim i {
+  --slice-w: calc(var(--coin-radius) * 6.2832 / var(--coin-slices) + 1.5px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--slice-w);
+  height: var(--coin-thickness);
+  margin: calc(var(--coin-thickness) / -2) 0 0 calc(var(--slice-w) / -2);
+  background: linear-gradient(
+    to bottom,
+    #8e6418 0%,
+    #e6c774 30%,
+    #f5e3a8 50%,
+    #c99a37 72%,
+    #7d5512 100%
+  );
+  /* Turn to this strip's place around the axis, step out to the rim, then tip
+     it up so its height runs through the coin's thickness. */
+  transform: rotate(var(--slice)) translateY(calc(var(--coin-radius) * -1)) rotateX(90deg);
+}
+
+@keyframes coin-spin {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes coin-land {
+  to {
+    transform: rotateY(var(--coin-landing));
+  }
+}
+
+/* Too fast to read, which is the point: nobody should be able to follow the
+   faces while it is in the air. */
+.coin--spinning {
+  animation: coin-spin 0.26s linear infinite;
+}
+
+/* And then it brakes — a turn and a half in a third of a second. Long enough to
+   read as stopping, short enough that the answer arrives rather than drifts in. */
+.coin--landed {
+  animation: coin-land 0.32s cubic-bezier(0.18, 0.86, 0.3, 1) forwards;
+}
+
+@media (max-width: 720px), (max-height: 680px) {
+  .coin {
+    --coin-d: 104px;
+    --coin-thickness: 9px;
+  }
+}

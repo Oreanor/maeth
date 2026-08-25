@@ -1,0 +1,320 @@
+/* Everything the pieces say — and everything said back to them — is written in
+   a comic hand: this is a board of characters bantering, not a system panel.
+   The stack falls back through the usual comic faces and then to any casual
+   handwriting the machine has. */
+.speech-bubble,
+.piece-chat {
+  font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', 'Marker Felt', cursive;
+}
+
+/* ── the cloud on a hovered piece ───────────────────────────────────────── */
+
+.chat-cloud {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgba(22, 32, 43, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
+  color: #2c3946;
+  cursor: pointer;
+  animation: chat-cloud-in 0.14s ease-out;
+}
+
+.chat-cloud:hover {
+  background: #fff;
+  transform: scale(1.08);
+}
+
+.chat-cloud svg {
+  width: 15px;
+  height: 15px;
+}
+
+@keyframes chat-cloud-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* ── the bubble over a piece's head ─────────────────────────────────────── */
+
+.speech-bubble {
+  max-width: 100%;
+  padding: 7px 11px;
+  border: 1px solid rgba(22, 32, 43, 0.14);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  color: #1d2733;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  animation: speech-in 0.16s ease-out;
+}
+
+/* An enemy speaks from behind a red edge, an ally from behind a blue one —
+   the same two colours the board uses for the sides. */
+.speech-bubble--hostile {
+  border-color: rgba(214, 69, 69, 0.55);
+}
+
+.speech-bubble--ally {
+  border-color: rgba(74, 144, 217, 0.55);
+}
+
+@keyframes speech-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Thinking: the reply is gone and the next one is on its way. */
+.speech-bubble__dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px 2px;
+}
+
+.speech-bubble__dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(29, 39, 51, 0.45);
+  animation: speech-dot 1s ease-in-out infinite;
+}
+
+.speech-bubble__dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.speech-bubble__dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes speech-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+/* Over the 3D board nothing clips the bubble, so it carries its own tail and
+   hangs directly above the miniature. */
+.speech-bubble--tailed::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-top: 10px solid rgba(255, 255, 255, 0.88);
+  border-bottom: 0;
+  transform: translateX(-50%);
+}
+
+.speech-bubble--tailed {
+  position: relative;
+}
+
+/* ── the layer over the flat board ─────────────────────────────────────── */
+
+/* Transparent to the pointer while the board takes its own clicks; when the
+   board is locked the layer catches the pointer instead, so a piece can still
+   be hovered and talked to. */
+.board-chat {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.board-chat__cloud {
+  position: absolute;
+  transform: translate(calc(-100% - 3px), 3px);
+  pointer-events: auto;
+}
+
+/* Centred on the board, not on the piece: the board clips what leaves it, and
+   a bubble over a corner square would lose half its words. The tail does the
+   pointing. */
+.board-chat__bubble {
+  position: absolute;
+  left: 50%;
+  width: 88%;
+  display: flex;
+  justify-content: center;
+}
+
+.board-chat__tail {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+}
+
+.board-chat__tail--down {
+  border-top: 10px solid rgba(255, 255, 255, 0.88);
+  border-bottom: 0;
+  transform: translate(-50%, -100%);
+}
+
+.board-chat__tail--up {
+  border-bottom: 10px solid rgba(255, 255, 255, 0.88);
+  border-top: 0;
+  transform: translate(-50%, 0);
+}
+
+/* ── the bar above the log ─────────────────────────────────────────────── */
+
+.piece-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.24);
+  color: #1d2733;
+  animation: speech-in 0.16s ease-out;
+}
+
+.piece-chat__who {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.piece-chat__icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+}
+
+.piece-chat__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.piece-chat__side {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.piece-chat__side--ally {
+  background: rgba(74, 144, 217, 0.9);
+}
+
+.piece-chat__side--enemy {
+  background: rgba(214, 69, 69, 0.9);
+}
+
+.piece-chat__close {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(22, 32, 43, 0.08);
+  color: #1d2733;
+  cursor: pointer;
+}
+
+.piece-chat__close:hover {
+  background: rgba(22, 32, 43, 0.16);
+}
+
+.piece-chat__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.piece-chat__row {
+  display: flex;
+  gap: 7px;
+}
+
+.piece-chat__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(22, 32, 43, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #1d2733;
+  font: inherit;
+  font-size: 13px;
+}
+
+.piece-chat__input:focus {
+  outline: 2px solid rgba(74, 144, 217, 0.5);
+  outline-offset: -1px;
+}
+
+.piece-chat__send {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 10px;
+  background: rgba(74, 144, 217, 0.92);
+  color: #fff;
+  cursor: pointer;
+}
+
+.piece-chat__send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.piece-chat__send svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The bar is a bottom HUD element like the log, and sits just above it. */
+.screen--game > .piece-chat {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--hud-log-top) + 10px);
+  z-index: 23;
+  width: min(var(--game-column-w), calc(100% - 320px));
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+@media (max-width: 720px) {
+  .screen--game > .piece-chat {
+    width: calc(100% - 20px);
+  }
+}
+
+.board-chat--catching {
+  pointer-events: auto;
+}

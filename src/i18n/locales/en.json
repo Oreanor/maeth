@@ -59,6 +59,9 @@
     "pieceStyle3dStone": "Stone",
     "pieceStyle3dBone": "Bone",
     "pieceStyle3dMetal": "Metal",
+    "aiChat": "AI dialogue",
+    "aiChatOn": "on",
+    "aiChatOff": "off",
     "boardView": "View",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -106,7 +109,7 @@
   },
   "rules": {
     "title": "How to play",
-    "body": "The goal is to **capture more of the opponent's pieces** than they capture of yours.\n**First turn**: the first player rolls one die for turn order. On 1, 3 or 5 they go first; on 2, 4 or 6 the second player goes first.\n**Phase 1 — draft**: take turns blindly drawing a piece and placing it on any free square, 4 per side.\n**Phase 2 — moves**: each piece may move **only once** the whole game, sliding along its own directions up to its **range** (select a piece to see its arrows).\n**Piece markings**: the pill shows **range** as a number and a **direction icon** (legend before the table).\n**Archers** (Orc Archer, Shelob, Wizard, Elven Warrior) **slide to empty squares** like other pieces; if an **enemy** is **first** on a ray, they **shoot from place** (without entering that square). **Dashed** arrows mark shots and ↗ on the badge; in the table — • in the **Archer** column.\nYou capture by moving onto an enemy piece. There are two cases:\n• **Clean capture** — if that piece can't strike your attacker back, you take it automatically.\n• **Duel** — if the defending piece also threatens the attacker, the attacker rolls one die: 1, 3 or 5 captures; 2, 4 or 6 fails. On a failure, the attacking piece stays put and its move is spent.\nWhen no moves remain, whoever **captured more pieces** wins; an equal count is a **draw**.",
+    "body": "The goal is to **capture more of the opponent's pieces** than they capture of yours.\n**First turn**: a coin decides the order. Side I — the player who created the game goes first; II — the other one does.\n**Phase 1 — draft**: take turns blindly drawing a piece and placing it on any free square, 4 per side.\n**Phase 2 — moves**: each piece may move **only once** the whole game, sliding along its own directions up to its **range** (select a piece to see its arrows).\n**Piece markings**: the pill shows **range** as a number and a **direction icon** (legend before the table).\n**Archers** (Orc Archer, Shelob, Wizard, Elven Warrior) **slide to empty squares** like other pieces; if an **enemy** is **first** on a ray, they **shoot from place** (without entering that square). **Dashed** arrows mark shots and ↗ on the badge; in the table — • in the **Archer** column.\nYou capture by moving onto an enemy piece. There are two cases:\n• **Clean capture** — if that piece can't strike your attacker back, you take it automatically.\n• **Duel** — if the defending piece also threatens the attacker, a coin decides: side I captures, II misses. On a miss the attacking piece stays put and its move is spent.\nWhen no moves remain, whoever **captured more pieces** wins; an equal count is a **draw**.",
     "piecesTitle": "All 16 pieces",
     "colPiece": "Piece",
     "colRange": "Range",
@@ -127,6 +130,14 @@
     "win": "{name} wins",
     "draw": "Draw"
   },
+  "chat": {
+    "talk": "Talk to this piece",
+    "placeholder": "Ask it something…",
+    "send": "Send",
+    "ally": "ally",
+    "enemy": "enemy",
+    "silence": "…It says nothing."
+  },
   "game": {
     "exit": "Exit game",
     "waitingPlayer": "Waiting for the second player…",
@@ -142,11 +153,8 @@
     "yourTurn": "Your turn — pick a piece",
     "chooseMoveOrPiece": "Choose a move direction or another piece",
     "opponentTurn": "Opponent's turn",
-    "stopDie": "Press the dice button to stop the roll",
-    "opponentRolling": "Opponent is rolling the dice…",
     "stopPiece": "Press the piece button to choose your piece",
     "opponentChoosingPiece": "Opponent is choosing a piece…",
-    "dieButton": "Dice",
     "pieceButton": "Piece",
     "errLoadGame": "Could not load the game",
     "errRefresh": "Could not refresh the game",
@@ -162,14 +170,18 @@
     "status": "Turn lottery",
     "statusAwaitRoll": "Roll for first move",
     "statusRevealed": "First move decided — waiting to start",
-    "stopRoll": "Roll the die to determine turn order",
-    "firstPlayerRolling": "The first player is rolling for turn order…",
+    "coinSpinning": "The coin decides who goes first…",
+    "firstYou": "You move first",
+    "firstThem": "{name} moves first",
     "errRoll": "Could not roll the dice",
     "errStart": "Could not start the game"
   },
   "duel": {
     "attack": "{name} · attack",
-    "success": "Hit landed!"
+    "success": "Hit landed!",
+    "coinSpinning": "The coin decides the strike…",
+    "hit": "The blow lands!",
+    "blocked": "The blow is turned aside"
   },
   "result": {
     "draw": "🤝 Draw",

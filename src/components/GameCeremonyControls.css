@@ -60,31 +60,6 @@
   transform: scale(0.95);
 }
 
-.corner-die {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  width: 85%;
-  height: 85%;
-  padding: 16%;
-  border-radius: 23%;
-  background: #f8f4e9;
-  box-shadow: inset 0 -7px 14px rgba(52, 34, 19, 0.18), 0 7px 14px rgba(0, 0, 0, 0.28);
-}
-
-.corner-die__pip {
-  width: 76%;
-  aspect-ratio: 1;
-  place-self: center;
-  border-radius: 50%;
-  background: transparent;
-}
-
-.corner-die__pip--on {
-  background: #20242a;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
-}
-
 .ceremony-control__piece {
   /* The button clips it: matching radii here would only round it twice. */
   --piece-icon-radius: 0;
@@ -150,7 +125,7 @@
 
 /* Over the 3D board the canvas repaints every frame, so anything with a blurred
    backdrop on top of it has to be re-sampled and re-blurred every frame as well.
-   The die is the worst case: it also carries the infinite "ready" pulse, whose
+   The coin is the worst case: it also carries the infinite "ready" pulse, whose
    box-shadow keyframes repaint it and invalidate that backdrop again. Trade the
    blur for a denser fill here — the 2D board's backdrop is static, so it keeps
    the glass. */
@@ -162,7 +137,7 @@
 
 /* The opponent is acting on this control. Red ring, no pulse: the pulse means
    "your move", and an animated box-shadow over the live 3D canvas is exactly
-   the repaint the die roll was slowed down by. */
+   the repaint the spinning coin was slowed down by. */
 .ceremony-control--opponent {
   border-color: #e2655d;
   box-shadow: 0 0 0 5px color-mix(in srgb, #e2655d 22%, transparent), 0 12px 38px rgba(0, 0, 0, 0.3);
@@ -212,4 +187,44 @@
   box-shadow:
     0 0 0 5px color-mix(in srgb, #e2655d 22%, transparent),
     0 12px 38px rgba(0, 0, 0, 0.3);
+}
+
+/* The coin needs no chrome around it: the disc is the control, so the panel it
+   used to sit in gets out of the way and only the perspective stays — without
+   it the spin is a flat squash rather than a coin turning. */
+.ceremony-control--coin {
+  padding: 0;
+  opacity: 1;
+  overflow: visible;
+  /* Without a vanishing point the spin is a flat squash rather than a coin. */
+  perspective: 900px;
+  cursor: default;
+}
+
+.ceremony-control--coin.ceremony-control--settled {
+  transform: none;
+}
+
+/* The coin's frame is the answer as much as the face is: grey while it turns,
+   and the colour of whoever won the throw once it has stopped. */
+.ceremony-control--coin {
+  border-color: color-mix(in srgb, var(--text) 34%, transparent);
+  transition: border-color 260ms ease, box-shadow 260ms ease;
+}
+
+.ceremony-control--won-white,
+.ceremony-control--won-black {
+  border-color: var(--won-colour);
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.25),
+    0 0 26px 2px color-mix(in srgb, var(--won-colour) 45%, transparent);
+  opacity: 1;
+}
+
+.ceremony-control--won-white {
+  --won-colour: var(--owner-white);
+}
+
+.ceremony-control--won-black {
+  --won-colour: var(--owner-black);
 }

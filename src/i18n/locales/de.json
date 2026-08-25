@@ -59,6 +59,9 @@
     "pieceStyle3dStone": "Stein",
     "pieceStyle3dBone": "Knochen",
     "pieceStyle3dMetal": "Metall",
+    "aiChat": "KI-Dialoge",
+    "aiChatOn": "an",
+    "aiChatOff": "aus",
     "boardView": "Ansicht",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -106,7 +109,7 @@
   },
   "rules": {
     "title": "Spielanleitung",
-    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Erster Zug**: Der erste Spieler würfelt einmal um die Zugreihenfolge. Bei 1, 3 oder 5 beginnt er; bei 2, 4 oder 6 beginnt der zweite Spieler.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen**: auf der Plakette die **Reichweite** als Zahl und ein **Richtungssymbol** (Legende vor der Tabelle).\n**Schützen** (Ork-Bogenschütze, Shelob, Zauberer, Elfenkrieger) **ziehen auf freie Felder** wie andere Figuren; steht auf dem Strahl **zuerst** ein **Gegner**, **schießen sie vom Platz** (ohne auf sein Feld zu ziehen). **Gestrichelte** Pfeile markieren Schüsse und ↗ auf der Plakette; in der Tabelle • in der Spalte **Schütze**.\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht die verteidigende Figur auch die Angreiferin, würfelt die Angreiferin einmal: Bei 1, 3 oder 5 gelingt der Schlag, bei 2, 4 oder 6 scheitert er. Bei einem Fehlschlag bleibt sie stehen und ihr Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**.",
+    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Erster Zug**: eine Münze entscheidet die Reihenfolge. Seite I — wer die Partie erstellt hat, beginnt; II — der andere.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen**: auf der Plakette die **Reichweite** als Zahl und ein **Richtungssymbol** (Legende vor der Tabelle).\n**Schützen** (Ork-Bogenschütze, Shelob, Zauberer, Elfenkrieger) **ziehen auf freie Felder** wie andere Figuren; steht auf dem Strahl **zuerst** ein **Gegner**, **schießen sie vom Platz** (ohne auf sein Feld zu ziehen). **Gestrichelte** Pfeile markieren Schüsse und ↗ auf der Plakette; in der Tabelle • in der Spalte **Schütze**.\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht die verteidigende Figur auch den Angreifer, entscheidet eine Münze: Seite I schlägt, II geht daneben. Bei einem Fehlschlag bleibt der Angreifer stehen und sein Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**.",
     "piecesTitle": "Alle 16 Figuren",
     "colPiece": "Figur",
     "colRange": "Reichweite",
@@ -127,6 +130,14 @@
     "win": "{name} gewinnt",
     "draw": "Remis"
   },
+  "chat": {
+    "talk": "Mit dieser Figur sprechen",
+    "placeholder": "Frag sie etwas…",
+    "send": "Senden",
+    "ally": "Verbündeter",
+    "enemy": "Feind",
+    "silence": "…Sie schweigt."
+  },
   "game": {
     "exit": "Spiel verlassen",
     "waitingPlayer": "Warten auf den zweiten Spieler…",
@@ -142,11 +153,8 @@
     "yourTurn": "Du bist dran — wähle eine Figur",
     "chooseMoveOrPiece": "Wähle eine Zugrichtung oder eine andere Figur",
     "opponentTurn": "Gegner ist am Zug",
-    "stopDie": "Drücke den Würfel, um den Wurf anzuhalten",
-    "opponentRolling": "Der Gegner würfelt…",
     "stopPiece": "Drücke die Figurentaste, um deine Figur zu wählen",
     "opponentChoosingPiece": "Der Gegner wählt eine Figur…",
-    "dieButton": "Würfel",
     "pieceButton": "Figur",
     "errLoadGame": "Spiel konnte nicht geladen werden",
     "errRefresh": "Spiel konnte nicht aktualisiert werden",
@@ -162,14 +170,18 @@
     "status": "Zugauslosung",
     "statusAwaitRoll": "Ersten Zug auslosen",
     "statusRevealed": "Erster Zug festgelegt — warten auf Start",
-    "stopRoll": "Würfle, um die Zugreihenfolge zu bestimmen",
-    "firstPlayerRolling": "Der erste Spieler würfelt um die Zugreihenfolge…",
+    "coinSpinning": "Die Münze entscheidet, wer beginnt …",
+    "firstYou": "Du beginnst",
+    "firstThem": "{name} beginnt",
     "errRoll": "Würfeln fehlgeschlagen",
     "errStart": "Spiel konnte nicht gestartet werden"
   },
   "duel": {
     "attack": "{name} · Angriff",
-    "success": "Treffer!"
+    "success": "Treffer!",
+    "coinSpinning": "Die Münze entscheidet den Schlag …",
+    "hit": "Der Schlag sitzt!",
+    "blocked": "Der Schlag wird abgewehrt"
   },
   "result": {
     "draw": "🤝 Unentschieden",

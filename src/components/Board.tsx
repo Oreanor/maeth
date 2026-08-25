@@ -3,10 +3,14 @@ import { useI18n } from '@/i18n'
 import { colOf, rowOf, type Board as BoardModel, type Color, type Move } from '@/game/types'
 import { isArcher, pieceBadgeAria, pieceName, type PieceKind } from '@/game/pieces'
 import type { AnimInfo } from '@/game/presentation'
+import type { PieceChat } from '@/chat/usePieceChat'
+import type { Speech } from '@/chat/speech'
 import { PieceBadge } from './PieceBadge'
 import { ArrowOverlay, OWNER_COLOR, edgeArrows, moveArrows } from './ArrowOverlay'
 import { MoveAnimation } from './MoveAnimation'
 import { PieceIcon } from './PieceIcon'
+import { BoardChatLayer } from './PieceChat'
+import { BoardCoords } from './BoardCoords'
 import './Board.css'
 
 export interface BoardProps {
@@ -30,6 +34,13 @@ export interface BoardProps {
   orientation: Color
   /** Move being animated; its pieces are drawn by the overlay, not the grid. */
   anim: AnimInfo | null
+  /** Whoever the coin has just given the first move to: the board wears their
+   *  colour for as long as the answer is on screen. */
+  claimedBy?: Color | null
+  /** Talking to the pieces: the cloud on hover and the bubble over a head. */
+  chat?: PieceChat
+  /** What the board is saying to itself while nobody talks to it. */
+  ambient?: Speech | null
   onCellClick: (cell: number) => void
   onCellEnter?: (cell: number) => void
   onBoardLeave?: () => void
@@ -49,6 +60,9 @@ export function Board({
   previewOwner,
   orientation,
   anim,
+  claimedBy,
+  chat,
+  ambient,
   onCellClick,
   onCellEnter,
   onBoardLeave,
@@ -72,8 +86,11 @@ export function Board({
   }
 
   return (
+    <>
     <div
-      className={`board ${interactive ? '' : 'board--locked'}`}
+      className={`board ${interactive ? '' : 'board--locked'}${
+        claimedBy ? ` board--claimed board--claimed-${claimedBy}` : ''
+      }`}
       onPointerLeave={(event) => {
         if (event.pointerType !== 'mouse') return
         setHoverCell(null)
@@ -157,6 +174,17 @@ export function Board({
         )
       })}
 
+      {chat && (
+        <BoardChatLayer
+          chat={chat}
+          ambient={ambient ?? null}
+          board={board}
+          hoverCell={hoverCell}
+          orientation={orientation}
+          locked={!interactive}
+        />
+      )}
+
       {anim ? (
         <MoveAnimation anim={anim} orientation={orientation} />
       ) : previewCell != null && previewKind ? (
@@ -183,5 +211,10 @@ export function Board({
         )
       )}
     </div>
+
+    {/* Outside the board, not on it: every board style paints its own frame,
+        and letters that read on one wash out on the next. */}
+    <BoardCoords orientation={orientation} />
+    </>
   )
 }

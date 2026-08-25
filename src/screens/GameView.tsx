@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/components/AppHeader'
 import { AppStage } from '@/components/AppStage'
 import { GameBoard } from '@/components/GameBoard'
 import { GameLog } from '@/components/GameLog'
+import { PieceChatBar } from '@/components/PieceChat'
 import { ResultModal } from '@/components/ResultModal'
 import { RulesModal } from '@/components/RulesModal'
 import { Scoreboard } from '@/components/Scoreboard'
@@ -20,13 +21,14 @@ import type { Color, GameState, LotteryState, Move } from '@/game/types'
 import type { Presence } from '@/lib/api'
 import { useI18n } from '@/i18n'
 import { useBoardView } from '@/boardView'
+import { opposite as opponentOf } from '@/game/types'
 import { preloadPieceModel } from '@/three/preload'
+import { usePieceChat } from '@/chat/usePieceChat'
+import { useChatter } from '@/chat/useChatter'
 
 function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): string | null {
-  if (hint === 'stop-die') return t('game.stopDie')
-  if (hint === 'wait-die') return t('game.opponentRolling')
-  if (hint === 'stop-lottery') return t('lottery.stopRoll')
-  if (hint === 'wait-lottery') return t('lottery.firstPlayerRolling')
+  if (hint === 'coin-lottery') return t('lottery.coinSpinning')
+  if (hint === 'coin-duel') return t('duel.coinSpinning')
   if (hint === 'stop-piece') return t('game.stopPiece')
   if (hint === 'wait-piece') return t('game.opponentChoosingPiece')
   return null
@@ -153,6 +155,50 @@ export function GameView({
   const over = state.phase === 'over' && !resultBlocked
   const showResult = over && !resultClosed
   const showPlayAgain = over && resultClosed
+  // The pieces read the same play-by-play the player does, so they know who
+  // struck down whom without a second record being kept for them.
+  const logLines = useMemo(() => logEntries.map((entry) => entry.text), [logEntries])
+  // An order from the player is played the way their own hands would play it:
+  // pick the piece up, then put it down. Two clicks rather than a private path
+  // into the engine, so every guard the board already has still applies — and
+  // the second one waits a frame, because the first has to land in state first.
+  const onCellRef = useRef(onCell)
+  onCellRef.current = onCell
+  const onOrder = useCallback((from: number, to: number) => {
+    onCellRef.current(from)
+    requestAnimationFrame(() => requestAnimationFrame(() => onCellRef.current(to)))
+  }, [])
+
+  const chat = usePieceChat({ state, human, youName, opponentName, gameLog: logLines, onOrder })
+  // The board mutters to itself between moves — but not over the top of a
+  // conversation the player started.
+  const ambient = useChatter({
+    state,
+    human,
+    youName,
+    busy: chat.cell != null,
+    enabled: chat.available,
+  })
+
+  const firstTurn =
+    showLottery && lottery?.step === 'revealed' ? (lottery.firstTurn ?? null) : null
+  const firstLine =
+    firstTurn == null
+      ? null
+      : firstTurn === human
+        ? t('lottery.firstYou')
+        : t('lottery.firstThem', { name: opponentName })
+
+  // The strike is the same ceremony: the coin comes down, and the line says
+  // whether the blow went home. Its colour belongs to whoever won the exchange.
+  const duelWinner = duel == null ? null : duel.success ? duel.by : opponentOf(duel.by)
+  const duelLine =
+    duel == null
+      ? null
+      : duel.success
+        ? t('duel.hit')
+        : t('duel.blocked')
+
   const ceremonyStatus = ceremonyHintLine(ceremonyHint, t)
   const selectionStatus =
     state.phase === 'play' && interactive && selected != null
@@ -185,14 +231,20 @@ export function GameView({
         opponentName={opponentName}
         youName={youName}
         opponentPresence={opponentPresence}
-        statusLine={showPlayAgain ? null : (ceremonyStatus ?? selectionStatus ?? logStatus)}
-        statusColor={showPlayAgain ? null : logStatusColor}
+        statusLine={
+          showPlayAgain
+            ? null
+            : (duelLine ?? firstLine ?? ceremonyStatus ?? selectionStatus ?? logStatus)
+        }
+        statusColor={showPlayAgain ? null : (duelWinner ?? firstTurn ?? logStatusColor)}
         statusAction={
           showPlayAgain
             ? { label: t('result.again'), onClick: onAgain, disabled: againBusy }
             : undefined
         }
       />
+
+      <PieceChatBar chat={chat} />
 
       <GameLog entries={logEntries} />
 
@@ -209,6 +261,9 @@ export function GameView({
         previewOwner={human}
         orientation={human}
         anim={anim}
+        claimedBy={duelWinner ?? firstTurn}
+        chat={chat}
+        ambient={ambient}
         onCellClick={onCell}
         onCellEnter={onCellEnter}
         onBoardLeave={clearPreview}

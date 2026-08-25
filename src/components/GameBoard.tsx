@@ -15,8 +15,11 @@ export function GameBoard(props: BoardProps) {
       <Suspense fallback={<div className="three-board-shell three-board-shell--loading" />}>
         <ThreeBoard {...props} />
       </Suspense>
+      {/* The screen-reader mirror of the board. The chat is left out of it: the
+          3D layer above renders the very same bubble as live text, and two of
+          them would announce every line twice. */}
       <div className="three-board-a11y">
-        <Board {...props} anim={null} />
+        <Board {...props} anim={null} chat={undefined} />
       </div>
     </>
   )

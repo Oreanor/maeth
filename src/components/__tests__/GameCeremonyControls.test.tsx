@@ -25,14 +25,14 @@ function renderControls(
     ...overrides,
   }
 
-  render(
+  const { container } = render(
     <I18nProvider>
       <BoardViewProvider>
         <GameCeremonyControls {...props} />
       </BoardViewProvider>
     </I18nProvider>,
   )
-  return props
+  return { ...props, container }
 }
 
 describe('GameCeremonyControls', () => {
@@ -46,7 +46,8 @@ describe('GameCeremonyControls', () => {
     vi.useRealTimers()
   })
 
-  it('uses the corner die to stop the first-turn lottery', () => {
+  it('throws the coin by itself — nobody has to stop it', () => {
+    vi.useFakeTimers()
     const onRollLottery = vi.fn()
     renderControls({
       lottery: { step: 'await_roll' },
@@ -54,10 +55,35 @@ describe('GameCeremonyControls', () => {
       onRollLottery,
     })
 
-    const die = screen.getByRole('button', { name: 'Dice' })
-    expect(die.getAttribute('aria-disabled')).toBe('false')
-    fireEvent.click(die)
+    // No die to press: the coin is simply in the air.
+    expect(screen.queryByRole('button', { name: 'Dice' })).toBeNull()
+    expect(onRollLottery).not.toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(2_000)
+    })
     expect(onRollLottery).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('leaves the answer up long enough to read before the draft begins', () => {
+    vi.useFakeTimers()
+    const onStartLottery = vi.fn()
+    renderControls({
+      lottery: { step: 'revealed', roll: 3, firstTurn: 'white' },
+      canStartLottery: true,
+      onStartLottery,
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(1_000)
+    })
+    expect(onStartLottery).not.toHaveBeenCalled()
+    act(() => {
+      vi.advanceTimersByTime(1_500)
+    })
+    expect(onStartLottery).toHaveBeenCalledOnce()
+    vi.useRealTimers()
   })
 
   it('uses the portrait button to settle a human draft pick', () => {
@@ -75,34 +101,37 @@ describe('GameCeremonyControls', () => {
     expect(onConfirmDraftPick).toHaveBeenCalledOnce()
   })
 
-  it('lets the attacking human stop the only duel roll', () => {
+  it('spins the coin over a contested strike and dismisses it on its own', () => {
     const onDismissDuel = vi.fn()
     renderControls({
       duel: { by: 'white', attacker: 5, success: true },
       onDismissDuel,
     })
 
-    const die = screen.getByRole('button', { name: 'Dice' })
-    expect(die.getAttribute('aria-disabled')).toBe('false')
-    fireEvent.click(die)
-    expect(die.getAttribute('aria-disabled')).toBe('true')
+    // No button to press: the coin turns, lands, and the answer stays up.
+    expect(screen.queryByRole('button', { name: 'Dice' })).toBeNull()
 
-    act(() => vi.advanceTimersByTime(700))
+    act(() => {
+      vi.advanceTimersByTime(2_200)
+    })
+    expect(onDismissDuel).not.toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(2_400)
+    })
     expect(onDismissDuel).toHaveBeenCalledOnce()
   })
 
-  it('simulates the opposing attacker without offering a defence roll', () => {
-    const onDismissDuel = vi.fn()
-    renderControls({
+  it("wears the winner's colour: the attacker on a hit, the defender on a miss", () => {
+    const { container } = renderControls({
       duel: { by: 'black', attacker: 4, success: false },
-      onDismissDuel,
     })
 
-    const die = screen.getByRole('button', { name: 'Dice' })
-    expect(die.getAttribute('aria-disabled')).toBe('true')
-    act(() => vi.advanceTimersByTime(1100))
-    expect(die.getAttribute('aria-disabled')).toBe('true')
-    act(() => vi.advanceTimersByTime(700))
-    expect(onDismissDuel).toHaveBeenCalledOnce()
+    act(() => {
+      vi.advanceTimersByTime(2_200)
+    })
+    // Black struck and missed, so the frame belongs to white.
+    expect(container.querySelector('.ceremony-control--won-white')).not.toBeNull()
+    expect(container.querySelector('.ceremony-control--won-black')).toBeNull()
   })
 })

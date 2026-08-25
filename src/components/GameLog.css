@@ -11,11 +11,22 @@
 }
 
 /* The game log is a bottom HUD element. On the regular 4:3 stage it sits
-   between the two ceremony controls instead of covering the pieces up top. */
+   between the two ceremony controls instead of covering the pieces up top.
+
+   Its geometry is published as two variables because the piece-chat bar hangs
+   off the top edge of the log: it has to follow every media query the log
+   makes, and guessing at those numbers twice is how they drift apart. */
+.screen--game {
+  --hud-log-bottom: calc(max(18px, env(safe-area-inset-bottom)) + 64px);
+  /* Half the panel's own height, since it is centred on that line by the
+     transform below: 4 lines at 1.45em plus 9px of padding either side. */
+  --hud-log-top: calc(var(--hud-log-bottom) + 47px);
+}
+
 .screen--game > .gamelog {
   position: absolute;
   left: 50%;
-  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 64px);
+  bottom: var(--hud-log-bottom);
   z-index: 22;
   width: min(var(--game-column-w), calc(100% - 320px));
   transform: translate(-50%, 50%);
@@ -49,8 +60,8 @@
 }
 
 @media (max-width: 720px), (max-height: 680px) {
-  .screen--game > .gamelog {
-    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 45px);
+  .screen--game {
+    --hud-log-bottom: calc(max(10px, env(safe-area-inset-bottom)) + 45px);
   }
 }
 
@@ -58,12 +69,15 @@
   .screen--game {
     --mobile-log-height: 122px;
     --mobile-hud-gap: 12px;
+    --hud-log-bottom: max(10px, env(safe-area-inset-bottom));
+    /* No vertical transform here — the panel stands on that line, so its top
+       edge is a whole height above it rather than half of one. */
+    --hud-log-top: calc(var(--hud-log-bottom) + var(--mobile-log-height));
   }
 
   .screen--game > .gamelog {
     width: calc(100% - 20px);
     height: var(--mobile-log-height);
-    bottom: max(10px, env(safe-area-inset-bottom));
     transform: translateX(-50%);
   }
 

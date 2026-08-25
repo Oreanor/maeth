@@ -23,8 +23,8 @@ import { pickReaction, pickSpeakers, sameMove } from './whoSpeaks'
 /** Roughly every other move is worth a word; the rest pass in silence. */
 const REACTION_CHANCE = 0.5
 /** Quiet for this long and they start on each other. */
-const IDLE_MS = 12_000
-const IDLE_POLL_MS = 4_000
+const IDLE_MS = 30_000
+const IDLE_POLL_MS = 5_000
 /** How long one line hangs: a beat to read it, and no more. */
 const HOLD_MIN_MS = 2_200
 const HOLD_MAX_MS = 4_200

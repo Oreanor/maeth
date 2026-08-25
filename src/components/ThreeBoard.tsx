@@ -1136,7 +1136,7 @@ export function ThreeBoard(props: BoardProps) {
       </div>
 
       {props.chat?.available && (
-        <div className="three-board__labels">
+        <div className="three-board__labels three-board__labels--chat">
           {cloudTarget != null && cloudTarget !== props.chat.cell && (
             <div className="three-label three-label--cloud" ref={cloudRef} {...cloudHold}>
               <ChatCloudButton onClick={() => props.chat?.open(cloudTarget)} title={t('chat.talk')} />

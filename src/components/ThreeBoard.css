@@ -100,6 +100,17 @@
 /* The cloud and the speech bubble ride in a second label layer, positioned by
    the same loop. Only the cloud takes the pointer back from the canvas — the
    bubble stays out of the way of a camera drag. */
+/* Above the HUD, unlike the badges: a bubble reaches well over the board and
+   was landing behind the line that says whose turn it is. The shell has no
+   stacking context of its own, so this competes with the panels directly. */
+.three-board__labels--chat {
+  /* Above the panels (5) so a bubble is never lost behind the line telling you
+     whose turn it is, and below the log (22) and the chat bar (23), which are
+     the two things it must not cover. */
+  z-index: 21;
+  overflow: visible;
+}
+
 .three-label--cloud {
   pointer-events: auto;
   /* Off to the right of the head, clear of the move badge above it. */

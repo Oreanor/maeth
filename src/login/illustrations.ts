@@ -36,8 +36,8 @@ const ART: readonly Illustration[] = [
   { set: '2' },
   { set: '3' },
   { set: '4' },
-  { file: '/pic/05.webp' },
-  { file: '/pic/06.webp' },
+  { set: '5' },
+  { set: '6' },
 ]
 
 export function pickIllustration(): Illustration {

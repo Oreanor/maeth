@@ -114,7 +114,7 @@
   },
   "rules": {
     "title": "Como jogar",
-    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Primeiro turno**: uma moeda decide a ordem. Lado I — começa quem criou a partida; II — começa o outro.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças**: na placa, o número é o **alcance** e ao lado o **ícone de direções** (legenda antes da tabela).\n**Arqueiros** (orc arqueiro, Shelob, mago, guerreiro élfico) **movem-se para casas livres** como os outros; se um **inimigo** é o **primeiro** num raio, **atiram do lugar** (sem entrar na casa dele). Setas **tracejadas** nos tiros e ↗ na placa; na tabela, • na coluna **Arqueiro**.\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se a peça defensora também ameaça a atacante, uma moeda decide: lado I captura, II falha. Ao falhar, a atacante fica onde está e o seu lance é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual.",
+    "body": "O objetivo é **capturar mais peças do adversário** do que ele captura das suas.\n**Primeiro turno**: uma moeda decide a ordem. Lado I e começa **o azul**, II e **o vermelho**; quem a lançou não altera nada.\n**Fase 1 — draft**: em turnos, puxe uma peça às cegas e coloque-a em qualquer casa livre, 4 por lado.\n**Fase 2 — movimentos**: cada peça move-se **apenas uma vez** na partida toda, deslizando nas suas direções até o seu **alcance** (selecione uma peça para ver as setas).\n**Marcações nas peças**: na placa, o número é o **alcance** e ao lado o **ícone de direções** (legenda antes da tabela).\n**Arqueiros** (orc arqueiro, Shelob, mago, guerreiro élfico) **movem-se para casas livres** como os outros; se um **inimigo** é o **primeiro** num raio, **atiram do lugar** (sem entrar na casa dele). Setas **tracejadas** nos tiros e ↗ na placa; na tabela, • na coluna **Arqueiro**.\nVocê captura movendo-se sobre uma peça inimiga. Há dois casos:\n• **Captura limpa** — se essa peça não puder revidar na sua atacante, você a toma automaticamente.\n• **Duelo** — se a peça defensora também ameaça a atacante, decide a mesma moeda: lado I e a troca fica para **o azul**, II e fica para **o vermelho** — o golpe acerta quando a moeda nomeia o atacante. Ao falhar, a atacante fica onde está e o seu lance é gasto.\nQuando não há mais movimentos, vence quem **capturou mais peças**; **empate** se for igual.",
     "piecesTitle": "Todas as 16 peças",
     "colPiece": "Peça",
     "colRange": "Alcance",
@@ -130,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} capturou {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, moeda I — capturado",
-    "duelFail": "{name}: {attacker} vs {victim}, moeda II — falhou",
+    "duelWin": "{name}: {attacker} vs {victim}, moeda {side} — capturado",
+    "duelFail": "{name}: {attacker} vs {victim}, moeda {side} — falhou",
     "win": "{name} vence",
     "draw": "Empate"
   },

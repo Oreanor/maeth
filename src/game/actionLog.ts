@@ -1,6 +1,7 @@
 import {
   applyFailedStrike,
   applyMove,
+  coinWinner,
   createInitialState,
   replayPlace,
   type DuelRoll,
@@ -96,8 +97,6 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
       const attackerName = pieceLabel(attacker.kind, t)
 
       if (duel && victim) {
-        // Which way the coin came down is already in the key: side one is the odd
-        // roll, and the odd roll is the strike landing. The line says so itself.
         const key = duel.success ? 'log.duelWin' : 'log.duelFail'
         lines.push({
           color: by,
@@ -105,6 +104,9 @@ export function buildActionLog(actions: StoredAction[], names: LogNames, t: LogT
             name,
             attacker: attackerName,
             victim: pieceLabel(victim.kind, t),
+            // The face that was up, which is the colour the coin named — not
+            // the outcome. A red attacker that lands its blow did so on II.
+            side: coinWinner(duel.attacker) === 'white' ? 'I' : 'II',
           }),
         })
       } else if (victim) {

@@ -86,7 +86,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const roll = 1 + Math.floor(Math.random() * 6)
-    const firstTurn = firstTurnFromRoll(roll, playerColor)
+    const firstTurn = firstTurnFromRoll(roll)
     const next: GameState = {
       ...state,
       lottery: { step: 'revealed', roll, firstTurn },

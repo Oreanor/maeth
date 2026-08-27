@@ -303,7 +303,7 @@ export function useGame({ humanColor, vsBot, duels, preset = false }: UseGameOpt
     setState((prev) => {
       if (prev.phase !== 'lottery' || prev.lottery?.step !== 'await_roll') return prev
       const roll = 1 + Math.floor(Math.random() * 6)
-      const firstTurn = firstTurnFromRoll(roll, humanColor)
+      const firstTurn = firstTurnFromRoll(roll)
       return {
         ...prev,
         lottery: { step: 'revealed', roll, firstTurn },

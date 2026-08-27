@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { THREE_PIECE_SPRITE_URL, useBoardView } from '@/boardView'
 import { useI18n } from '@/i18n'
 import type { DraftPick, DuelEvent } from '@/game/useGame'
-import type { Color, LotteryState } from '@/game/types'
+import { opposite as opponentOf, type Color, type LotteryState } from '@/game/types'
 import type { PieceKind } from '@/game/pieces'
 import { Coin } from './Coin'
 import { PieceIcon } from './PieceIcon'
@@ -173,29 +173,22 @@ export function GameCeremonyControls({
 
   useEffect(() => onHintChange?.(hint), [hint, onHintChange])
 
-  // The engine rolls a die; the coin shows which way it came out. Side one is
-  // the odd roll: the first player in the lottery, the blow landing in a duel.
-  const coinSide =
-    duel && duelSettled
-      ? duel.success
-        ? ('one' as const)
-        : ('two' as const)
-      : !duelOpen && lottery?.step === 'revealed' && lottery.roll != null
-        ? lottery.roll % 2 === 1
-          ? ('one' as const)
-          : ('two' as const)
-        : null
-  /** Whose colour the frame takes once it has landed: the winner of the throw. */
-  const coinWinner: Color | null =
+  /**
+   * Whose colour the frame takes once it has landed, and — the same thing —
+   * which face is up. The coin decides in colours whatever it was thrown over:
+   * the army that has the first move, or the army that has the exchange. So a
+   * player reading "I" never has to ask first whose throw it was.
+   */
+  const wonBy: Color | null =
     duel && duelSettled
       ? duel.success
         ? duel.by
-        : duel.by === 'white'
-          ? 'black'
-          : 'white'
+        : opponentOf(duel.by)
       : !duelOpen && lottery?.step === 'revealed'
         ? (lottery.firstTurn ?? null)
         : null
+  const coinSide = wonBy ? (wonBy === 'white' ? ('one' as const) : ('two' as const)) : null
+  const coinWinner = wonBy
   const shownPiece = draftPick?.settled ?? pieceSpin
   // One control at a time, centred on the board, and only while a ceremony is
   // actually running — the two idle corner buttons are gone. A duel or the

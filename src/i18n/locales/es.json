@@ -114,7 +114,7 @@
   },
   "rules": {
     "title": "Cómo jugar",
-    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Primer turno**: una moneda decide el orden. Cara I — empieza quien creó la partida; II — empieza el otro.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas**: en la pastilla, el número es el **alcance** y junto a él el **icono de direcciones** (leyenda antes de la tabla).\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **se mueven a casillas libres** como el resto; si un **enemigo** es el **primero** en un rayo, **disparan desde su casilla** (sin entrar en la suya). Flechas **discontinuas** en los disparos y ↗ en la pastilla; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si la pieza defensora también amenaza a la atacante, una moneda decide: cara I captura, II falla. Al fallar, la atacante se queda donde está y su turno se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
+    "body": "El objetivo es **capturar más piezas del rival** de las que él capture de las tuyas.\n**Primer turno**: una moneda decide el orden. Cara I y empieza **el azul**, II y **el rojo**; quién la lanzó no cambia nada.\n**Fase 1 — draft**: por turnos, saca una pieza a ciegas y colócala en cualquier casilla libre, 4 por bando.\n**Fase 2 — movimientos**: cada pieza se mueve **solo una vez** en toda la partida, deslizándose en sus direcciones hasta su **alcance** (selecciona una pieza para ver sus flechas).\n**Marcas en las piezas**: en la pastilla, el número es el **alcance** y junto a él el **icono de direcciones** (leyenda antes de la tabla).\n**Arqueros** (orco arquero, Shelob, mago, guerrero elfo) **se mueven a casillas libres** como el resto; si un **enemigo** es el **primero** en un rayo, **disparan desde su casilla** (sin entrar en la suya). Flechas **discontinuas** en los disparos y ↗ en la pastilla; en la tabla, • en la columna **Arquero**.\nCapturas moviéndote sobre una pieza enemiga. Hay dos casos:\n• **Captura limpia** — si esa pieza no puede golpear de vuelta a tu atacante, la tomas automáticamente.\n• **Duelo** — si la pieza defensora también amenaza a la atacante, decide la misma moneda: cara I y el intercambio es para **el azul**, II y es para **el rojo** — el golpe entra cuando la moneda nombra al atacante. Al fallar, la atacante se queda donde está y su turno se gasta.\nCuando no quedan movimientos, gana quien haya **capturado más piezas**; **empate** si es igual.",
     "piecesTitle": "Las 16 piezas",
     "colPiece": "Pieza",
     "colRange": "Alcance",
@@ -130,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} capturó {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, moneda I — capturado",
-    "duelFail": "{name}: {attacker} vs {victim}, moneda II — fallido",
+    "duelWin": "{name}: {attacker} vs {victim}, moneda {side} — capturado",
+    "duelFail": "{name}: {attacker} vs {victim}, moneda {side} — fallido",
     "win": "Gana {name}",
     "draw": "Tablas"
   },

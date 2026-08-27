@@ -114,7 +114,7 @@
   },
   "rules": {
     "title": "Spielanleitung",
-    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Erster Zug**: eine Münze entscheidet die Reihenfolge. Seite I — wer die Partie erstellt hat, beginnt; II — der andere.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen**: auf der Plakette die **Reichweite** als Zahl und ein **Richtungssymbol** (Legende vor der Tabelle).\n**Schützen** (Ork-Bogenschütze, Shelob, Zauberer, Elfenkrieger) **ziehen auf freie Felder** wie andere Figuren; steht auf dem Strahl **zuerst** ein **Gegner**, **schießen sie vom Platz** (ohne auf sein Feld zu ziehen). **Gestrichelte** Pfeile markieren Schüsse und ↗ auf der Plakette; in der Tabelle • in der Spalte **Schütze**.\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht die verteidigende Figur auch den Angreifer, entscheidet eine Münze: Seite I schlägt, II geht daneben. Bei einem Fehlschlag bleibt der Angreifer stehen und sein Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**.",
+    "body": "Ziel ist es, **mehr gegnerische Figuren zu schlagen**, als der Gegner von deinen schlägt.\n**Erster Zug**: eine Münze entscheidet die Reihenfolge. Seite I und **Blau** beginnt, II und **Rot**; wer geworfen hat, ändert nichts.\n**Phase 1 — Draft**: Zieht abwechselnd blind eine Figur und setzt sie auf ein freies Feld, 4 pro Seite.\n**Phase 2 — Züge**: Jede Figur zieht im ganzen Spiel **nur einmal** und gleitet in ihren Richtungen bis zu ihrer **Reichweite** (wähle eine Figur, um ihre Pfeile zu sehen).\n**Figurenzeichen**: auf der Plakette die **Reichweite** als Zahl und ein **Richtungssymbol** (Legende vor der Tabelle).\n**Schützen** (Ork-Bogenschütze, Shelob, Zauberer, Elfenkrieger) **ziehen auf freie Felder** wie andere Figuren; steht auf dem Strahl **zuerst** ein **Gegner**, **schießen sie vom Platz** (ohne auf sein Feld zu ziehen). **Gestrichelte** Pfeile markieren Schüsse und ↗ auf der Plakette; in der Tabelle • in der Spalte **Schütze**.\nGeschlagen wird, indem du auf eine gegnerische Figur ziehst. Es gibt zwei Fälle:\n• **Sauberer Schlag** — kann diese Figur deine Angreiferin nicht zurückschlagen, nimmst du sie automatisch.\n• **Duell** — bedroht die verteidigende Figur auch den Angreifer, entscheidet dieselbe Münze: Seite I und der Schlagabtausch geht an **Blau**, II und an **Rot** — der Schlag sitzt, wenn die Münze den Angreifer nennt. Bei einem Fehlschlag bleibt der Angreifer stehen und sein Zug ist verbraucht.\nWenn keine Züge mehr möglich sind, gewinnt, wer **mehr Figuren geschlagen** hat; bei Gleichstand **unentschieden**.",
     "piecesTitle": "Alle 16 Figuren",
     "colPiece": "Figur",
     "colRange": "Reichweite",
@@ -130,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} schlägt {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, Münze I — geschlagen",
-    "duelFail": "{name}: {attacker} vs {victim}, Münze II — gescheitert",
+    "duelWin": "{name}: {attacker} vs {victim}, Münze {side} — geschlagen",
+    "duelFail": "{name}: {attacker} vs {victim}, Münze {side} — gescheitert",
     "win": "{name} gewinnt",
     "draw": "Remis"
   },

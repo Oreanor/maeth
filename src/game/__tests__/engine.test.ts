@@ -50,16 +50,12 @@ describe('turn lottery', () => {
     expect(s.board.every((c) => c === null)).toBe(true)
   })
 
-  it('lets the roller start on odd values and the opponent on even values', () => {
-    expect(firstTurnFromRoll(1, 'white')).toBe('white')
-    expect(firstTurnFromRoll(3, 'white')).toBe('white')
-    expect(firstTurnFromRoll(5, 'white')).toBe('white')
-    expect(firstTurnFromRoll(2, 'white')).toBe('black')
-    expect(firstTurnFromRoll(4, 'white')).toBe('black')
-    expect(firstTurnFromRoll(6, 'white')).toBe('black')
-    expect(firstTurnFromRoll(1, 'black')).toBe('black')
-    expect(firstTurnFromRoll(2, 'black')).toBe('white')
+  it('names a colour, and the same colour whoever threw it', () => {
+    // Side one is blue, side two is red, and there is no third reading of it.
+    for (const roll of [1, 3, 5]) expect(firstTurnFromRoll(roll)).toBe('white')
+    for (const roll of [2, 4, 6]) expect(firstTurnFromRoll(roll)).toBe('black')
   })
+
 
   it('beginDraft shuffles and sets the first turn', () => {
     const s = beginDraft('black')
@@ -297,6 +293,21 @@ describe('duels', () => {
     expect(duel?.success).toBe(false)
     expect(next.captures.white).toBe(0)
     expect(next.board[5]).toMatchObject({ kind: 'rohanWarrior', moved: true })
+  })
+
+  it('settles a duel by the coins own colours, not by who struck', () => {
+    // Red attacking blue: the odd faces are blue's, so now they are the ones
+    // that turn the blow aside. The same throw reads the same way whoever made
+    // it — which was the whole point of the coin.
+    const random = vi.spyOn(Math, 'random')
+    for (const roll of [1, 2, 3, 4, 5, 6]) {
+      random.mockReturnValueOnce((roll - 1) / 6 + 0.01)
+      const b = emptyBoard()
+      b[5] = piece('balrog', 'black')
+      b[13] = piece('rohanWarrior', 'white')
+      const { duel } = resolveMove(playState(b, 'black'), { from: 5, to: 13, capture: true })
+      expect(duel).toEqual({ attacker: roll, success: roll % 2 === 0 })
+    }
   })
 
   it('wins on every odd face and fails on every even face', () => {

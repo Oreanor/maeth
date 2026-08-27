@@ -5,6 +5,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { BOARD_STYLE_CONFIG, useBoardView, type ThreePieceStyle } from '@/boardView'
 import { useI18n } from '@/i18n'
 import { FILES } from '@/game/notation'
+import { isDuelMove } from '@/game/engine'
 import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
@@ -13,6 +14,7 @@ import { edgeArrows } from './ArrowOverlay'
 import {
   ARCHER_SHOT_HEX,
   CAPTURE_HEX,
+  DUEL_HEX,
   MOVE_HEX,
   OWNER_COLOR,
   OWNER_HEX,
@@ -1157,12 +1159,17 @@ export function ThreeBoard(props: BoardProps) {
     clearGroup(current.arrowRoot)
     const arrowFrom = props.selected ?? props.previewCell
     if (props.selected != null) {
+      const duels = props.duels !== false
       for (const move of props.selectedMoves) {
+        // Orange for a capture the piece being taken can answer, as on the flat
+        // board: the warning is the same one, so it is the same colour.
+        const capture =
+          duels && isDuelMove(props.board, move) ? DUEL_HEX : CAPTURE_HEX
         addArrow(
           current.arrowRoot,
           cellPosition(move.from),
           cellPosition(move.to),
-          move.capture ? CAPTURE_HEX : MOVE_HEX,
+          move.capture ? capture : MOVE_HEX,
         )
       }
     } else if (arrowFrom != null && props.previewKind) {
@@ -1209,6 +1216,7 @@ export function ThreeBoard(props: BoardProps) {
     props.previewCell,
     props.previewKind,
     props.previewOwner,
+    props.duels,
     props.selected,
     props.selectedMoves,
     restoreToken,

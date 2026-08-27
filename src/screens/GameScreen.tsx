@@ -91,6 +91,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
       selected={game.selected}
       legalTargets={game.legalTargets}
       selectedMoves={game.selectedMoves}
+      duels={config.duels !== false}
       placementTargets={game.placementTargets}
       movableCells={game.movableCells}
       previewCell={game.previewCell}
@@ -219,6 +220,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
       selected={remote.selected}
       legalTargets={remote.legalTargets}
       selectedMoves={remote.selectedMoves}
+      duels={remote.game?.duels_enabled !== false}
       placementTargets={remote.placementTargets}
       movableCells={remote.movableCells}
       previewCell={remote.previewCell}

@@ -1,7 +1,8 @@
-import { SIZE, colOf, onBoard, rowOf, type Color, type Move } from '@/game/types'
+import { SIZE, colOf, onBoard, rowOf, type Board, type Color, type Move } from '@/game/types'
 import { displayCell, displayStep } from './boardGeometry'
 import { PIECES, dirsFor, isArcher, type PieceKind } from '@/game/pieces'
-import { CAPTURE_COLOR, MOVE_COLOR } from '@/palette'
+import { isDuelMove } from '@/game/engine'
+import { CAPTURE_COLOR, DUEL_COLOR, MOVE_COLOR } from '@/palette'
 
 // Generic arrow overlay drawn over the board grid. Units are board cells
 // (viewBox 0 0 SIZE SIZE). Used for two things:
@@ -43,11 +44,26 @@ export function edgeArrows(cell: number, kind: PieceKind, color: string): ArrowS
   return out
 }
 
-/** Turn a selected piece's legal moves into aim arrows. Archer shots are dashed
- *  to the target; archer slides and other pieces use solid arrows. */
-export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowSpec[] {
+/**
+ * Turn a selected piece's legal moves into aim arrows. Archer shots are dashed
+ * to the target; archer slides and other pieces use solid arrows.
+ *
+ * A capture is red when it is certain and orange when the piece being taken can
+ * answer it — the same question `isDuelMove` settles, asked here so the player
+ * is told before committing rather than by the coin afterwards. In a game
+ * played without duels there is nothing to warn about and every capture is red.
+ */
+export function moveArrows(
+  from: number,
+  moves: Move[],
+  kind: PieceKind,
+  board: Board,
+  duels = true,
+): ArrowSpec[] {
   const fr = rowOf(from)
   const fc = colOf(from)
+  const captureColor = (move: Move) =>
+    duels && isDuelMove(board, move) ? DUEL_COLOR : CAPTURE_COLOR
 
   if (isArcher(kind)) {
     const byKey = new Map<string, ArrowSpec>()
@@ -57,7 +73,7 @@ export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowS
       const len = Math.max(Math.abs(rowOf(m.to) - fr), Math.abs(colOf(m.to) - fc))
       const key = `${dr},${dc},${m.capture ? 'c' : 'm'}`
       if (m.capture) {
-        byKey.set(key, { dr, dc, len, to: m.to, color: CAPTURE_COLOR, dashed: true })
+        byKey.set(key, { dr, dc, len, to: m.to, color: captureColor(m), dashed: true })
       } else {
         byKey.set(key, { dr, dc, len, color: MOVE_COLOR })
       }
@@ -65,20 +81,22 @@ export function moveArrows(from: number, moves: Move[], kind: PieceKind): ArrowS
     return [...byKey.values()]
   }
 
-  const byDir = new Map<string, { dr: number; dc: number; len: number; capture: boolean }>()
+  const byDir = new Map<string, { dr: number; dc: number; len: number; move: Move }>()
   for (const m of moves) {
     const dr = sign(rowOf(m.to) - fr)
     const dc = sign(colOf(m.to) - fc)
     const len = Math.max(Math.abs(rowOf(m.to) - fr), Math.abs(colOf(m.to) - fc))
     const key = `${dr},${dc}`
     const cur = byDir.get(key)
-    if (!cur || len > cur.len) byDir.set(key, { dr, dc, len, capture: m.capture })
+    // The move is kept, not just whether it takes something: which square it
+    // lands on is what decides whether the piece there can answer.
+    if (!cur || len > cur.len) byDir.set(key, { dr, dc, len, move: m })
   }
-  return [...byDir.values()].map(({ dr, dc, len, capture }) => ({
+  return [...byDir.values()].map(({ dr, dc, len, move }) => ({
     dr,
     dc,
     len,
-    color: capture ? CAPTURE_COLOR : MOVE_COLOR,
+    color: move.capture ? captureColor(move) : MOVE_COLOR,
   }))
 }
 

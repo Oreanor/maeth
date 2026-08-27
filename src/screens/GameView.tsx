@@ -54,6 +54,8 @@ export interface GameViewProps {
   selected: number | null
   legalTargets: number[]
   selectedMoves: Move[]
+  /** Contested captures are settled by the coin in this game. */
+  duels: boolean
   placementTargets: number[]
   movableCells: number[]
   previewCell: number | null
@@ -108,6 +110,7 @@ export function GameView({
   selected,
   legalTargets,
   selectedMoves,
+  duels,
   placementTargets,
   movableCells,
   previewCell,
@@ -266,6 +269,7 @@ export function GameView({
         selected={selected}
         legalTargets={legalTargets}
         selectedMoves={selectedMoves}
+        duels={duels}
         placementTargets={pendingDef ? placementTargets : []}
         lastPlaced={state.phase === 'draft' ? (lastPlaced ?? null) : null}
         movable={interactive ? movableCells : []}

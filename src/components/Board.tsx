@@ -19,6 +19,10 @@ export interface BoardProps {
   legalTargets: number[]
   /** Legal moves of the selected piece (for capture/move arrows). */
   selectedMoves: Move[]
+  /** Whether contested captures are settled by the coin in this game. With them
+   *  off there is no such thing as a capture that can be answered, so no arrow
+   *  should warn of one. */
+  duels?: boolean
   /** Empty cells available for dropping a piece during the draft. */
   placementTargets: number[]
   /** Cell a piece was just dropped on — briefly highlighted to draw the eye. */
@@ -52,6 +56,7 @@ export function Board({
   selected,
   legalTargets,
   selectedMoves,
+  duels = true,
   placementTargets,
   lastPlaced,
   movable,
@@ -205,7 +210,7 @@ export function Board({
       ) : selected != null && selectedMoves.length > 0 ? (
         <ArrowOverlay
           cell={selected}
-          arrows={moveArrows(selected, selectedMoves, board[selected]!.kind)}
+          arrows={moveArrows(selected, selectedMoves, board[selected]!.kind, board, duels)}
           orientation={orientation}
         />
       ) : (

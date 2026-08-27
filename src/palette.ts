@@ -18,8 +18,15 @@ import type { Color } from '@/game/types'
 /** Which side a piece, arrow or label belongs to. */
 export const OWNER_COLOR: Record<Color, string> = { white: '#4a90d9', black: '#d64545' }
 
-/** A move that takes a piece. */
+/** A move that takes a piece and cannot be answered. */
 export const CAPTURE_COLOR = '#e23b34'
+
+/** A move that takes a piece which can strike back — a duel, so not a certainty.
+ *  Sits between the capture red it qualifies and the archer's amber. Worth
+ *  knowing that red against orange is the one pair red-green blindness flattens,
+ *  so this carries the distinction on its own for fewer players than it looks:
+ *  a shape or a mark would carry it for everyone. */
+export const DUEL_COLOR = '#ef8a1f'
 
 /** A move to an empty square. */
 export const MOVE_COLOR = '#3fae5a'
@@ -35,5 +42,6 @@ export const OWNER_HEX: Record<Color, number> = {
   black: hex(OWNER_COLOR.black),
 }
 export const CAPTURE_HEX = hex(CAPTURE_COLOR)
+export const DUEL_HEX = hex(DUEL_COLOR)
 export const MOVE_HEX = hex(MOVE_COLOR)
 export const ARCHER_SHOT_HEX = hex(ARCHER_SHOT_COLOR)

@@ -43,6 +43,8 @@ const MAX_TOKENS = 700
 const MAX_PROMPT_CHARS = 16_000
 /** System line, a few turns of conversation, and the thing just said. */
 const MAX_MESSAGES = 24
+/** Languages the board speaks, and the script each of them is written in. */
+const CYRILLIC: Record<string, boolean> = { ru: true }
 /** Lines one player may be answered in a day. A long evening is a few hundred. */
 const DAILY_LIMIT = Number(process.env.CHAT_DAILY_LIMIT) || 400
 
@@ -127,7 +129,10 @@ async function callModel(ref: ModelRef, messages: Outbound, maxTokens: number, m
       body: JSON.stringify({
         model: ref.model,
         messages,
-        temperature: 0.9,
+        // Lower than it was. These are small models writing one short line in a
+        // language the rest of the prompt is not in, and the last of the heat
+        // was buying fluent nothing rather than character.
+        temperature: 0.7,
         max_tokens: maxTokens,
         ...reasoningTuning(ref),
       }),
@@ -188,6 +193,22 @@ async function withinQuota(db: SupabaseClient, caller: string): Promise<boolean>
   return Number(data) <= DAILY_LIMIT
 }
 
+/**
+ * Did it answer in the language it was asked in?
+ *
+ * A small model handed an English prompt and told to reply in Russian sometimes
+ * replies in English instead, and to the player that is not a bad line — it is
+ * no line at all. Cheap to see and worth another model's turn. Only a clear
+ * miss counts: a name or a square left in Latin is not one.
+ */
+function inLanguage(text: string, lang: string | undefined): boolean {
+  if (!lang || !(lang in CYRILLIC)) return true
+  const cyrillic = (text.match(/[Ѐ-ӿ]/g) ?? []).length
+  const latin = (text.match(/[A-Za-z]/g) ?? []).length
+  if (cyrillic + latin < 8) return true
+  return cyrillic >= latin
+}
+
 /** The conversation as the caller sent it, or null if it is not one. */
 function readMessages(body: unknown): Outbound | null {
   const raw = (body as { messages?: unknown } | null)?.messages
@@ -237,6 +258,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
   // The model is the server's to choose, not the caller's: an open relay to
   // whatever is most expensive today is not what this is.
+  const lang = (req.body as { lang?: unknown })?.lang
+  const wanted = typeof lang === 'string' && lang.length <= 8 ? lang : undefined
   const asked = Number((req.body as { maxTokens?: unknown })?.maxTokens)
   const maxTokens = Math.min(MAX_TOKENS, Math.max(16, Number.isFinite(asked) ? asked : 300))
 
@@ -246,6 +269,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const left = deadline - Date.now()
       if (left <= 0) break
       const text = await callModel(ref, messages, maxTokens, Math.min(PER_MODEL_MS, left))
+      if (text && !inLanguage(text, wanted)) {
+        console.warn(`[piece-chat] ${ref.label} → answered in the wrong language`)
+        continue
+      }
       if (text) {
         json(res, 200, { text })
         return

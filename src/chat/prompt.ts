@@ -4,7 +4,7 @@ import { cellSquare } from '@/game/notation'
 import { opposite, type Board, type Color, type GameState } from '@/game/types'
 import type { Lang } from '@/i18n'
 import { PIECE_LORE } from './lore'
-import { capturesLine, LANG_NAME, WHAT_MAETH_IS, whatMaethMeans } from './scene'
+import { ANSWER_IN, capturesLine, LANG_NAME, WHAT_MAETH_IS, whatMaethMeans } from './scene'
 import { threatenedBy, threatsAfterMove } from './threats'
 
 /** Everything a piece is allowed to know when it speaks. */
@@ -161,12 +161,48 @@ export function buildSystemPrompt(ctx: ChatContext): string {
     ctx.color === ctx.human
       ? '- IF THEY JUST ORDERED YOU to go somewhere or to kill somebody you can actually reach, the LAST thing in your answer must be the matching tag from the list above. Saying that you are striking without the tag means you never struck, and they are left watching a board where nothing happened.'
       : null,
+    '',
+    ANSWER_IN[ctx.lang],
   ]
     .filter(Boolean)
     .join('\n')
 }
 
-/** The nudge that makes a piece speak first, before the player has said anything. */
+/**
+ * The nudge that makes a piece speak first, before the player has said anything.
+ *
+ * It names the one thing to speak about rather than leaving the whole board
+ * open. Told to remark on how things stand, a small model remarks in general —
+ * which is where the fluent, weightless line comes from. Pointed at the sword
+ * over its head, it has something to say.
+ */
+export function openingTurn(ctx: ChatContext): string {
+  const board = ctx.state.board
+  const self = board[ctx.cell]
+  const name = (cell: number) =>
+    board[cell] ? `the ${PIECES[board[cell]!.kind].name} on ${cellSquare(cell)}` : cellSquare(cell)
+  const hunted = threatenedBy(board, ctx.cell).map(name)
+  const takes =
+    self && !self.moved
+      ? pieceMoves(board, ctx.cell)
+          .filter((m) => m.capture)
+          .map((m) => name(m.to))
+      : []
+
+  // Whichever of these is true of it right now, in the order it would be on its
+  // mind.
+  const about = takes.length
+    ? `You are within reach of ${takes[0]} and could end it with your one move. Speak about that.`
+    : hunted.length
+      ? `${hunted[0]} is aimed straight at you and you know it. Speak about that.`
+      : self?.moved
+        ? 'Your one move is spent and you will stand on this square until the end. Speak about that.'
+        : 'Nobody can reach you and you can reach nobody yet. Speak about the waiting.'
+
+  return `The player has just leaned in and looked at you for the first time. Say your opening line. ${about}`
+}
+
+/** The same nudge with nothing in particular to point at. */
 export const OPENING_TURN =
   'The player has just leaned in and looked at you for the first time. Say your opening line — one or two short sentences, in character, and it may nod at how things stand on the board.'
 

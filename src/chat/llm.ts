@@ -1,5 +1,5 @@
 import { sessionToken } from '@/lib/api'
-import { buildSystemPrompt, OPENING_TURN, type ChatContext } from './prompt'
+import { buildSystemPrompt, openingTurn, type ChatContext } from './prompt'
 
 /**
  * The voice behind the pieces: a small chat completion, asked for through this
@@ -98,7 +98,7 @@ export async function complete(
  * session, picks the model, and answers with the text or with nothing —
  * whatever went wrong, the board's answer to it is the same silence.
  */
-async function askModel(messages: Outbound, maxTokens: number): Promise<string | null> {
+async function askModel(messages: Outbound, maxTokens: number, lang?: string): Promise<string | null> {
   const token = await sessionToken()
   if (!token) return null
   const ctrl = new AbortController()
@@ -111,7 +111,7 @@ async function askModel(messages: Outbound, maxTokens: number): Promise<string |
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ messages, maxTokens }),
+      body: JSON.stringify({ messages, maxTokens, lang }),
     })
     if (!res.ok) {
       console.warn(`[piece-chat] → HTTP ${res.status}`)
@@ -168,9 +168,9 @@ export async function askPiece(
   for (const turn of history.slice(-RECENT_TURNS)) {
     messages.push({ role: turn.who === 'you' ? 'user' : 'assistant', content: turn.text })
   }
-  messages.push({ role: 'user', content: userText.trim() || OPENING_TURN })
+  messages.push({ role: 'user', content: userText.trim() || openingTurn(ctx) })
 
-  const raw = await askModel(messages, 500)
+  const raw = await askModel(messages, 500, ctx.lang)
   if (!raw) return null
   const reply = extractOrder(raw)
   return { ...reply, text: trimLine(reply.text) }

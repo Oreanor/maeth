@@ -50,6 +50,25 @@ export const LANG_NAME: Record<Lang, string> = {
   it: 'Italian',
 }
 
+/**
+ * The last thing the piece reads, in the language it has to answer in.
+ *
+ * The rest of the prompt is English — it is written for the model, not for the
+ * player — and a small model asked in one language to answer in another tends
+ * to drift into fluent nothing. The instruction that matters most therefore
+ * comes last and comes in the target language, which is the one thing these
+ * models reliably take a register from.
+ */
+export const ANSWER_IN: Record<Lang, string> = {
+  ru: 'Отвечай по-русски: одна короткая фраза, не длиннее двенадцати слов, от первого лица и в характере. Говори о том, что происходит на доске прямо сейчас, а не вообще.',
+  en: 'Answer in English: one short sentence, twelve words at most, first person, in character. Speak about what is happening on the board right now, not in general.',
+  fr: "Réponds en français : une phrase courte, douze mots au plus, à la première personne, dans ton rôle. Parle de ce qui se passe sur le plateau maintenant, pas en général.",
+  de: 'Antworte auf Deutsch: ein kurzer Satz, höchstens zwölf Wörter, in der Ich-Form und in deiner Rolle. Sprich über das, was gerade auf dem Brett geschieht, nicht allgemein.',
+  pt: 'Responde em português: uma frase curta, no máximo doze palavras, na primeira pessoa e em personagem. Fala do que está a acontecer no tabuleiro agora, não em geral.',
+  es: 'Responde en español: una frase corta, doce palabras como máximo, en primera persona y en personaje. Habla de lo que ocurre en el tablero ahora, no en general.',
+  it: 'Rispondi in italiano: una frase breve, al massimo dodici parole, in prima persona e nel personaggio. Parla di ciò che accade sulla scacchiera adesso, non in generale.',
+}
+
 /** The game itself, in one breath. */
 export const WHAT_MAETH_IS =
   'This is "Maeth", a 4x4 game in the spirit of chess played out in Middle-earth. Sixteen pieces were drawn blindly out of one deck, four a side. Each piece moves only ONCE in the whole battle, and whoever captures more wins.'

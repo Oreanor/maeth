@@ -4,7 +4,7 @@ import { cellSquare } from '@/game/notation'
 import { allLegalMoves } from '@/game/engine'
 import { adviseHuman } from '../advice'
 import { trimLine } from '../llm'
-import { buildSystemPrompt } from '../prompt'
+import { buildSystemPrompt, openingTurn } from '../prompt'
 import { threatsAfterMove } from '../threats'
 
 describe('trimLine', () => {
@@ -110,6 +110,44 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Elven Queen on B3')
     expect(prompt).toContain('RULES TEXT')
     expect(prompt).toContain('Alice: Elven Queen → B3')
+  })
+})
+
+describe('openingTurn', () => {
+  const context = (board: ReturnType<typeof emptyBoard>, cell: number, kind: 'orcChief' | 'hobbit') => ({
+    cell,
+    kind,
+    color: 'black' as const,
+    state: playState(board),
+    human: 'white' as const,
+    youName: 'Alice',
+    opponentName: 'Bob',
+    lang: 'ru' as const,
+    rules: 'RULES TEXT',
+    advice: null,
+    log: [],
+  })
+
+  it('points a piece at what it can take', () => {
+    const board = emptyBoard()
+    board[0] = piece('orcChief', 'black')
+    board[5] = piece('elvenQueen', 'white')
+    expect(openingTurn(context(board, 0, 'orcChief'))).toContain('within reach of the Elven Queen on B3')
+  })
+
+  it('points it at whoever is aimed at it when it can take nobody', () => {
+    const board = emptyBoard()
+    board[0] = piece('hobbit', 'black', true) // spent, so it can take nothing
+    board[5] = piece('elvenQueen', 'white')
+    const said = openingTurn(context(board, 0, 'hobbit'))
+    expect(said).toContain('the Elven Queen on B3 is aimed straight at you')
+  })
+
+  it('falls back to the waiting when nothing is happening to it', () => {
+    const board = emptyBoard()
+    board[0] = piece('hobbit', 'black')
+    board[15] = piece('hobbit', 'white')
+    expect(openingTurn(context(board, 0, 'hobbit'))).toContain('Speak about the waiting')
   })
 })
 

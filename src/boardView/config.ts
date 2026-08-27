@@ -58,11 +58,13 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
   ]),
 ) as Record<BoardStyle, BoardStyleConfig>
 
-/** HUD portraits follow the 3D pieces, not the 2D skin. The chess sheet is the
- * same cast carved in ivory, which is what the Lewis models are. */
+/** HUD portraits follow the 3D pieces, not the 2D skin. The Lewis sheet is
+ * photographs of the figures the models are carved from, laid out by hand from
+ * the originals kept in `docs/chess3d/`; it sits beside the skins' sheets
+ * without being one, since no 2D board is drawn with it. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
   dnd: SKIN_SPRITE_URL.dnd,
-  lewis: SKIN_SPRITE_URL.chess,
+  lewis: '/pieces/lewis.webp',
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '3d'

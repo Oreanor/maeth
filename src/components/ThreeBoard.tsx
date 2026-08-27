@@ -55,8 +55,17 @@ const PIECE_SINK_RATIO = 0.003
 // Let go of the board while it is really spinning and the pieces are thrown off
 // it. The board coasts to a stop on OrbitControls' own damping, and once it has
 // settled the same pieces are put back where they were.
-/** Radians per frame at the moment of release that count as a flick. */
-const FLING_RELEASE_SPEED = 0.3
+//
+// The flick is weighed by the hand, not by the camera. The camera is damped: it
+// is still gathering speed at the moment the finger lifts, and it turns half as
+// far per frame on a 120 Hz phone as on a 60 Hz screen. Between them that put
+// the throw out of reach on a phone entirely. How fast a hand sweeps is the
+// same on both.
+/** Radians of board turn per second of gesture that count as a flick. */
+const FLING_RELEASE_SPEED = 10
+/** Only the end of the drag is weighed: a slow haul finished with a flick is
+ *  one, the same haul brought to a stop is not. */
+const FLING_SAMPLE_MS = 120
 /** How long the pieces stay off the board before it is set up again. */
 const FLING_SETTLE_MS = 2300
 const FLING_GRAVITY = 9
@@ -524,6 +533,7 @@ export function ThreeBoard(props: BoardProps) {
     let multiTouchGesture = false
     const canvas = renderer.domElement
     const onPointerDown = (event: PointerEvent) => {
+      spinTrail = [{ x: event.clientX, t: event.timeStamp }]
       activePointers.add(event.pointerId)
       if (activePointers.size > 1) {
         multiTouchGesture = true
@@ -535,7 +545,16 @@ export function ThreeBoard(props: BoardProps) {
     }
     const onPointerMove = (event: PointerEvent) => {
       const current = propsRef.current
-      if (pointerStart) return
+      if (pointerStart) {
+        // Turning the board, not looking at it. Keep the tail of the sweep, and
+        // one sample from just before the window — that is what the window has
+        // to measure itself against.
+        spinTrail.push({ x: event.clientX, t: event.timeStamp })
+        while (spinTrail.length > 2 && event.timeStamp - spinTrail[1].t > FLING_SAMPLE_MS) {
+          spinTrail.shift()
+        }
+        return
+      }
       // Inspecting a piece works whoever's turn it is, so hover is tracked
       // before the interactivity gate that guards the draft preview.
       // Not during a pinch: there is nothing to hover, and the pick is a
@@ -560,8 +579,17 @@ export function ThreeBoard(props: BoardProps) {
       }
       // Released mid-spin: throw the pieces off. Checked before the click paths
       // below, which a flick never reaches — it is a drag, not a tap.
-      if (!flung && Math.abs(spinSpeed) > FLING_RELEASE_SPEED) {
-        flung = throwPieces(Math.sign(spinSpeed))
+      //
+      // OrbitControls measures a drag against the element's height whichever way
+      // it goes, so the same ratio turns pixels back into radians here; and
+      // dragging right turns the board left, which is the minus.
+      const swept = spinTrail.length
+        ? ((event.clientX - spinTrail[0].x) * 2 * Math.PI) / canvas.clientHeight
+        : 0
+      const over = spinTrail.length ? (event.timeStamp - spinTrail[0].t) / 1000 : 0
+      spinTrail = []
+      if (!flung && over > 0 && Math.abs(swept / over) > FLING_RELEASE_SPEED) {
+        flung = throwPieces(-Math.sign(swept))
         if (flung) {
           flungAt = performance.now()
           // The move hints point at squares that, for the moment, have nothing
@@ -718,8 +746,8 @@ export function ThreeBoard(props: BoardProps) {
     }
     let flung: FlungPiece[] | null = null
     let flungAt = 0
-    let azimuth = controls.getAzimuthalAngle()
-    let spinSpeed = 0
+    /** The tail of a drag, for weighing the flick that ends it. */
+    let spinTrail: { x: number; t: number }[] = []
     let lastFrame = 0
 
     /**
@@ -775,14 +803,6 @@ export function ThreeBoard(props: BoardProps) {
       threeScene.frame = requestAnimationFrame(render)
       const moving = controls.update()
       const animation = threeScene.animation
-
-      const nextAzimuth = controls.getAzimuthalAngle()
-      let turned = nextAzimuth - azimuth
-      if (turned > Math.PI) turned -= 2 * Math.PI
-      else if (turned < -Math.PI) turned += 2 * Math.PI
-      azimuth = nextAzimuth
-      // Smoothed, so one jittery frame cannot pass for a flick.
-      spinSpeed = spinSpeed * 0.6 + turned * 0.4
 
       const step = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 0
       lastFrame = time

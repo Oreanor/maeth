@@ -12,7 +12,7 @@ const askPiece = vi.fn<() => Promise<import('../llm').PieceReply | null>>()
 vi.mock('../llm', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../llm')>()),
   askPiece: () => askPiece(),
-  pieceChatAvailable: () => true,
+  pieceChatAvailable: async () => true,
 }))
 
 const wrapper = ({ children }: { children: ReactNode }) => <I18nProvider>{children}</I18nProvider>
@@ -70,6 +70,9 @@ describe('orders given to a piece', () => {
         }),
       { wrapper },
     )
+    // The board asks the server whether the pieces can speak at all before it
+    // offers to open one; nothing happens until that has come back.
+    await act(async () => {})
     await act(async () => {
       hook.result.current.open(cell)
       await Promise.resolve()
@@ -141,6 +144,7 @@ describe('passing a word to somebody else', () => {
         }),
       { wrapper },
     )
+    await act(async () => {})
     await act(async () => {
       hook.result.current.open(0)
       await Promise.resolve()

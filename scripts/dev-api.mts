@@ -20,6 +20,7 @@ import me from '../api/me.js'
 import friends from '../api/friends.js'
 import stats from '../api/stats.js'
 import ping from '../api/ping.js'
+import chat from '../api/chat.js'
 
 // --- env loading (.env then .env.local; real shell env always wins) -----------
 const shellKeys = new Set(Object.keys(process.env))
@@ -48,6 +49,7 @@ const routes: { re: RegExp; handler: Handler }[] = [
   { re: /^\/api\/me\/?$/, handler: me as Handler },
   { re: /^\/api\/friends\/?$/, handler: friends as Handler },
   { re: /^\/api\/stats\/?$/, handler: stats as Handler },
+  { re: /^\/api\/chat\/?$/, handler: chat as Handler },
   { re: /^\/api\/games\/?$/, handler: games as Handler },
   { re: /^\/api\/games\/([^/]+)\/actions\/?$/, handler: actions as Handler },
   { re: /^\/api\/games\/([^/]+)\/invite\/?$/, handler: invite as Handler },

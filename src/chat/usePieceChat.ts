@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { PIECES, type PieceKind } from '@/game/pieces'
 import { legalMovesFrom } from '@/game/engine'
@@ -61,7 +61,19 @@ export function usePieceChat({
   // Nobody is on the board to talk to until the draft is over, and during it
   // every square is a placement target — a cloud there would be in the way.
   const settled = state.phase === 'play' || state.phase === 'over'
-  const available = useMemo(pieceChatAvailable, []) && settled && chatEnabled
+  // Whether the pieces can speak is the server's answer, not the page's, so it
+  // arrives a moment after the board does.
+  const [canSpeak, setCanSpeak] = useState(false)
+  useEffect(() => {
+    let alive = true
+    void pieceChatAvailable().then((ok) => {
+      if (alive) setCanSpeak(ok)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+  const available = canSpeak && settled && chatEnabled
 
   /** Who is being talked to — an identity, not merely a square. */
   const [subject, setSubject] = useState<{ cell: number; kind: PieceKind; color: Color } | null>(

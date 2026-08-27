@@ -243,3 +243,42 @@ create policy "players can read their games"
         and gp.user_id = auth.uid()
     )
   );
+
+-- ── piece chat quota ─────────────────────────────────────────────────────────
+-- `/api/chat` speaks to a paid model on the server's key, so it counts what it
+-- is asked for and stops answering a caller that has had its share for the day.
+-- One row per caller: a signed-in player by id, anyone else by address.
+--
+-- Optional. Without it the endpoint still works and simply keeps no count —
+-- the function logs that it is running uncounted rather than refusing to serve.
+create table if not exists public.chat_quota (
+  id text primary key,
+  day date not null default current_date,
+  used integer not null default 0
+);
+
+-- Counted and read in one statement, because two would race: several replies
+-- can be in the air at once, and a check followed by a write would let them all
+-- past the same last slot.
+create or replace function public.chat_quota_take(caller text)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  after integer;
+begin
+  insert into public.chat_quota (id, day, used)
+  values (caller, current_date, 1)
+  on conflict (id) do update
+    set used = case when public.chat_quota.day = current_date then public.chat_quota.used + 1 else 1 end,
+        day = current_date
+  returning used into after;
+  return after;
+end;
+$$;
+
+-- Nobody reaches this table but the service role inside the API.
+alter table public.chat_quota enable row level security;
+revoke all on function public.chat_quota_take(text) from public, anon, authenticated;

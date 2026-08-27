@@ -16,7 +16,7 @@ const complete = vi.fn<(system: string, user: string, max?: number) => Promise<s
 vi.mock('../llm', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../llm')>()),
   complete: (system: string, user: string, max?: number) => complete(system, user, max),
-  pieceChatAvailable: () => true,
+  pieceChatAvailable: async () => true,
 }))
 
 const wrapper = ({ children }: { children: ReactNode }) => <I18nProvider>{children}</I18nProvider>

@@ -1,51 +1,18 @@
+import { sessionToken } from '@/lib/api'
 import { buildSystemPrompt, OPENING_TURN, type ChatContext } from './prompt'
 
 /**
- * The voice behind the pieces: a small chat completion, called straight from
- * the browser the way Star Elite calls its negotiator. Groq first because it is
- * fast, OpenRouter behind it; within a tier the models are tried in order until
- * one answers. No key configured — no cloud icon on the board at all.
+ * The voice behind the pieces: a small chat completion, asked for through this
+ * deployment's own `/api/chat` rather than called from the browser.
+ *
+ * The key belongs on the server — in the page it was readable by anyone who
+ * opened the bundle — and so does the outgoing request: it used to leave from
+ * the player's own connection, and a player whose country the provider does not
+ * serve got silence while everyone else got a board that talked. Which models
+ * are tried, and in what order, is the server's business now.
  */
 
-const env = import.meta.env as unknown as Record<string, string | undefined>
-
-const GROQ_KEY = env.VITE_GROQ_API_KEY?.trim() ?? ''
-const OPENROUTER_KEY = env.VITE_OPENROUTER_API_KEY?.trim() ?? ''
-
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
-const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
-
-// Checked against both providers' live model lists — the Llama models Star
-// Elite still lists are gone from Groq and answer 404. Override either list
-// through VITE_GROQ_MODELS / VITE_OPENROUTER_MODELS when they turn over again.
-const GROQ_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.6-27b', 'openai/gpt-oss-20b']
-const OPENROUTER_MODELS = ['minimax/minimax-m3:free', 'nvidia/nemotron-3-super-120b-a12b:free']
-
-function models(key: string, list: string[]): string[] {
-  const configured = env[key]?.split(',').map((s) => s.trim()).filter(Boolean) ?? []
-  return configured.length ? configured : list
-}
-
-interface ModelRef {
-  label: string
-  endpoint: string
-  key: string
-  model: string
-}
-
-/**
- * Every model worth using here thinks before it speaks, and thinking is charged
- * to the same token budget as the answer: gpt-oss spent its whole allowance
- * reasoning and returned a single letter, and qwen wrote its deliberations into
- * the reply. Both are told to keep it short — the parameter is Groq's, so it
- * only goes to Groq.
- */
-function reasoningTuning(ref: ModelRef): Record<string, string> {
-  if (ref.endpoint !== GROQ_ENDPOINT) return {}
-  if (ref.model.includes('gpt-oss')) return { reasoning_effort: 'low', reasoning_format: 'hidden' }
-  if (ref.model.includes('qwen')) return { reasoning_effort: 'none' }
-  return {}
-}
+const CHAT_ENDPOINT = '/api/chat'
 
 /** Whatever thinking still leaks into the text is not part of the line. */
 export function stripThinking(raw: string): string {
@@ -56,28 +23,28 @@ export function stripThinking(raw: string): string {
     .trim()
 }
 
-const TIERS: ModelRef[][] = [
-  GROQ_KEY
-    ? models('VITE_GROQ_MODELS', GROQ_MODELS).map((model) => ({
-        label: `groq/${model}`,
-        endpoint: GROQ_ENDPOINT,
-        key: GROQ_KEY,
-        model,
-      }))
-    : [],
-  OPENROUTER_KEY
-    ? models('VITE_OPENROUTER_MODELS', OPENROUTER_MODELS).map((model) => ({
-        label: `or/${model}`,
-        endpoint: OPENROUTER_ENDPOINT,
-        key: OPENROUTER_KEY,
-        model,
-      }))
-    : [],
-].filter((tier) => tier.length > 0)
+let asked: Promise<boolean> | null = null
 
-/** Whether the pieces can speak at all. False hides the cloud on the board. */
-export function pieceChatAvailable(): boolean {
-  return TIERS.length > 0
+/**
+ * Whether the pieces can speak at all — false hides the cloud on the board.
+ *
+ * Only the server knows: it holds the keys. Asked once per session, and a
+ * refusal is remembered, so a build with no API behind it (or none reachable)
+ * simply plays the game it was before, in silence.
+ */
+export function pieceChatAvailable(): Promise<boolean> {
+  asked ??= sessionToken()
+    .then((token) =>
+      // No session, nobody to bill it to: the endpoint answers only to a player
+      // this deployment knows, guest sessions included.
+      token
+        ? fetch(CHAT_ENDPOINT, { headers: { Authorization: `Bearer ${token}` } })
+        : null,
+    )
+    .then((res) => (res?.ok ? res.json() : { available: false }))
+    .then((data: { available?: boolean }) => data.available === true)
+    .catch(() => false)
+  return asked
 }
 
 export interface ChatTurn {
@@ -111,57 +78,49 @@ export function trimLine(raw: string): string {
 
 type Outbound = { role: 'system' | 'user' | 'assistant'; content: string }[]
 
-/**
- * One completion, whatever it is for. The tiers are walked in order until a
- * model answers; null means every one of them failed or there is no key.
- */
+/** One completion, whatever it is for. Null means nothing answered. */
 export async function complete(
   system: string,
   user: string,
   maxTokens = 500,
 ): Promise<string | null> {
-  if (!pieceChatAvailable()) return null
-  const messages: Outbound = [
-    { role: 'system', content: system },
-    { role: 'user', content: user },
-  ]
-  for (const tier of TIERS) {
-    for (const ref of tier) {
-      const raw = await callModel(ref, messages, maxTokens)
-      if (raw) return raw
-    }
-  }
-  return null
+  return askModel(
+    [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    maxTokens,
+  )
 }
 
-async function callModel(ref: ModelRef, messages: Outbound, maxTokens = 500): Promise<string | null> {
+/**
+ * Ask the server for a line. It signs the request with the player's own
+ * session, picks the model, and answers with the text or with nothing —
+ * whatever went wrong, the board's answer to it is the same silence.
+ */
+async function askModel(messages: Outbound, maxTokens: number): Promise<string | null> {
+  const token = await sessionToken()
+  if (!token) return null
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   try {
-    const res = await fetch(ref.endpoint, {
+    const res = await fetch(CHAT_ENDPOINT, {
       method: 'POST',
       signal: ctrl.signal,
       headers: {
-        Authorization: `Bearer ${ref.key}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'X-Title': 'Maeth',
       },
-      body: JSON.stringify({
-        model: ref.model,
-        messages,
-        temperature: 0.9,
-        max_tokens: maxTokens,
-        ...reasoningTuning(ref),
-      }),
+      body: JSON.stringify({ messages, maxTokens }),
     })
     if (!res.ok) {
-      console.warn(`[piece-chat] ${ref.label} → HTTP ${res.status}`)
+      console.warn(`[piece-chat] → HTTP ${res.status}`)
       return null
     }
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] }
-    return data.choices?.[0]?.message?.content?.trim() || null
+    const data = (await res.json()) as { text?: string }
+    return data.text?.trim() || null
   } catch (err) {
-    console.warn(`[piece-chat] ${ref.label} → request failed:`, err)
+    console.warn('[piece-chat] → request failed:', err)
     return null
   } finally {
     clearTimeout(timer)
@@ -205,22 +164,14 @@ export async function askPiece(
   history: ChatTurn[],
   userText: string,
 ): Promise<PieceReply | null> {
-  if (!pieceChatAvailable()) return null
-
   const messages: Outbound = [{ role: 'system', content: buildSystemPrompt(ctx) }]
   for (const turn of history.slice(-RECENT_TURNS)) {
     messages.push({ role: turn.who === 'you' ? 'user' : 'assistant', content: turn.text })
   }
   messages.push({ role: 'user', content: userText.trim() || OPENING_TURN })
 
-  for (const tier of TIERS) {
-    for (const ref of tier) {
-      const raw = await callModel(ref, messages, 500)
-      if (raw) {
-        const reply = extractOrder(raw)
-        return { ...reply, text: trimLine(reply.text) }
-      }
-    }
-  }
-  return null
+  const raw = await askModel(messages, 500)
+  if (!raw) return null
+  const reply = extractOrder(raw)
+  return { ...reply, text: trimLine(reply.text) }
 }

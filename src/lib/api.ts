@@ -225,6 +225,15 @@ function apiErrorMessage(data: unknown): string | null {
   return missing.length > 0 ? `${error}: ${missing.join(', ')}` : error
 }
 
+/** The session token, for callers outside this module that talk to the API. */
+export async function sessionToken(): Promise<string | null> {
+  try {
+    return await accessToken()
+  } catch {
+    return null
+  }
+}
+
 async function accessToken(): Promise<string> {
   if (!supabase) throw new Error('Supabase is not configured')
   const { data, error } = await supabase.auth.getSession()

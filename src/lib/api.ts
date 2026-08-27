@@ -234,6 +234,31 @@ export async function sessionToken(): Promise<string | null> {
   }
 }
 
+/** One anonymous sign-in per page, however many callers ask at once. */
+let guestSignIn: Promise<unknown> | null = null
+
+/**
+ * A token for an endpoint that will answer a guest, opening an anonymous
+ * session if this visitor has none.
+ *
+ * Anonymous is not the same as unauthenticated: the session is one this
+ * deployment issued, which is what lets the endpoint tell a player from the
+ * open internet while still answering someone who never signed in. The visitor
+ * is not signed in by this — nothing in the interface treats them as a player,
+ * and the way in stays where it was.
+ *
+ * Best effort on purpose: a project with anonymous sign-ins turned off has no
+ * token to give, and the caller goes quiet rather than failing.
+ */
+export async function guestSessionToken(): Promise<string | null> {
+  const existing = await sessionToken()
+  if (existing) return existing
+  if (!supabase) return null
+  guestSignIn ??= supabase.auth.signInAnonymously().catch(() => null)
+  await guestSignIn
+  return sessionToken()
+}
+
 async function accessToken(): Promise<string> {
   if (!supabase) throw new Error('Supabase is not configured')
   const { data, error } = await supabase.auth.getSession()

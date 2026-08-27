@@ -57,15 +57,16 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
     let alive = true
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
-      const sessionUser = data.session?.user
-      setUser(sessionUser ? fromSupabaseUser(sessionUser) : null)
-      if (sessionUser) void syncProfile()
+      const player = playerOf(data.session?.user)
+      setUser(player)
+      if (player) void syncProfile()
       setLoading(false)
     })
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? fromSupabaseUser(session.user) : null)
-      if (session?.user) void syncProfile()
+      const player = playerOf(session?.user)
+      setUser(player)
+      if (player) void syncProfile()
       setLoading(false)
     })
 
@@ -81,6 +82,14 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
         throw new Error('Supabase is not configured. Fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.')
       }
       setLoading(true)
+      // A visitor who has been talking to the pieces is carrying the anonymous
+      // session the board opened for them. Signing in on top of it is not a
+      // plain sign-in as far as Supabase is concerned — it can take the OAuth
+      // identity as one to link onto the anonymous account instead — so the
+      // session goes first and Google is asked from a clean slate. Nothing is
+      // lost with it: a guest has no games and no standing to carry over.
+      const { data } = await supabase.auth.getSession()
+      if (data.session?.user.is_anonymous) await supabase.auth.signOut()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -137,10 +146,19 @@ async function syncProfile() {
   }
 }
 
+/**
+ * The player behind a session, if there is one.
+ *
+ * An anonymous session is plumbing rather than a player: the board opens one so
+ * a guest's pieces can be asked to speak, and nothing in the interface should
+ * read that as having signed in — the lobby has to go on offering the way in,
+ * and the stats have to go on ignoring whoever has not taken it.
+ */
+function playerOf(user: SupabaseUser | undefined): AppUser | null {
+  return user && !user.is_anonymous ? fromSupabaseUser(user) : null
+}
+
 function fromSupabaseUser(user: SupabaseUser): AppUser {
-  if (user.is_anonymous) {
-    return { id: user.id, name: 'Guest', provider: 'guest' }
-  }
   const meta = user.user_metadata
   return {
     id: user.id,

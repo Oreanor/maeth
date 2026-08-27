@@ -1,4 +1,4 @@
-import { sessionToken } from '@/lib/api'
+import { guestSessionToken } from '@/lib/api'
 import { buildSystemPrompt, openingTurn, type ChatContext } from './prompt'
 
 /**
@@ -33,7 +33,7 @@ let asked: Promise<boolean> | null = null
  * simply plays the game it was before, in silence.
  */
 export function pieceChatAvailable(): Promise<boolean> {
-  asked ??= sessionToken()
+  asked ??= guestSessionToken()
     .then((token) =>
       // No session, nobody to bill it to: the endpoint answers only to a player
       // this deployment knows, guest sessions included.
@@ -99,7 +99,7 @@ export async function complete(
  * whatever went wrong, the board's answer to it is the same silence.
  */
 async function askModel(messages: Outbound, maxTokens: number, lang?: string): Promise<string | null> {
-  const token = await sessionToken()
+  const token = await guestSessionToken()
   if (!token) return null
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)

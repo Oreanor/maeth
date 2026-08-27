@@ -275,6 +275,9 @@ interface ThreeScene {
   bottomMaterial: THREE.MeshStandardMaterial
   sideMaterial: THREE.MeshStandardMaterial
   animation: ActiveThreeAnimation | null
+  /** The pieces are in the air, thrown off by a flick. Nothing is standing
+   *  where the game thinks it is, so nothing points at a square meanwhile. */
+  airborne: boolean
   /** Ask for a redraw; the loop is otherwise idle. */
   invalidate: () => void
   frame: number
@@ -537,6 +540,7 @@ export function ThreeBoard(props: BoardProps) {
       bottomMaterial,
       sideMaterial,
       animation: null,
+      airborne: false,
       frame: 0,
     }
     sceneRef.current = threeScene
@@ -578,6 +582,9 @@ export function ThreeBoard(props: BoardProps) {
     }
     const onPointerMove = (event: PointerEvent) => {
       const current = propsRef.current
+      // Nothing to inspect while the pieces are in the air: the squares under
+      // the pointer are empty, and a piece flying past is not standing on one.
+      if (flung) return
       if (pointerStart) {
         // Turning the board, not looking at it. Keep the tail of the sweep, and
         // one sample from just before the window — that is what the window has
@@ -627,7 +634,13 @@ export function ThreeBoard(props: BoardProps) {
           flungAt = performance.now()
           // The move hints point at squares that, for the moment, have nothing
           // standing on them. Both effects put them back on restore.
+          threeScene.airborne = true
           arrowRoot.visible = false
+          // And whatever the pointer was resting on is not there any more, so
+          // it is resting on nothing until they land.
+          hoverProbe = null
+          hoverRef.current = null
+          setHoverCell(null)
           threeScene.invalidate()
         }
       }
@@ -640,7 +653,7 @@ export function ThreeBoard(props: BoardProps) {
       // uses, so a tap on bare board takes the cloud away again — and it is
       // read before the gate below, because a piece can be looked at and
       // talked to whoever's turn it is.
-      if (event.pointerType !== 'mouse') {
+      if (event.pointerType !== 'mouse' && !flung) {
         hoverProbe = { x: event.clientX, y: event.clientY }
         threeScene.invalidate()
       }
@@ -909,6 +922,7 @@ export function ThreeBoard(props: BoardProps) {
         }
         if (time - flungAt > FLING_SETTLE_MS) {
           flung = null
+          threeScene.airborne = false
           setRestoreToken((token) => token + 1)
         }
       }
@@ -1128,7 +1142,9 @@ export function ThreeBoard(props: BoardProps) {
   useEffect(() => {
     const current = sceneRef.current
     if (!current) return
-    current.arrowRoot.visible = true
+    // Thrown off the board, the pieces are nowhere near the squares these
+    // would point at, so they wait for the board to be set up again.
+    current.arrowRoot.visible = !current.airborne
     clearGroup(current.arrowRoot)
     const arrowFrom = props.selected ?? props.previewCell
     if (props.selected != null) {

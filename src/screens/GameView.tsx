@@ -37,6 +37,7 @@ function ceremonyHintLine(hint: CeremonyHint, t: (key: string) => string): strin
 export interface GameViewProps {
   userName?: string
   onLogout: () => void
+  onSignIn: () => void
 
   state: GameState
   human: Color
@@ -93,6 +94,7 @@ export interface GameViewProps {
 export function GameView({
   userName,
   onLogout,
+  onSignIn,
   state,
   human,
   opponentColor,
@@ -207,17 +209,28 @@ export function GameView({
 
   return (
     <AppStage>
+      {/* The same menu the lobby shows, and on the same terms: whoever is not
+          signed in is offered the way in rather than a logout and a stats table
+          with nothing of theirs in it. A guest reaches the board without ever
+          passing the lobby — the pieces will talk to them either way — so the
+          offer has to be here too. */}
       <AppHeader
         name={userName}
         onHelp={() => setRulesOpen(true)}
-        onStats={() => setStatsOpen(true)}
-        onLogout={() => {
-          onLogout()
-          // Back to the start screen. The online routes would bounce there on
-          // their own once the account goes, but a local game against the bot
-          // is not guarded and would otherwise carry on underneath.
-          navigate('/')
-        }}
+        onStats={userName ? () => setStatsOpen(true) : undefined}
+        onSignIn={userName ? undefined : onSignIn}
+        onLogout={
+          userName
+            ? () => {
+                onLogout()
+                // Back to the start screen. The online routes would bounce
+                // there on their own once the account goes, but a local game
+                // against the bot is not guarded and would otherwise carry on
+                // underneath.
+                navigate('/')
+              }
+            : undefined
+        }
         onExit={() => navigate('/')}
         className="game-topbar"
       />

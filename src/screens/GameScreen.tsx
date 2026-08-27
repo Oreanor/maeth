@@ -40,7 +40,7 @@ export function GameScreen() {
 }
 
 function LocalGameScreen({ config }: { config: PlayConfig }) {
-  const { user, logout } = useAuth()
+  const { user, logout, login } = useAuth()
   const { t } = useI18n()
   const human = config.humanColor
   const bot: Color = human === 'white' ? 'black' : 'white'
@@ -72,6 +72,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     <GameView
       userName={user?.name}
       onLogout={logout}
+      onSignIn={() => void login('google')}
       state={state}
       human={human}
       opponentColor={bot}
@@ -122,7 +123,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
 
 function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConfig }) {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, logout, login } = useAuth()
   const { t } = useI18n()
   const remote = useRemoteGame(gameId)
   const [rematching, setRematching] = useState(false)
@@ -197,6 +198,7 @@ function RemoteGameScreen({ gameId, config }: { gameId: string; config: PlayConf
     <GameView
       userName={user?.name}
       onLogout={logout}
+      onSignIn={() => void login('google')}
       state={state}
       human={human}
       opponentColor={opponentColor}

@@ -37,8 +37,10 @@ const BOARD_TEXTURE_SIZE = BOARD_SIZE - 0.12
 const PLAYFIELD_SIZE = 4.24
 const CELL_SIZE = PLAYFIELD_SIZE / 4
 // Keep click/highlight cells aligned to the artwork, but gather the physical
-// miniatures a little closer toward the board centre.
-const PIECE_GRID_SCALE = 0.94
+// miniatures a little closer toward the board centre. Only a little: the pull
+// is toward the middle, so it is the outer ranks that wear all of it, and at
+// 0.94 they stood visibly inside their own squares.
+const PIECE_GRID_SCALE = 0.968
 /** The painted face of the board — the surface pieces stand on. */
 const BOARD_FACE_Y = BOARD_THICKNESS / 2 + 0.012
 /** Highlights and arrows ride just above the face so they do not z-fight it.

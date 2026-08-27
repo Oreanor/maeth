@@ -73,6 +73,28 @@ const FLING_GRAVITY = 9
 const FLING_OUTWARD = 3.4
 const FLING_TANGENT = 2.6
 const FLING_LIFT = 3.2
+// ── keeping up ───────────────────────────────────────────────────────────────
+// Zoomed in, the board fills the screen and every one of those pixels is shaded
+// through three lights and a shadow lookup. Geometry is not the cost here and
+// never was: the same scene from across the room is three times cheaper. So
+// when frames start arriving late the board draws at less than the screen's own
+// resolution and lets the browser scale it up, and takes it back the moment
+// they are early again — rather than everyone paying, for ever, for the worst
+// machine that has to run it.
+/** Frame times either side of this leave the resolution alone. */
+const PACE_SLOW_MS = 21
+const PACE_FAST_MS = 13
+/** What it aims for in between: a frame every sixtieth of a second. */
+const PACE_TARGET_MS = 16
+/** Below this the picture is soft enough that the slideshow was the better trade. */
+const PACE_MIN_RESOLUTION = 0.6
+/** Resolutions are rounded to this, so a hair of drift is not a resize. */
+const PACE_STEP = 0.05
+/** Long enough that a resize is never itself the thing making frames late. */
+const PACE_COOLDOWN_MS = 700
+/** Time constant of the frame-time average: a stutter is not a verdict. */
+const PACE_SMOOTH_S = 0.35
+
 /** How quickly a piece that has come down on the board loses what is left of
  *  its motion. */
 const LANDED_DAMPING = 0.06
@@ -400,7 +422,7 @@ export function ThreeBoard(props: BoardProps) {
     // board is restyled — so it is refreshed on demand instead.
     renderer.shadowMap.autoUpdate = false
     renderer.shadowMap.needsUpdate = true
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    const BASE_PIXEL_RATIO = Math.min(window.devicePixelRatio || 1, 2)
     // Nothing is drawn behind the board, so the canvas clears to nothing and the
     // shell's gradient shows through — a backdrop the compositor paints once,
     // rather than geometry the GPU shades every frame.
@@ -491,6 +513,10 @@ export function ThreeBoard(props: BoardProps) {
       hit.position.copy(position)
       hit.position.y += 0.035
       hit.userData.cell = cell
+      // Never drawn, only pointed at. Left visible these were sixteen blended
+      // quads over the whole board every frame, drawing nothing — a raycast
+      // does not care, since it tests layers rather than visibility.
+      hit.visible = false
       scene.add(hit)
       hitCells.push(hit)
     }
@@ -515,11 +541,18 @@ export function ThreeBoard(props: BoardProps) {
     }
     sceneRef.current = threeScene
 
+    // How much of the device's own resolution the board is drawing at. The
+    // scene is fill-rate bound — the same board costs three times as much
+    // filling the screen as it does seen from across the room — so this is what
+    // gives when frames start arriving late, and what is handed back when they
+    // stop. See `pace()` below.
+    let resolution = 1
     const resize = () => {
       const width = host.clientWidth || window.innerWidth
       const height = host.clientHeight || window.innerHeight
       camera.aspect = width / Math.max(1, height)
       camera.updateProjectionMatrix()
+      renderer.setPixelRatio(BASE_PIXEL_RATIO * resolution)
       renderer.setSize(width, height, false)
       threeScene.invalidate()
     }
@@ -788,6 +821,39 @@ export function ThreeBoard(props: BoardProps) {
       dirtyFrames = 2
     }
 
+    /**
+     * Watch how long frames are taking and trade resolution for them.
+     *
+     * Only frames that were actually drawn count: an idle board skips the
+     * render entirely, and timing those would read as a machine that has grown
+     * wonderfully fast while it was doing nothing.
+     */
+    let frameAverage = 0
+    let pacedAt = 0
+    const pace = (time: number, step: number) => {
+      // A hidden tab is given about one frame a second, and that is the browser
+      // being sensible rather than the machine struggling. Judging it would
+      // shrink the board to nothing behind the player's back.
+      if (step <= 0 || document.hidden) return
+      frameAverage += (step * 1000 - frameAverage) * (1 - Math.exp(-step / PACE_SMOOTH_S))
+      if (time - pacedAt < PACE_COOLDOWN_MS) return
+      if (frameAverage < PACE_SLOW_MS && frameAverage > PACE_FAST_MS) return
+      // Cost follows the pixel count, and the pixel count follows the square of
+      // this, so the square root of how far off the frame time is says how far
+      // to move in one go. Stepping down by a fixed amount instead would spend
+      // several seconds crawling to the right answer on a machine that needs it
+      // most.
+      const aim = resolution * Math.sqrt(PACE_TARGET_MS / frameAverage)
+      const wanted = Math.min(1, Math.max(PACE_MIN_RESOLUTION, Math.round(aim / PACE_STEP) * PACE_STEP))
+      if (Math.abs(wanted - resolution) < PACE_STEP) return
+      resolution = wanted
+      pacedAt = time
+      // Enough of the average is about the old size that keeping it would ask
+      // for the next step before the last one has been seen.
+      frameAverage = (PACE_SLOW_MS + PACE_FAST_MS) / 2
+      resize()
+    }
+
     // The controls announce every camera change, whatever caused it. This is
     // the one signal that covers a trackpad pinch: that arrives as a wheel
     // event, so no pointer handler here sees it — and OrbitControls calls
@@ -805,12 +871,15 @@ export function ThreeBoard(props: BoardProps) {
       const animation = threeScene.animation
 
       const step = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 0
-      lastFrame = time
+      const idle = !moving && !animation && !flung && dirtyFrames <= 0
+      lastFrame = idle ? 0 : time
 
       if (!moving && !animation && !flung) {
         if (dirtyFrames <= 0) return
         dirtyFrames -= 1
       }
+
+      pace(time, step)
 
       if (flung) {
         // The pieces are moving, so their shadows have to move with them.

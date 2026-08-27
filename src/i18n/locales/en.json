@@ -62,6 +62,9 @@
     "aiChat": "AI dialogue",
     "aiChatOn": "on",
     "aiChatOff": "off",
+    "coords": "Square labels",
+    "coordsOn": "on",
+    "coordsOff": "off",
     "boardView": "View",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "Your friends list is empty",
     "duels": "Duels",
-    "duelsHint": "Contested captures are settled with dice",
+    "duelsHint": "Contested captures are settled by a coin toss",
+    "preset": "Dealt position",
+    "presetHint": "The bot sets both sides out — straight to the moves",
     "submit": "Create",
     "cancel": "Cancel",
     "creating": "Creating…"
@@ -125,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} captured {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, rolled {roll} — captured",
-    "duelFail": "{name}: {attacker} vs {victim}, rolled {roll} — failed",
+    "duelWin": "{name}: {attacker} vs {victim}, coin I — captured",
+    "duelFail": "{name}: {attacker} vs {victim}, coin II — failed",
     "win": "{name} wins",
     "draw": "Draw"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "The coin decides who goes first…",
     "firstYou": "You move first",
     "firstThem": "{name} moves first",
-    "errRoll": "Could not roll the dice",
+    "errRoll": "Could not toss the coin",
     "errStart": "Could not start the game"
   },
   "duel": {

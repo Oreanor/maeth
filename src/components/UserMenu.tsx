@@ -5,6 +5,7 @@ import {
   Circle,
   Globe,
   Grid2X2,
+  Hash,
   HelpCircle,
   Home,
   LogIn,
@@ -61,6 +62,8 @@ export function UserMenu({
     setBoardStyle,
     threePieceStyle,
     setThreePieceStyle,
+    coords,
+    toggleCoords,
   } = useBoardView()
   const { chatEnabled, toggleChat } = useChatSettings()
   const [open, setOpen] = useState(false)
@@ -205,6 +208,17 @@ export function UserMenu({
                   </span>
                 </button>
 
+                <button className="usermenu__item" role="menuitem" onClick={toggleCoords}>
+                  <Hash size={18} />
+                  <span>{t('lobby.coords')}</span>
+                  <span className="usermenu__tail">
+                    <span className="usermenu__value">
+                      {t(coords ? 'lobby.coordsOn' : 'lobby.coordsOff')}
+                    </span>
+                    <kbd className="usermenu__shortcut">A</kbd>
+                  </span>
+                </button>
+
                 {onStats && (
                 <button
                   className="usermenu__item"
@@ -242,6 +256,9 @@ export function UserMenu({
                   >
                     <Home size={18} />
                     <span>{t('game.exit')}</span>
+                    <span className="usermenu__tail">
+                      <kbd className="usermenu__shortcut">Q</kbd>
+                    </span>
                   </button>
                 )}
 
@@ -253,6 +270,9 @@ export function UserMenu({
                   >
                     <LogOut size={18} />
                     <span>{t('lobby.logout')}</span>
+                    <span className="usermenu__tail">
+                      <kbd className="usermenu__shortcut">E</kbd>
+                    </span>
                   </button>
                 )}
               </>

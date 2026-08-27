@@ -56,6 +56,22 @@ export function createLotteryState(): GameState {
   }
 }
 
+/**
+ * Enter the move phase on a board that is already set — the dealt position,
+ * whose draft happened before the coin was thrown. All the coin decides there
+ * is who moves first in it.
+ */
+export function beginPlay(state: GameState, turn: Color): GameState {
+  return normalizePlay({
+    ...state,
+    phase: 'play',
+    lottery: null,
+    pending: null,
+    turn,
+    status: { kind: 'playing' },
+  })
+}
+
 /** The roller starts on odd values; their opponent starts on even values. */
 export function firstTurnFromRoll(roll: number, roller: Color): Color {
   return roll % 2 === 1 ? roller : opposite(roller)

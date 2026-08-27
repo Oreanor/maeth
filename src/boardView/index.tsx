@@ -65,6 +65,7 @@ const LEGACY_STYLE_STORAGE_KEY = 'maeth.boardStyle'
 const STYLE_2D_STORAGE_KEY = 'maeth.boardStyle2d'
 const STYLE_3D_STORAGE_KEY = 'maeth.boardStyle3d'
 const THREE_PIECE_STYLE_STORAGE_KEY = 'maeth.threePieceStyle'
+const COORDS_STORAGE_KEY = 'maeth.boardCoords'
 
 interface BoardViewContextValue {
   viewMode: BoardViewMode
@@ -73,6 +74,9 @@ interface BoardViewContextValue {
   setBoardStyle: (style: BoardStyle) => void
   threePieceStyle: ThreePieceStyle
   setThreePieceStyle: (style: ThreePieceStyle) => void
+  /** Whether the A–D / 1–4 ring is drawn around the board. */
+  coords: boolean
+  toggleCoords: () => void
 }
 
 const BoardViewContext = createContext<BoardViewContextValue | null>(null)
@@ -92,6 +96,9 @@ const storedThreePieceStyle = (): ThreePieceStyle => {
   return isThreePieceStyle(value) ? value : DEFAULT_THREE_PIECE_STYLE
 }
 
+/** On unless it has been turned off: the squares are what the pieces talk in. */
+const storedCoords = (): boolean => localStorage.getItem(COORDS_STORAGE_KEY) !== 'off'
+
 export function BoardViewProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n()
   const [viewMode, setViewMode] = useState<BoardViewMode>(storedView)
@@ -103,6 +110,7 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
   )
   const [threePieceStyle, setThreePieceStyle] =
     useState<ThreePieceStyle>(storedThreePieceStyle)
+  const [coords, setCoords] = useState<boolean>(storedCoords)
   const [boardLoading, setBoardLoading] = useState(false)
   const loadIdRef = useRef(0)
   const boardStyle = viewMode === '2d' ? boardStyle2d : boardStyle3d
@@ -162,6 +170,13 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-three-piece-style', threePieceStyle)
   }, [threePieceStyle])
 
+  const toggleCoords = useCallback(() => {
+    setCoords((was) => {
+      localStorage.setItem(COORDS_STORAGE_KEY, was ? 'off' : 'on')
+      return !was
+    })
+  }, [])
+
   const value = useMemo(
     () => ({
       viewMode,
@@ -170,8 +185,10 @@ export function BoardViewProvider({ children }: { children: ReactNode }) {
       setBoardStyle,
       threePieceStyle,
       setThreePieceStyle,
+      coords,
+      toggleCoords,
     }),
-    [boardStyle, setBoardStyle, threePieceStyle, viewMode],
+    [boardStyle, coords, setBoardStyle, threePieceStyle, toggleCoords, viewMode],
   )
 
   return (

@@ -121,7 +121,14 @@
 
 .screen--game-3d
   > :where(
-    :not(.three-board-shell, .three-board-a11y, .modal-backdrop, .ceremony-controls, .fps-meter)
+    :not(
+        .three-board-shell,
+        .three-board__labels,
+        .three-board-a11y,
+        .modal-backdrop,
+        .ceremony-controls,
+        .fps-meter
+      )
   ) {
   position: relative;
   z-index: 5;
@@ -718,6 +725,12 @@
   flex-direction: column;
   gap: 8px;
   padding-left: 28px;
+}
+
+/* Belongs to the option above it, so it stands in from the margin the way the
+   friend picker does, rather than reading as a third setting of its own. */
+.check-row--sub {
+  padding: 0 0 4px 28px;
 }
 .create-friend__select {
   max-width: none;

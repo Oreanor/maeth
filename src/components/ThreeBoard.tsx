@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { BOARD_STYLE_CONFIG, useBoardView, type ThreePieceStyle } from '@/boardView'
 import { useI18n } from '@/i18n'
+import { FILES } from '@/game/notation'
 import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
@@ -192,7 +193,10 @@ async function createPiece(
   )
 
   const group = new THREE.Group()
-  group.rotation.y = color === 'white' ? 0 : Math.PI
+  // The two armies face each other along the ranks: white up the numbers
+  // towards 4, black down them towards 1. Board rows run the other way (row 0
+  // is rank 4, at -z), which is why white is the one turned half about.
+  group.rotation.y = color === 'white' ? Math.PI : 0
   group.add(model)
   // Height of the sculpted figure above the board, so the overlay can park a
   // label just clear of its crown rather than at a guessed fixed height.
@@ -345,7 +349,7 @@ export function ThreeBoard(props: BoardProps) {
   /** A–D and 1–4 floating off each edge, placed by the same loop. */
   const coordRefs = useRef(new Map<string, HTMLDivElement>())
   const hoverRef = useRef<number | null>(null)
-  const { boardStyle, threePieceStyle } = useBoardView()
+  const { boardStyle, coords, threePieceStyle } = useBoardView()
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
@@ -568,8 +572,18 @@ export function ThreeBoard(props: BoardProps) {
       }
       const start = pointerStart
       pointerStart = null
-      if (!start || !propsRef.current.interactive) return
+      if (!start) return
       if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 6) return
+      // A finger never hovers: the tap is what puts a piece under inspection
+      // and hangs the cloud on it. It goes through the same probe the cursor
+      // uses, so a tap on bare board takes the cloud away again — and it is
+      // read before the gate below, because a piece can be looked at and
+      // talked to whoever's turn it is.
+      if (event.pointerType !== 'mouse') {
+        hoverProbe = { x: event.clientX, y: event.clientY }
+        threeScene.invalidate()
+      }
+      if (!propsRef.current.interactive) return
       const cell = pointerCell(event, canvas, camera, hitCells)
       if (cell != null) propsRef.current.onCellClick(cell)
     }
@@ -584,13 +598,16 @@ export function ThreeBoard(props: BoardProps) {
         'three-board__canvas--cell',
         'three-board__canvas--own',
       )
+      // A touch pointer stops existing the instant the finger lifts, firing
+      // leave right after the tap that set the draft preview and chose the
+      // piece to talk to. Only a real cursor travelling off the board clears
+      // either: on a touch screen the tap IS the hover, and it has to outlive
+      // the finger that made it.
+      if (event.pointerType !== 'mouse') return
       hoverProbe = null
       hoverRef.current = null
       setHoverCell(null)
-      // A touch pointer stops existing the instant the finger lifts, firing
-      // leave right after the tap that set the draft preview. Only a real
-      // cursor travelling off the board should clear that preview.
-      if (event.pointerType === 'mouse') propsRef.current.onBoardLeave?.()
+      propsRef.current.onBoardLeave?.()
     }
     canvas.addEventListener('pointerdown', onPointerDown)
     canvas.addEventListener('pointermove', onPointerMove)
@@ -1085,6 +1102,7 @@ export function ThreeBoard(props: BoardProps) {
 
 
   return (
+    <>
     <div
       ref={hostRef}
       className={`three-board-shell${
@@ -1114,10 +1132,12 @@ export function ThreeBoard(props: BoardProps) {
       </div>
 
       <div className="three-board__labels" aria-hidden>
-        {COORD_SIDES.flatMap((side) =>
+        {(coords ? COORD_SIDES : []).flatMap((side) =>
           Array.from({ length: 4 }, (_, i) => {
             const flipped = props.orientation === 'white' ? i : 3 - i
-            const text = side === 'top' || side === 'bottom' ? 'ABCD'[flipped] : String(flipped + 1)
+            // `flipped` is the board's own index; the rank counts back from it
+            // so that 1 sits at the bottom of the board and 4 at the top.
+            const text = side === 'top' || side === 'bottom' ? FILES[flipped] : String(4 - flipped)
             const key = `${side}:${i}`
             return (
               <div
@@ -1134,26 +1154,32 @@ export function ThreeBoard(props: BoardProps) {
           }),
         )}
       </div>
-
-      {props.chat?.available && (
-        <div className="three-board__labels three-board__labels--chat">
-          {cloudTarget != null && cloudTarget !== props.chat.cell && (
-            <div className="three-label three-label--cloud" ref={cloudRef} {...cloudHold}>
-              <ChatCloudButton onClick={() => props.chat?.open(cloudTarget)} title={t('chat.talk')} />
-            </div>
-          )}
-          {(props.chat.speech ?? props.ambient) && (
-            <div className="three-label three-label--bubble" ref={bubbleRef}>
-              <SpeechBubble
-                text={(props.chat.speech ?? props.ambient)!.text}
-                thinking={(props.chat.speech ?? props.ambient)!.thinking === true}
-                hostile={(props.chat.speech ?? props.ambient)!.hostile}
-                tail="inside"
-              />
-            </div>
-          )}
-        </div>
-      )}
     </div>
+
+    {/* Outside the shell, not in it: a fixed element is a stacking context
+        whatever its z-index, so anything left inside could never rise above the
+        line that says whose turn it is. As the shell's sibling it can. Same
+        `position: fixed` box, so the render loop's viewport coordinates place
+        these labels exactly as they place the ones on the board. */}
+    {props.chat?.available && (
+      <div className="three-board__labels three-board__labels--chat">
+        {cloudTarget != null && cloudTarget !== props.chat.cell && (
+          <div className="three-label three-label--cloud" ref={cloudRef} {...cloudHold}>
+            <ChatCloudButton onClick={() => props.chat?.open(cloudTarget)} title={t('chat.talk')} />
+          </div>
+        )}
+        {(props.chat.speech ?? props.ambient) && (
+          <div className="three-label three-label--bubble" ref={bubbleRef}>
+            <SpeechBubble
+              text={(props.chat.speech ?? props.ambient)!.text}
+              thinking={(props.chat.speech ?? props.ambient)!.thinking === true}
+              hostile={(props.chat.speech ?? props.ambient)!.hostile}
+              tail="inside"
+            />
+          </div>
+        )}
+      </div>
+    )}
+    </>
   )
 }

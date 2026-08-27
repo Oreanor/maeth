@@ -62,6 +62,9 @@
     "aiChat": "Diálogos de IA",
     "aiChatOn": "ligado",
     "aiChatOff": "desligado",
+    "coords": "Coordenadas",
+    "coordsOn": "ligadas",
+    "coordsOff": "desligadas",
     "boardView": "Vista",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "Sua lista de amigos está vazia",
     "duels": "Duelos",
-    "duelsHint": "Capturas disputadas são resolvidas com dados",
+    "duelsHint": "Capturas disputadas são resolvidas no lançamento de uma moeda",
+    "preset": "Posição distribuída",
+    "presetHint": "O bot dispõe os dois lados — direto para os lances",
     "submit": "Criar",
     "cancel": "Cancelar",
     "creating": "Criando…"
@@ -125,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} capturou {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, dado {roll} — capturado",
-    "duelFail": "{name}: {attacker} vs {victim}, dado {roll} — falhou",
+    "duelWin": "{name}: {attacker} vs {victim}, moeda I — capturado",
+    "duelFail": "{name}: {attacker} vs {victim}, moeda II — falhou",
     "win": "{name} vence",
     "draw": "Empate"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "A moeda decide quem começa…",
     "firstYou": "Você começa",
     "firstThem": "{name} começa",
-    "errRoll": "Não foi possível rolar o dado",
+    "errRoll": "Não foi possível lançar a moeda",
     "errStart": "Não foi possível iniciar a partida"
   },
   "duel": {

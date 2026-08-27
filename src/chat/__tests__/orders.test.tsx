@@ -47,7 +47,7 @@ describe('extractOrder', () => {
 })
 
 describe('orders given to a piece', () => {
-  // The queen on A1 can slide onto the orc chief on B2; D4 lies behind it on the
+  // The queen on A4 can slide onto the orc chief on B3; D1 lies behind it on the
   // same diagonal, so the path is blocked and that order is not playable.
   const board = () => {
     const b = emptyBoard()
@@ -86,7 +86,7 @@ describe('orders given to a piece', () => {
 
   it('plays the move the piece agreed to', async () => {
     const onOrder = vi.fn()
-    askPiece.mockResolvedValue({ text: 'As you command.', square: 'B2', tell: null })
+    askPiece.mockResolvedValue({ text: 'As you command.', square: 'B3', tell: null })
     const hook = await open(0, onOrder)
 
     expect(onOrder).toHaveBeenCalledWith(0, 5)
@@ -96,14 +96,14 @@ describe('orders given to a piece', () => {
 
   it('ignores a square the piece cannot actually reach', async () => {
     const onOrder = vi.fn()
-    askPiece.mockResolvedValue({ text: 'At once!', square: 'D4', tell: null })
+    askPiece.mockResolvedValue({ text: 'At once!', square: 'D1', tell: null })
     await open(0, onOrder)
     expect(onOrder).not.toHaveBeenCalled()
   })
 
   it('takes no orders on behalf of the enemy', async () => {
     const onOrder = vi.fn()
-    askPiece.mockResolvedValue({ text: 'Make me, maggot.', square: 'A1', tell: null })
+    askPiece.mockResolvedValue({ text: 'Make me, maggot.', square: 'A4', tell: null })
     await open(5, onOrder)
     expect(onOrder).not.toHaveBeenCalled()
   })
@@ -112,8 +112,8 @@ describe('orders given to a piece', () => {
 describe('passing a word to somebody else', () => {
   const board = () => {
     const b = emptyBoard()
-    b[0] = piece('elvenQueen', 'white') // A1 — the one being talked to
-    b[5] = piece('orcChief', 'black') // B2 — the one the message is for
+    b[0] = piece('elvenQueen', 'white') // A4 — the one being talked to
+    b[5] = piece('orcChief', 'black') // B3 — the one the message is for
     return b
   }
 
@@ -125,7 +125,7 @@ describe('passing a word to somebody else', () => {
 
   it('lets the addressee answer over its own head', async () => {
     askPiece
-      .mockResolvedValueOnce({ text: 'Orc, my lady calls you a worm.', square: null, tell: 'B2' })
+      .mockResolvedValueOnce({ text: 'Orc, my lady calls you a worm.', square: null, tell: 'B3' })
       .mockResolvedValueOnce({ text: 'Come and say it closer.', square: null, tell: null })
 
     const state = playState(board())

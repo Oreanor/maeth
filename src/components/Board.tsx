@@ -70,7 +70,8 @@ export function Board({
 }: BoardProps) {
   const { t } = useI18n()
   // Hover-to-inspect, matching the 3D board: works on either side's pieces and
-  // whoever's turn it is, so it is deliberately not gated on `interactive`.
+  // whoever's turn it is, so it is deliberately not gated on `interactive`. On
+  // a touch screen a tap stands in for the hover and stays until the next one.
   const [hoverCell, setHoverCell] = useState<number | null>(null)
   const hoveredPiece = hoverCell != null ? board[hoverCell] : null
   const order = [...board.keys()]
@@ -144,6 +145,14 @@ export function Board({
               if (event.pointerType !== 'mouse') return
               setHoverCell(i)
               if (interactive) onCellEnter?.(i)
+            }}
+            onPointerDown={(event) => {
+              // A finger never hovers, so the tap itself is what puts a piece
+              // under inspection and hangs the cloud on it. Only that much:
+              // the draft preview still waits for the click, or the first tap
+              // on an empty square would place the piece outright.
+              if (event.pointerType === 'mouse') return
+              setHoverCell(board[i] ? i : null)
             }}
             aria-label={t('board.cell', { square, content: cellState })}
             aria-pressed={isSel}

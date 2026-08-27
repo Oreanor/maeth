@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { I18nProvider } from '@/i18n'
+import { BoardViewProvider } from '@/boardView'
 import type { Board as BoardModel } from '@/game/types'
 import { Board } from '../Board'
 
@@ -12,22 +13,24 @@ function renderBoard(overrides: Partial<Parameters<typeof Board>[0]> = {}) {
 
   render(
     <I18nProvider>
-      <Board
-        board={board}
-        selected={null}
-        legalTargets={[]}
-        selectedMoves={[]}
-        placementTargets={[]}
-        movable={[]}
-        previewCell={null}
-        previewKind={null}
-        previewOwner="white"
-        orientation="white"
-        anim={null}
-        onCellClick={onCellClick}
-        interactive
-        {...overrides}
-      />
+      <BoardViewProvider>
+        <Board
+          board={board}
+          selected={null}
+          legalTargets={[]}
+          selectedMoves={[]}
+          placementTargets={[]}
+          movable={[]}
+          previewCell={null}
+          previewKind={null}
+          previewOwner="white"
+          orientation="white"
+          anim={null}
+          onCellClick={onCellClick}
+          interactive
+          {...overrides}
+        />
+      </BoardViewProvider>
     </I18nProvider>,
   )
 

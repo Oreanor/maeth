@@ -62,6 +62,9 @@
     "aiChat": "Dialoghi IA",
     "aiChatOn": "attivi",
     "aiChatOff": "disattivi",
+    "coords": "Coordinate",
+    "coordsOn": "attive",
+    "coordsOff": "disattive",
     "boardView": "Vista",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "La tua lista amici è vuota",
     "duels": "Duelli",
-    "duelsHint": "Le catture contestate si risolvono con i dadi",
+    "duelsHint": "Le catture contestate si risolvono con il lancio di una moneta",
+    "preset": "Posizione servita",
+    "presetHint": "Il bot schiera entrambe le parti — subito alle mosse",
     "submit": "Crea",
     "cancel": "Annulla",
     "creating": "Creazione…"
@@ -125,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} cattura {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, tiro {roll} — catturato",
-    "duelFail": "{name}: {attacker} vs {victim}, tiro {roll} — fallito",
+    "duelWin": "{name}: {attacker} vs {victim}, moneta I — catturato",
+    "duelFail": "{name}: {attacker} vs {victim}, moneta II — fallito",
     "win": "Vince {name}",
     "draw": "Patta"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "La moneta decide chi inizia…",
     "firstYou": "Inizi tu",
     "firstThem": "Inizia {name}",
-    "errRoll": "Impossibile lanciare il dado",
+    "errRoll": "Impossibile lanciare la moneta",
     "errStart": "Impossibile avviare la partita"
   },
   "duel": {

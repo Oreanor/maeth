@@ -60,7 +60,7 @@ describe('useChatter', () => {
     )
 
     expect(result.current).toBeNull()
-    await flush(31_000)
+    await flush(16_000)
 
     expect(complete).toHaveBeenCalledTimes(1)
     expect(result.current?.text).toBe('Pointy-eared filth.')

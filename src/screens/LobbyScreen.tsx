@@ -112,6 +112,7 @@ export function LobbyScreen() {
           opponentName: t('common.bot'),
           humanColor: 'white',
           duels: choice.duels,
+          preset: choice.preset,
         },
       })
       return

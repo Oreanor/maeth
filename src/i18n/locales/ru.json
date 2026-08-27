@@ -62,6 +62,9 @@
     "aiChat": "ИИ-диалоги",
     "aiChatOn": "вкл",
     "aiChatOff": "выкл",
+    "coords": "Подписи к клеткам",
+    "coordsOn": "вкл",
+    "coordsOff": "выкл",
     "boardView": "Вид",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "Список друзей пуст",
     "duels": "Дуэли",
-    "duelsHint": "Спорные взятия решаются броском кубика",
+    "duelsHint": "Спорные взятия решаются броском монеты",
+    "preset": "Предрасстановка",
+    "presetHint": "Фигуры расставит бот — сразу к ходам",
     "submit": "Создать",
     "cancel": "Отмена",
     "creating": "Создаём…"
@@ -125,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} съел {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, бросок {roll} — взял",
-    "duelFail": "{name}: {attacker} vs {victim}, бросок {roll} — неудача",
+    "duelWin": "{name}: {attacker} vs {victim}, монета I — взял",
+    "duelFail": "{name}: {attacker} vs {victim}, монета II — неудача",
     "win": "Победа: {name}",
     "draw": "Ничья"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "Монета решает, кто ходит первым…",
     "firstYou": "Первым ходишь ты",
     "firstThem": "Первым ходит {name}",
-    "errRoll": "Не удалось бросить кубик",
+    "errRoll": "Не удалось подбросить монету",
     "errStart": "Не удалось начать игру"
   },
   "duel": {

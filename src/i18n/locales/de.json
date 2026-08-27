@@ -62,6 +62,9 @@
     "aiChat": "KI-Dialoge",
     "aiChatOn": "an",
     "aiChatOff": "aus",
+    "coords": "Feldbeschriftung",
+    "coordsOn": "an",
+    "coordsOff": "aus",
     "boardView": "Ansicht",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "Deine Freundesliste ist leer",
     "duels": "Duelle",
-    "duelsHint": "Umstrittene Schläge werden mit Würfeln entschieden",
+    "duelsHint": "Umstrittene Schläge entscheidet ein Münzwurf",
+    "preset": "Fertige Stellung",
+    "presetHint": "Der Bot stellt beide Seiten auf — direkt zu den Zügen",
     "submit": "Erstellen",
     "cancel": "Abbrechen",
     "creating": "Wird erstellt…"
@@ -125,8 +130,8 @@
     "place": "{name}: {piece} → {square}",
     "move": "{name}: {piece} {from}–{to}",
     "capture": "{name}: {attacker} {from}–{to} schlägt {victim}",
-    "duelWin": "{name}: {attacker} vs {victim}, Wurf {roll} — geschlagen",
-    "duelFail": "{name}: {attacker} vs {victim}, Wurf {roll} — gescheitert",
+    "duelWin": "{name}: {attacker} vs {victim}, Münze I — geschlagen",
+    "duelFail": "{name}: {attacker} vs {victim}, Münze II — gescheitert",
     "win": "{name} gewinnt",
     "draw": "Remis"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "Die Münze entscheidet, wer beginnt …",
     "firstYou": "Du beginnst",
     "firstThem": "{name} beginnt",
-    "errRoll": "Würfeln fehlgeschlagen",
+    "errRoll": "Münzwurf fehlgeschlagen",
     "errStart": "Spiel konnte nicht gestartet werden"
   },
   "duel": {

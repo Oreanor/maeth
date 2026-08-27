@@ -101,9 +101,13 @@
    the same loop. Only the cloud takes the pointer back from the canvas — the
    bubble stays out of the way of a camera drag. */
 /* Above the HUD, unlike the badges: a bubble reaches well over the board and
-   was landing behind the line that says whose turn it is. The shell has no
-   stacking context of its own, so this competes with the panels directly. */
+   was landing behind the line that says whose turn it is. This layer is the
+   shell's sibling rather than its child (see ThreeBoard.tsx) — a fixed element
+   is a stacking context whatever its z-index, so a number set inside the shell
+   could never outrank anything outside it. Fixed here too, over the same box,
+   because the render loop places these labels in viewport coordinates. */
 .three-board__labels--chat {
+  position: fixed;
   /* Above the panels (5) so a bubble is never lost behind the line telling you
      whose turn it is, and below the log (22) and the chat bar (23), which are
      the two things it must not cover. */

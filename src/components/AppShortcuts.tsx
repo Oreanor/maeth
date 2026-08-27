@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { BOARD_STYLES, THREE_PIECE_STYLES, useBoardView } from '@/boardView'
 import { LANGS, useI18n } from '@/i18n'
 import { SKINS, SKIN_I18N, useSkin } from '@/skin'
 import { useTheme } from '@/theme'
+import { useAuth } from '@/auth/AuthContext'
 import { useChatSettings } from '@/chat/ChatSettings'
 import './AppShortcuts.css'
 
@@ -46,9 +48,11 @@ function next<T>(values: readonly T[], current: T): T {
  *
  *   B  board style        F  pieces        V  2D / 3D
  *   L  language           T  theme          C  talking pieces
+ *   A  square labels       Q  leave a game   E  sign out
  *
  * Every one is also in the settings menu — this is a faster path to the same
- * state, not a second source of truth.
+ * thing, not a second source of truth. The last two go somewhere rather than
+ * change something, so they show no confirmation: the screen is the answer.
  */
 export function AppShortcuts() {
   const {
@@ -58,8 +62,13 @@ export function AppShortcuts() {
     setBoardStyle,
     threePieceStyle,
     setThreePieceStyle,
+    coords,
+    toggleCoords,
   } = useBoardView()
   const { t, lang, setLang } = useI18n()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const { user, logout } = useAuth()
   const { skin, setSkin } = useSkin()
   const { theme, toggle } = useTheme()
   const { chatEnabled, toggleChat } = useChatSettings()
@@ -133,6 +142,24 @@ export function AppShortcuts() {
           announce('lobby.theme', theme === 'dark' ? 'lobby.themeLight' : 'lobby.themeDark')
           break
         }
+        case 'KeyA': {
+          toggleCoords()
+          announce('lobby.coords', coords ? 'lobby.coordsOff' : 'lobby.coordsOn')
+          break
+        }
+        case 'KeyQ': {
+          // Only from a game — in the lobby there is nothing to leave, and the
+          // key should go back to whoever else might want it.
+          if (!pathname.startsWith('/play')) return
+          navigate('/')
+          break
+        }
+        case 'KeyE': {
+          if (!user) return
+          logout()
+          navigate('/')
+          break
+        }
         default:
           return
       }
@@ -145,8 +172,11 @@ export function AppShortcuts() {
     announce,
     boardStyle,
     chatEnabled,
-    toggleChat,
+    coords,
     lang,
+    logout,
+    navigate,
+    pathname,
     setBoardStyle,
     setLang,
     setSkin,
@@ -156,6 +186,9 @@ export function AppShortcuts() {
     theme,
     threePieceStyle,
     toggle,
+    toggleChat,
+    toggleCoords,
+    user,
     viewMode,
   ])
 

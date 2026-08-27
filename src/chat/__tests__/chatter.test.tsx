@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { I18nProvider } from '@/i18n'
+import { BoardViewProvider } from '@/boardView'
 import { emptyBoard, piece } from '@/game/__tests__/kit'
 import type { Board as BoardModel } from '@/game/types'
 import { Board } from '@/components/Board'
@@ -25,23 +26,25 @@ const silentChat: PieceChat = {
 function renderBoard(board: BoardModel, overrides: Partial<Parameters<typeof Board>[0]> = {}) {
   render(
     <I18nProvider>
-      <Board
-        board={board}
-        selected={null}
-        legalTargets={[]}
-        selectedMoves={[]}
-        placementTargets={[]}
-        movable={[]}
-        previewCell={null}
-        previewKind={null}
-        previewOwner="white"
-        orientation="white"
-        anim={null}
-        chat={silentChat}
-        onCellClick={vi.fn()}
-        interactive
-        {...overrides}
-      />
+      <BoardViewProvider>
+        <Board
+          board={board}
+          selected={null}
+          legalTargets={[]}
+          selectedMoves={[]}
+          placementTargets={[]}
+          movable={[]}
+          previewCell={null}
+          previewKind={null}
+          previewOwner="white"
+          orientation="white"
+          anim={null}
+          chat={silentChat}
+          onCellClick={vi.fn()}
+          interactive
+          {...overrides}
+        />
+      </BoardViewProvider>
     </I18nProvider>,
   )
 }

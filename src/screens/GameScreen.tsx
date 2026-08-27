@@ -17,6 +17,8 @@ interface PlayConfig {
   opponentName: string
   humanColor: Color
   duels?: boolean
+  /** Bot games only: the position is dealt, not drafted. */
+  preset?: boolean
 }
 
 export function GameScreen() {
@@ -48,6 +50,7 @@ function LocalGameScreen({ config }: { config: PlayConfig }) {
     humanColor: human,
     vsBot: config.vsBot,
     duels: config.duels !== false,
+    preset: config.preset === true,
   })
   const { state, pendingDef, duel, anim, isHumanTurn } = game
 

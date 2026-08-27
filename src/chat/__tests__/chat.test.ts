@@ -61,7 +61,7 @@ describe('buildSystemPrompt', () => {
     lang: 'ru' as const,
     rules: 'RULES TEXT',
     advice: 'THE CALCULATION SAYS: something clever.',
-    log: ['Alice: Elven Queen → B2'],
+    log: ['Alice: Elven Queen → B3'],
   }
 
   it('tells an enemy piece it is an enemy, and to sit on the advice', () => {
@@ -78,20 +78,20 @@ describe('buildSystemPrompt', () => {
   })
 
   it('hands each piece the squares it can actually reach', () => {
-    // The Orc Chief on A1 steps one square in any direction; the Elven Queen
-    // stands on B2, in reach of it and it of her.
+    // The Orc Chief on A4 steps one square in any direction; the Elven Queen
+    // stands on B3, in reach of it and it of her.
     const prompt = buildSystemPrompt(context)
-    expect(prompt).toContain('SQUARES YOU CAN STEP TO: A2')
-    expect(prompt).toContain('B1')
-    expect(prompt).toContain('YOU CAN TAKE: the Elven Queen on B2')
+    expect(prompt).toContain('SQUARES YOU CAN STEP TO: A3')
+    expect(prompt).toContain('B4')
+    expect(prompt).toContain('YOU CAN TAKE: the Elven Queen on B3')
     // Both of those squares are in the queen's reach, and the piece is told so
     // before it is ordered onto one of them.
-    expect(prompt).toContain('but the Elven Queen on B2 would have you there')
-    expect(prompt).toContain('AIMED AT YOU: the Elven Queen on B2')
+    expect(prompt).toContain('but the Elven Queen on B3 would have you there')
+    expect(prompt).toContain('AIMED AT YOU: the Elven Queen on B3')
     // And the same facts for every other piece in the army listing.
-    expect(prompt).toContain('CAN STEP TO: A2, B1')
-    expect(prompt).toContain('CAN TAKE: Elven Queen B2')
-    expect(prompt).toContain('UNDER THREAT FROM: Elven Queen B2')
+    expect(prompt).toContain('CAN STEP TO: A3, B4')
+    expect(prompt).toContain('CAN TAKE: Elven Queen B3')
+    expect(prompt).toContain('UNDER THREAT FROM: Elven Queen B3')
   })
 
   it('tells a spent piece it is spent, and offers it no squares', () => {
@@ -106,17 +106,17 @@ describe('buildSystemPrompt', () => {
 
   it('carries the position, the rules and the log', () => {
     const prompt = buildSystemPrompt(context)
-    expect(prompt).toContain('Orc Chief on A1')
-    expect(prompt).toContain('Elven Queen on B2')
+    expect(prompt).toContain('Orc Chief on A4')
+    expect(prompt).toContain('Elven Queen on B3')
     expect(prompt).toContain('RULES TEXT')
-    expect(prompt).toContain('Alice: Elven Queen → B2')
+    expect(prompt).toContain('Alice: Elven Queen → B3')
   })
 })
 
 describe('threatsAfterMove', () => {
   it('counts who could reach the square the piece is walking onto', () => {
     const board = emptyBoard()
-    board[0] = piece('hobbit', 'white') // ortho, range 1 — A1 → B1 or A2
+    board[0] = piece('hobbit', 'white') // ortho, range 1 — A4 → B4 or A3
     board[5] = piece('elvenQueen', 'black') // all, range 3 — covers both
     expect(threatsAfterMove(board, 0, 1)).toEqual([5])
   })
@@ -130,15 +130,15 @@ describe('threatsAfterMove', () => {
 
   it('leaves an archer on its own square when it shoots — and opens the ray it cleared', () => {
     const board = emptyBoard()
-    board[0] = piece('wizard', 'white') // archer: shoots B2 without stepping onto it
+    board[0] = piece('wizard', 'white') // archer: shoots B3 without stepping onto it
     board[5] = piece('orcChief', 'black')
-    board[15] = piece('balrog', 'black') // D4, diagonal to A1 — through B2
+    board[15] = piece('balrog', 'black') // D1, diagonal to A4 — through B3
 
-    // The danger is to A1, where the wizard stays; and taking B2 is what clears
+    // The danger is to A4, where the wizard stays; and taking B3 is what clears
     // the balrog's diagonal onto it. Both facts fall out of playing the move.
     expect(threatsAfterMove(board, 0, 5)).toEqual([15])
 
-    // With the diagonal still blocked by one of its own, nothing reaches A1.
+    // With the diagonal still blocked by one of its own, nothing reaches A4.
     const blocked = board.slice()
     blocked[10] = piece('hobbit', 'black')
     expect(threatsAfterMove(blocked, 0, 5)).toEqual([])
@@ -148,8 +148,8 @@ describe('threatsAfterMove', () => {
 describe('orders a piece can be given', () => {
   const queenAnd = (moved: boolean) => {
     const board = emptyBoard()
-    board[0] = piece('elvenQueen', 'white', moved) // A1, all directions, range 3
-    board[5] = piece('hobbit', 'black') // B2, diagonally in reach
+    board[0] = piece('elvenQueen', 'white', moved) // A4, all directions, range 3
+    board[5] = piece('hobbit', 'black') // B3, diagonally in reach
     return {
       cell: 0,
       kind: 'elvenQueen' as const,
@@ -170,7 +170,7 @@ describe('orders a piece can be given', () => {
     // ready-made rather than left to the model to work out.
     const prompt = buildSystemPrompt(queenAnd(false))
     expect(prompt).toContain('to kill the Hobbit')
-    expect(prompt).toContain('answer [MOVE: B2]')
+    expect(prompt).toContain('answer [MOVE: B3]')
   })
 
   it('offers no orders at all to a piece that has moved', () => {

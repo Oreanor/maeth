@@ -1,4 +1,4 @@
-import { attackSquares, isAttackedBy, placementCells } from './engine'
+import { attackSquares, beginDraft, isAttackedBy, placePiece, placementCells } from './engine'
 import { searchBestMove } from './search'
 import {
   CELLS,
@@ -113,6 +113,56 @@ export function chooseBotPlacement(state: GameState): number | null {
   const kind = state.pending
   const me = state.turn
   return best(placementCells(state), (cell) => scorePlacement(state.board, cell, kind, me))
+}
+
+/** One placement of a dealt position, in the order it was made. */
+export interface DealtPlacement {
+  by: Color
+  cell: number
+  kind: PieceKind
+}
+
+/**
+ * Deal a whole opening position: the draft played out for both sides by the
+ * same judgement the bot uses on its own turn, so the eight pieces stand
+ * somewhere worth standing rather than scattered at random.
+ *
+ * The placements come back with it because the play-by-play is rebuilt by
+ * replaying them — a position with no draft behind it would leave the log with
+ * an empty board to move pieces around on.
+ */
+export function dealPosition(firstDrafter: Color): {
+  state: GameState
+  placements: DealtPlacement[]
+} {
+  let state = beginDraft(firstDrafter)
+  const placements: DealtPlacement[] = []
+  while (state.phase === 'draft' && state.pending != null) {
+    const cell = chooseBotPlacement(state)
+    if (cell == null) break
+    placements.push({ by: state.turn, cell, kind: state.pending })
+    state = placePiece(state, cell)
+  }
+  return { state, placements }
+}
+
+/**
+ * The dealt position, held back in the lottery so the pieces are already
+ * standing while the coin is still in the air — there is nothing to watch an
+ * empty board for.
+ *
+ * Which colour drafted first is its own toss, and it is not the coin's: the
+ * last piece placed is the one placed knowing everything, so letting the same
+ * side always have it would be a standing advantage. The coin that follows
+ * decides only who moves first in the position.
+ */
+export function dealLottery(): { state: GameState; placements: DealtPlacement[] } {
+  const firstDrafter: Color = Math.random() < 0.5 ? 'white' : 'black'
+  const { state, placements } = dealPosition(firstDrafter)
+  return {
+    state: { ...state, phase: 'lottery', lottery: { step: 'await_roll' } },
+    placements,
+  }
 }
 
 // ── moves ────────────────────────────────────────────────────────────────────

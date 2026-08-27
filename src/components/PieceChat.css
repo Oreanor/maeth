@@ -29,6 +29,21 @@
   transform: scale(1.08);
 }
 
+/* A finger is not a cursor: the cloud stays the same small mark beside the
+   piece, but the area that answers a tap grows to something a thumb can
+   actually land on. */
+@media (hover: none) and (pointer: coarse) {
+  .chat-cloud {
+    position: relative;
+  }
+
+  .chat-cloud::after {
+    content: '';
+    position: absolute;
+    inset: -9px;
+  }
+}
+
 .chat-cloud svg {
   width: 15px;
   height: 15px;

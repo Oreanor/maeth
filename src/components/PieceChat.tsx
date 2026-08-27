@@ -213,7 +213,18 @@ export function BoardChatLayer({
     <div
       className={`board-chat ${locked ? 'board-chat--catching' : ''}`.trim()}
       onPointerMove={locked ? (event) => setCaught(cellUnder(event)) : undefined}
-      onPointerLeave={locked ? () => setCaught(null) : undefined}
+      // A finger reports no hover at all, only the tap.
+      onPointerDown={locked ? (event) => setCaught(cellUnder(event)) : undefined}
+      onPointerLeave={
+        locked
+          ? (event) => {
+              // A touch pointer stops existing the moment the finger lifts, so
+              // leave arrives right behind the tap that chose the piece. Only a
+              // cursor actually going away should take the cloud with it.
+              if (event.pointerType === 'mouse') setCaught(null)
+            }
+          : undefined
+      }
     >
       {cloudCell != null && (
         <div

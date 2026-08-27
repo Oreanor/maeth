@@ -7,7 +7,8 @@ import { Modal } from './Modal'
 export type CreateChoice =
   | { mode: 'open'; duels: boolean }
   | { mode: 'friend'; invitedUserId?: string; invitedEmail?: string; duels: boolean }
-  | { mode: 'bot'; duels: boolean }
+  /** `preset` deals the position instead of drafting it — bot games only. */
+  | { mode: 'bot'; duels: boolean; preset: boolean }
 
 type Mode = 'open' | 'friend' | 'bot'
 
@@ -32,6 +33,7 @@ export function CreateGameModal({
   const [friendId, setFriendId] = useState('')
   const [email, setEmail] = useState('')
   const [duels, setDuels] = useState(true)
+  const [preset, setPreset] = useState(false)
 
   useEffect(() => {
     if (!online) return
@@ -53,7 +55,7 @@ export function CreateGameModal({
 
   const submit = () => {
     if (mode === 'open') return onSubmit({ mode: 'open', duels })
-    if (mode === 'bot') return onSubmit({ mode: 'bot', duels })
+    if (mode === 'bot') return onSubmit({ mode: 'bot', duels, preset })
     if (emailEntered) return onSubmit({ mode: 'friend', invitedEmail: email.trim(), duels })
     if (friendId) return onSubmit({ mode: 'friend', invitedUserId: friendId, duels })
   }
@@ -114,6 +116,17 @@ export function CreateGameModal({
                 <span className="muted tiny">{t('create.optBotHint')}</span>
               </span>
             </label>
+            {/* Only the bot can deal a position: the two of you would have to
+                agree to be handed one, and there is nobody to ask online. */}
+            {mode === 'bot' && (
+              <label className="check-row check-row--sub">
+                <input type="checkbox" checked={preset} onChange={(e) => setPreset(e.target.checked)} />
+                <span className="check-row__text">
+                  <span className="check-row__title">{t('create.preset')}</span>
+                  <span className="muted tiny">{t('create.presetHint')}</span>
+                </span>
+              </label>
+            )}
 
             <label className="check-row">
               <input type="checkbox" checked={duels} onChange={(e) => setDuels(e.target.checked)} />

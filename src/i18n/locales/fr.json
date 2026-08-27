@@ -62,6 +62,9 @@
     "aiChat": "Dialogues IA",
     "aiChatOn": "activé",
     "aiChatOff": "désactivé",
+    "coords": "Repères des cases",
+    "coordsOn": "affichés",
+    "coordsOff": "masqués",
     "boardView": "Vue",
     "boardView2d": "2D",
     "boardView3d": "3D",
@@ -91,7 +94,9 @@
     "emailPlaceholder": "email@example.com",
     "noFriends": "Votre liste d'amis est vide",
     "duels": "Duels",
-    "duelsHint": "Les prises contestées se règlent aux dés",
+    "duelsHint": "Les prises contestées se règlent à pile ou face",
+    "preset": "Position distribuée",
+    "presetHint": "Le bot place les deux camps — droit aux coups",
     "submit": "Créer",
     "cancel": "Annuler",
     "creating": "Création…"
@@ -125,8 +130,8 @@
     "place": "{name} : {piece} → {square}",
     "move": "{name} : {piece} {from}–{to}",
     "capture": "{name} : {attacker} {from}–{to} capture {victim}",
-    "duelWin": "{name} : {attacker} vs {victim}, dé {roll} — capturé",
-    "duelFail": "{name} : {attacker} vs {victim}, dé {roll} — échec",
+    "duelWin": "{name} : {attacker} vs {victim}, pièce I — capturé",
+    "duelFail": "{name} : {attacker} vs {victim}, pièce II — échec",
     "win": "{name} gagne",
     "draw": "Match nul"
   },
@@ -173,7 +178,7 @@
     "coinSpinning": "La pièce décide qui commence…",
     "firstYou": "Tu commences",
     "firstThem": "{name} commence",
-    "errRoll": "Impossible de lancer le dé",
+    "errRoll": "Impossible de lancer la pièce",
     "errStart": "Impossible de démarrer la partie"
   },
   "duel": {

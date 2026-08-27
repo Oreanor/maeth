@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   beginDraft,
+  beginPlay,
   createLotteryState,
   firstTurnFromRoll,
   legalMovesFrom,
@@ -10,7 +11,7 @@ import {
   resolveMove,
   type DuelRoll,
 } from './engine'
-import { chooseBotMove, chooseBotPlacement } from './bot'
+import { chooseBotMove, chooseBotPlacement, dealLottery, type DealtPlacement } from './bot'
 import { PIECES, type PieceDef } from './pieces'
 import type { AnimInfo, AnimKind } from './presentation'
 import type { Color, GameState, Move } from './types'
@@ -43,12 +44,23 @@ const botPickDelay = () => 500 + Math.random() * 500
 const botPlaceDelay = () => 450 + Math.random() * 350
 const botMoveDelay = () => 900 + Math.random() * 650
 
+/** A game that drafts normally opens with nothing behind it. */
+const NO_OPENING: DealtPlacement[] = []
+
+/** The dealt draft, written up as the play-by-play it would have produced. */
+const storedOpening = (placements: DealtPlacement[]): StoredAction[] =>
+  placements.map((payload, i) => ({ id: i + 1, action_type: 'place', payload }))
+
 export interface UseGameOptions {
   /** Color the human plays (the other side is the bot when vsBot). */
   humanColor: Color
   vsBot: boolean
   /** When false, contested captures are clean takes (no dice). */
   duels: boolean
+  /** Skip the draft: the coin decides who starts and the position is already
+   *  standing, dealt by the bot for both sides. A puzzle rather than a game
+   *  built up piece by piece. */
+  preset?: boolean
 }
 
 export interface UseGame {
@@ -98,8 +110,20 @@ export interface UseGame {
   startLottery: () => void
 }
 
-export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
-  const [state, setState] = useState<GameState>(createLotteryState)
+export function useGame({ humanColor, vsBot, duels, preset = false }: UseGameOptions): UseGame {
+  // A dealt game is already standing when the coin goes up: the board and the
+  // play-by-play that rebuilds it both come out of the one deal, so it is held
+  // here rather than made twice.
+  const dealtRef = useRef<ReturnType<typeof dealLottery> | null>(null)
+  const opening = preset ? (dealtRef.current ??= dealLottery()).placements : NO_OPENING
+
+  const [state, setState] = useState<GameState>(() =>
+    preset ? dealtRef.current!.state : createLotteryState(),
+  )
+  // Read by callbacks that must not be rebuilt every time the board changes —
+  // the ceremony restarts its timers whenever their identity does.
+  const stateRef = useRef(state)
+  stateRef.current = state
   const [selected, setSelected] = useState<number | null>(null)
   const [preview, setPreview] = useState<number | null>(null)
   const [duel, setDuel] = useState<DuelEvent | null>(null)
@@ -110,8 +134,8 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   const [lastPlaced, setLastPlaced] = useState<number | null>(null)
   // Per-session room score. Persists across `reset()` (a local rematch) and only
   // clears when the screen unmounts (i.e. you leave the room).
-  const [localActions, setLocalActions] = useState<StoredAction[]>([])
-  const actionIdRef = useRef(0)
+  const [localActions, setLocalActions] = useState<StoredAction[]>(() => storedOpening(opening))
+  const actionIdRef = useRef(opening.length)
 
   const recordAction = useCallback(
     (action_type: StoredAction['action_type'], payload: StoredAction['payload']) => {
@@ -289,14 +313,15 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
   }, [humanColor])
 
   const startLottery = useCallback(() => {
-    setState((prev) => {
-      if (prev.phase !== 'lottery' || prev.lottery?.step !== 'revealed' || !prev.lottery.firstTurn) {
-        return prev
-      }
-      if (!vsBot && prev.lottery.firstTurn !== humanColor) return prev
-      return beginDraft(prev.lottery.firstTurn)
-    })
-  }, [humanColor, vsBot])
+    const prev = stateRef.current
+    if (prev.phase !== 'lottery' || prev.lottery?.step !== 'revealed' || !prev.lottery.firstTurn) {
+      return
+    }
+    if (!vsBot && prev.lottery.firstTurn !== humanColor) return
+    // A dealt game drafted itself before the coin went up, so all that is left
+    // is to say who moves first in the position already on the board.
+    setState(preset ? beginPlay(prev, prev.lottery.firstTurn) : beginDraft(prev.lottery.firstTurn))
+  }, [humanColor, preset, vsBot])
 
   // Settle the spinning portrait on the actually-drawn piece (human's button, or
   // the bot's auto-pick). The reveal effect then closes the modal after a beat.
@@ -329,7 +354,6 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     clearTimeout(timer.current)
     clearTimeout(animTimer.current)
     resetPick()
-    setState(createLotteryState())
     setSelected(null)
     setPreview(null)
     setDuel(null)
@@ -338,9 +362,18 @@ export function useGame({ humanColor, vsBot, duels }: UseGameOptions): UseGame {
     setPendingMove(null)
     setThinking(false)
     setLastPlaced(null)
+    if (preset) {
+      const fresh = dealLottery()
+      dealtRef.current = fresh
+      setState(fresh.state)
+      setLocalActions(storedOpening(fresh.placements))
+      actionIdRef.current = fresh.placements.length
+      return
+    }
+    setState(createLotteryState())
     setLocalActions([])
     actionIdRef.current = 0
-  }, [resetPick])
+  }, [preset, resetPick])
 
   // When a move animation finishes: commit, or (bot pre-duel aim) open the modal.
   useEffect(() => {

@@ -1,14 +1,10 @@
 import { SKIN_SPRITE_URL } from '@/skin/config'
 
 export type BoardViewMode = '2d' | '3d'
-export const THREE_PIECE_STYLES = [
-  'painted',
-  'classic',
-  'wood',
-  'stone',
-  'bone',
-  'metal',
-] as const
+/** The two carved sets, each a folder of GLBs under `public/models/`. Both ship
+ *  their own baked textures, so the choice is of models rather than of a finish
+ *  laid over one set of them. */
+export const THREE_PIECE_STYLES = ['dnd', 'lewis'] as const
 export type ThreePieceStyle = (typeof THREE_PIECE_STYLES)[number]
 
 export const BOARD_STYLES = [
@@ -62,20 +58,16 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
   ]),
 ) as Record<BoardStyle, BoardStyleConfig>
 
-/** HUD portraits follow the 3D pieces, not the 2D skin: painted models use the
- * D&D sheet, while every runtime chess material shares the chess sheet. */
+/** HUD portraits follow the 3D pieces, not the 2D skin. The chess sheet is the
+ * same cast carved in ivory, which is what the Lewis models are. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
-  painted: SKIN_SPRITE_URL.dnd,
-  classic: SKIN_SPRITE_URL.chess,
-  wood: SKIN_SPRITE_URL.chess,
-  stone: SKIN_SPRITE_URL.chess,
-  bone: SKIN_SPRITE_URL.chess,
-  metal: SKIN_SPRITE_URL.chess,
+  dnd: SKIN_SPRITE_URL.dnd,
+  lewis: SKIN_SPRITE_URL.chess,
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '3d'
 export const DEFAULT_BOARD_STYLE: BoardStyle = 'board-1'
-export const DEFAULT_THREE_PIECE_STYLE: ThreePieceStyle = 'painted'
+export const DEFAULT_THREE_PIECE_STYLE: ThreePieceStyle = 'dnd'
 
 export function isBoardViewMode(value: string | null): value is BoardViewMode {
   return value === '2d' || value === '3d'

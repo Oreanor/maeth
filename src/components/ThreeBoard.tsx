@@ -8,12 +8,7 @@ import { FILES } from '@/game/notation'
 import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
-import {
-  chessMaterial,
-  paintedMaterial,
-  markSpent,
-  tunePieceMaterial,
-} from '@/three/pieceMaterials'
+import { paintedMaterial, markSpent, tunePieceMaterial } from '@/three/pieceMaterials'
 import { edgeArrows } from './ArrowOverlay'
 import {
   ARCHER_SHOT_HEX,
@@ -108,6 +103,23 @@ const MODEL_SCALE: Partial<Record<PieceKind, number>> = {
   ent: 1.2,
 }
 
+/** Where one set's carving of a piece stands wrong beside its own neighbours.
+ *  Multiplied onto the shared correction above rather than replacing it, so a
+ *  change to a silhouette still reaches both sets. */
+const SET_MODEL_SCALE: Record<ThreePieceStyle, Partial<Record<PieceKind, number>>> = {
+  dnd: {},
+  lewis: {
+    hobbit: 0.855,
+    orcChief: 1.1,
+    wizard: 1.155,
+    rohanWarrior: 0.95,
+    tomBombadil: 1.1,
+    shelob: 0.95,
+    gondorWarrior: 1.05,
+    dwarf: 0.9,
+  },
+}
+
 function cellPosition(cell: number): THREE.Vector3 {
   return new THREE.Vector3((colOf(cell) - 1.5) * CELL_SIZE, TOP_Y, (rowOf(cell) - 1.5) * CELL_SIZE)
 }
@@ -184,20 +196,16 @@ function textureEdgeColor(texture: THREE.Texture): THREE.Color | null {
 async function createPiece(
   kind: PieceKind,
   color: Color,
-  style: ThreePieceStyle,
+  set: ThreePieceStyle,
   ghost = false,
 ): Promise<THREE.Group> {
-  const source = await sourceModel(kind)
+  const source = await sourceModel(kind, set)
   const model = source.clone(true)
   model.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return
     object.material = Array.isArray(object.material)
-      ? object.material.map((material) =>
-          style === 'painted' ? paintedMaterial(material) : chessMaterial(style, color),
-        )
-      : style === 'painted'
-        ? paintedMaterial(object.material)
-        : chessMaterial(style, color)
+      ? object.material.map(paintedMaterial)
+      : paintedMaterial(object.material)
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     for (const material of materials) tunePieceMaterial(material, ghost)
     object.castShadow = !ghost
@@ -214,7 +222,8 @@ async function createPiece(
   const horizontal = Math.max(size.x, size.z, 0.001)
   const scale =
     Math.min(0.88 / horizontal, 1.02 / Math.max(size.y, 0.001)) *
-    (MODEL_SCALE[kind] ?? 1)
+    (MODEL_SCALE[kind] ?? 1) *
+    (SET_MODEL_SCALE[set][kind] ?? 1)
   model.scale.setScalar(scale)
   const sink = size.y * scale * PIECE_SINK_RATIO
   model.position.set(

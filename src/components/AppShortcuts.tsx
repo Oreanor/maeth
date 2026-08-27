@@ -28,12 +28,8 @@ interface Announcement {
 }
 
 const PIECE_STYLE_KEY: Record<string, string> = {
-  painted: 'lobby.pieceStyle3dPainted',
-  classic: 'lobby.pieceStyle3dClassic',
-  wood: 'lobby.pieceStyle3dWood',
-  stone: 'lobby.pieceStyle3dStone',
-  bone: 'lobby.pieceStyle3dBone',
-  metal: 'lobby.pieceStyle3dMetal',
+  dnd: 'lobby.pieceStyle3dDnd',
+  lewis: 'lobby.pieceStyle3dLewis',
 }
 
 /** Next value in a list, wrapping around. */

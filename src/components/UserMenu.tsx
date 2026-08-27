@@ -173,12 +173,8 @@ export function UserMenu({
                         value={threePieceStyle}
                         onChange={(e) => setThreePieceStyle(e.target.value as ThreePieceStyle)}
                       >
-                        <option value="painted">{t('lobby.pieceStyle3dPainted')}</option>
-                        <option value="classic">{t('lobby.pieceStyle3dClassic')}</option>
-                        <option value="wood">{t('lobby.pieceStyle3dWood')}</option>
-                        <option value="stone">{t('lobby.pieceStyle3dStone')}</option>
-                        <option value="bone">{t('lobby.pieceStyle3dBone')}</option>
-                        <option value="metal">{t('lobby.pieceStyle3dMetal')}</option>
+                        <option value="dnd">{t('lobby.pieceStyle3dDnd')}</option>
+                        <option value="lewis">{t('lobby.pieceStyle3dLewis')}</option>
                       </select>
                     ) : (
                       <select

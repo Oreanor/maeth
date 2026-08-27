@@ -134,7 +134,7 @@ export function GameView({
 }: GameViewProps) {
   const { t } = useI18n()
   const navigate = useNavigate()
-  const { viewMode } = useBoardView()
+  const { viewMode, threePieceStyle } = useBoardView()
   const [rulesOpen, setRulesOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [ceremonyHint, setCeremonyHint] = useState<CeremonyHint>(null)
@@ -149,8 +149,8 @@ export function GameView({
   // can be on the wire while the reveal plays instead of after it lands.
   const drawn = state.pending
   useEffect(() => {
-    if (viewMode === '3d' && drawn != null) preloadPieceModel(drawn)
-  }, [viewMode, drawn])
+    if (viewMode === '3d' && drawn != null) preloadPieceModel(drawn, threePieceStyle)
+  }, [viewMode, drawn, threePieceStyle])
 
   const over = state.phase === 'over' && !resultBlocked
   const showResult = over && !resultClosed

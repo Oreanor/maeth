@@ -1,3 +1,4 @@
+import type { ThreePieceStyle } from '@/boardView'
 import type { PieceKind } from '@/game/pieces'
 
 /**
@@ -12,8 +13,8 @@ import type { PieceKind } from '@/game/pieces'
  * Fire-and-forget. The result is cached for the real load, and a failure is
  * swallowed — the board requests the model again and surfaces errors itself.
  */
-export function preloadPieceModel(kind: PieceKind): void {
+export function preloadPieceModel(kind: PieceKind, set: ThreePieceStyle): void {
   void import('./pieceModels')
-    .then((module) => module.sourceModel(kind))
+    .then((module) => module.sourceModel(kind, set))
     .catch(() => {})
 }

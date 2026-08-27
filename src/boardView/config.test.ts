@@ -13,15 +13,20 @@ describe('board view configuration', () => {
     expect(BOARD_STYLE_CONFIG['board-10'].bottom).toBe('/boards/board-10-bottom.webp')
   })
 
-  it('accepts only supported 3D piece materials', () => {
-    expect(DEFAULT_THREE_PIECE_STYLE).toBe('painted')
-    expect(isThreePieceStyle('painted')).toBe(true)
-    expect(isThreePieceStyle('classic')).toBe(true)
-    expect(isThreePieceStyle('wood')).toBe(true)
-    expect(isThreePieceStyle('stone')).toBe(true)
-    expect(isThreePieceStyle('bone')).toBe(true)
-    expect(isThreePieceStyle('metal')).toBe(true)
+  it('accepts only the two carved sets', () => {
+    expect(DEFAULT_THREE_PIECE_STYLE).toBe('dnd')
+    expect(isThreePieceStyle('dnd')).toBe(true)
+    expect(isThreePieceStyle('lewis')).toBe(true)
     expect(isThreePieceStyle('textured')).toBe(false)
     expect(isThreePieceStyle(null)).toBe(false)
+  })
+
+  // A player who had picked one of the retired materials keeps it in local
+  // storage; the guard has to send them back to a set that still exists rather
+  // than leave the board asking for /models/bone/.
+  it('rejects the retired material names', () => {
+    for (const retired of ['painted', 'classic', 'wood', 'stone', 'bone', 'metal']) {
+      expect(isThreePieceStyle(retired)).toBe(false)
+    }
   })
 })

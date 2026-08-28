@@ -262,6 +262,20 @@ describe('duels', () => {
     expect(isDuelMove(b2, { from: 5, to: 6, capture: false })).toBe(false)
   })
 
+  it('an archer is never in a duel, at either end of one', () => {
+    const shooting = emptyBoard()
+    shooting[5] = piece('orcArcher', 'white')
+    shooting[13] = piece('balrog', 'black') // aims up through 9 to 5, and it changes nothing
+    expect(isDuelMove(shooting, { from: 5, to: 13, capture: true })).toBe(false)
+
+    // And the same pair the other way about: an archer set upon has only the
+    // shot it cannot use on something standing over it.
+    const shot = emptyBoard()
+    shot[5] = piece('balrog', 'white')
+    shot[13] = piece('orcArcher', 'black')
+    expect(isDuelMove(shot, { from: 5, to: 13, capture: true })).toBe(false)
+  })
+
   it('a failed strike leaves the attacker in place and flips the turn', () => {
     const b = emptyBoard()
     b[5] = piece('rohanWarrior', 'white')

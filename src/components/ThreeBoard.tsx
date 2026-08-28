@@ -341,8 +341,16 @@ function pointerPieceCell(
 // square instead of landing on it.
 const ARROW_TAIL_GAP = 0.3
 const ARROW_HEAD_GAP = 0.09
+/** Roughly how far apart the beads of a shot are strung. */
+const DOT_PITCH = 0.16
 
-function addArrow(root: THREE.Group, from: THREE.Vector3, to: THREE.Vector3, color: number) {
+function addArrow(
+  root: THREE.Group,
+  from: THREE.Vector3,
+  to: THREE.Vector3,
+  color: number,
+  dotted = false,
+) {
   const delta = to.clone().sub(from)
   const length = delta.length()
   if (length < 0.01) return
@@ -360,21 +368,37 @@ function addArrow(root: THREE.Group, from: THREE.Vector3, to: THREE.Vector3, col
     direction,
   )
   const material = new THREE.MeshBasicMaterial({ color, depthWrite: false })
-  const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLength, 12),
-    material,
-  )
-  shaft.position.copy(start).addScaledVector(direction, shaftLength / 2)
-  shaft.quaternion.copy(orientation)
-  shaft.renderOrder = 10
+
+  const arrow = new THREE.Group()
+  if (dotted) {
+    // A shot is a line of dots rather than a line: beads as wide as the shaft
+    // would be, laid along where it would have run.
+    const count = Math.max(2, Math.round(shaftLength / DOT_PITCH))
+    for (let i = 0; i < count; i++) {
+      // A geometry each, so disposing the arrow disposes all of them: the one
+      // that skips that is marked sharedGeometry, and these are not shared.
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(shaftRadius, 10, 8), material)
+      dot.position.copy(start).addScaledVector(direction, (i * shaftLength) / (count - 1))
+      dot.renderOrder = 10
+      arrow.add(dot)
+    }
+  } else {
+    const shaft = new THREE.Mesh(
+      new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLength, 12),
+      material,
+    )
+    shaft.position.copy(start).addScaledVector(direction, shaftLength / 2)
+    shaft.quaternion.copy(orientation)
+    shaft.renderOrder = 10
+    arrow.add(shaft)
+  }
 
   const head = new THREE.Mesh(new THREE.ConeGeometry(0.13, headLength, 16), material)
   head.position.copy(start).addScaledVector(direction, shaftLength + headLength / 2)
   head.quaternion.copy(orientation)
   head.renderOrder = 10
 
-  const arrow = new THREE.Group()
-  arrow.add(shaft, head)
+  arrow.add(head)
   root.add(arrow)
 }
 
@@ -1159,9 +1183,26 @@ export function ThreeBoard(props: BoardProps) {
     // would point at, so they wait for the board to be set up again.
     current.arrowRoot.visible = !current.airborne
     clearGroup(current.arrowRoot)
+
+    // The same squares the pieces effect stops drawing while a move plays. The
+    // board still holds what is on them until the move lands, so anything read
+    // off it for those squares is about a figure that is no longer there.
+    const anim = props.anim
+    const archerShot = Boolean(anim && isArcher(anim.attacker) && anim.kind === 'capture')
+    const inFlight = new Set<number>()
+    if (anim && anim.kind !== 'duel') {
+      if (!archerShot) inFlight.add(anim.from)
+      if (anim.kind === 'capture') inFlight.add(anim.to)
+    }
+
     const arrowFrom = props.selected ?? props.previewCell
     if (props.selected != null) {
       const duels = props.duels !== false
+      // An archer's capture is a shot: it is loosed from where the piece stands
+      // and the piece never crosses to the square, so the arrow is drawn as a
+      // line of dots rather than as a way of getting there.
+      const selectedKind = props.board[props.selected]?.kind
+      const shooter = selectedKind != null && isArcher(selectedKind)
       for (const move of props.selectedMoves) {
         // Orange for a capture the piece being taken can answer, as on the flat
         // board: the warning is the same one, so it is the same colour.
@@ -1172,6 +1213,7 @@ export function ThreeBoard(props: BoardProps) {
           cellPosition(move.from),
           cellPosition(move.to),
           move.capture ? capture : MOVE_HEX,
+          shooter && move.capture,
         )
       }
     } else if (arrowFrom != null && props.previewKind) {
@@ -1189,7 +1231,7 @@ export function ThreeBoard(props: BoardProps) {
     // a selection or draft ghost owns the arrows, so the two never overlap.
     // A piece that has already moved is shown greyed out; drawing its reach
     // would offer moves it cannot make this turn.
-    const hovered = hoverCell != null ? props.board[hoverCell] : null
+    const hovered = hoverCell != null && !inFlight.has(hoverCell) ? props.board[hoverCell] : null
     if (
       hovered &&
       !hovered.moved &&
@@ -1207,8 +1249,7 @@ export function ThreeBoard(props: BoardProps) {
       }
     }
 
-    const anim = props.anim
-    if (anim && isArcher(anim.attacker) && anim.kind === 'capture') {
+    if (anim && archerShot) {
       addArrow(current.arrowRoot, cellPosition(anim.from), cellPosition(anim.to), ARCHER_SHOT_HEX)
     }
   }, [

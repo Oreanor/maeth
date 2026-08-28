@@ -326,14 +326,27 @@ export function applyMove(state: GameState, move: Move): GameState {
 // army has the exchange, side two and it goes to the red one; so the strike
 // lands when the coin names the attacker's own colour. A failed strike still
 // spends the attacker's move (it stays put). Capturing a piece that can't hit
-// you back is a clean, automatic kill.
+// you back is a clean, automatic kill — and so is every capture with an archer
+// at either end of it: its shot answers to nobody, and nothing it carries
+// answers for it when something steps onto its square.
 
 /** P(attacker wins): three of the six faces name their colour. */
 export const DUEL_ATTACKER_WIN_P = 1 / 2
 
-/** Is this capture a duel — does the victim also threaten the attacker? */
+/**
+ * Is this capture a duel — does the victim also threaten the attacker?
+ *
+ * Never, with an archer at either end of it. An archer's own strike is a shot
+ * loosed from where it stands, with nothing crossing to the square to be met;
+ * and an archer set upon has only that shot, which is no answer to something
+ * already on top of it. It neither contests nor is contested.
+ */
 export function isDuelMove(board: Board, move: Move): boolean {
-  return move.capture && attackSquares(board, move.to).includes(move.from)
+  const attacker = board[move.from]
+  const victim = board[move.to]
+  if (!move.capture || !attacker || !victim) return false
+  if (PIECES[attacker.kind].archer === true || PIECES[victim.kind].archer === true) return false
+  return attackSquares(board, move.to).includes(move.from)
 }
 
 /** Outcome of a failed strike: attacker stays on its square, move spent. */

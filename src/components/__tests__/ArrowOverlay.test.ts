@@ -46,12 +46,13 @@ describe('moveArrows capture colours', () => {
     expect(arrow.color).toBe(MOVE_COLOR)
   })
 
-  it('colours an archer’s shot by the same question', () => {
+  it('leaves an archer’s shot red however well aimed at it the target is', () => {
     const board = emptyBoard()
     board[5] = piece('orcArcher', 'white')
     board[13] = piece('balrog', 'black')
     const [arrow] = moveArrows(5, [{ from: 5, to: 13, capture: true }], 'orcArcher', board)
-    expect(arrow.color).toBe(DUEL_COLOR)
+    // A shot is never contested, so it is never the colour of a contest.
+    expect(arrow.color).toBe(CAPTURE_COLOR)
     expect(arrow.dashed).toBe(true)
   })
 })

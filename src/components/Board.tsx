@@ -78,7 +78,6 @@ export function Board({
   // whoever's turn it is, so it is deliberately not gated on `interactive`. On
   // a touch screen a tap stands in for the hover and stays until the next one.
   const [hoverCell, setHoverCell] = useState<number | null>(null)
-  const hoveredPiece = hoverCell != null ? board[hoverCell] : null
   const order = [...board.keys()]
   const cells = orientation === 'white' ? order : order.slice().reverse()
 
@@ -90,6 +89,12 @@ export function Board({
     if (!archerShot) hidden.add(anim.from)
     if (anim.kind === 'capture') hidden.add(anim.to)
   }
+
+  // A hidden piece is gone as far as the eye is concerned, and its reach has to
+  // go with it: the board still holds it until the move lands, so hovering the
+  // square it was shot off would otherwise leave the arrows of something no
+  // longer there fanning out from under the pointer.
+  const hoveredPiece = hoverCell != null && !hidden.has(hoverCell) ? board[hoverCell] : null
 
   return (
     <>

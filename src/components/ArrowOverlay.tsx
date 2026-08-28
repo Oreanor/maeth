@@ -149,7 +149,9 @@ export function ArrowOverlay({ cell, arrows, orientation }: Props) {
               y2={by}
               strokeWidth={0.07}
               strokeLinecap="round"
-              strokeDasharray={a.dashed ? '0.14 0.1' : undefined}
+              // Dashes of no length at all, which the round cap then draws as
+              // circles a stroke wide: a shot is a line of dots, not a line.
+              strokeDasharray={a.dashed ? '0 0.14' : undefined}
             />
             <polygon
               points={`${ex},${ey} ${bx + px * half},${by + py * half} ${bx - px * half},${by - py * half}`}

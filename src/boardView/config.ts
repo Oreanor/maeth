@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import { SKIN_SPRITE_URL } from '@/skin/config'
 
 export type BoardViewMode = '2d' | '3d'
@@ -51,8 +52,8 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
     {
       id,
       number: index + 1,
-      top: `/boards/board-${index + 1}-top.webp`,
-      bottom: `/boards/board-${index + 1}-bottom.webp`,
+      top: withBase(`/boards/board-${index + 1}-top.webp`),
+      bottom: withBase(`/boards/board-${index + 1}-bottom.webp`),
       ...SIDE_MATERIALS[index],
     },
   ]),
@@ -64,7 +65,7 @@ export const BOARD_STYLE_CONFIG = Object.fromEntries(
  * without being one, since no 2D board is drawn with it. */
 export const THREE_PIECE_SPRITE_URL: Record<ThreePieceStyle, string> = {
   dnd: SKIN_SPRITE_URL.dnd,
-  lewis: '/pieces/lewis.webp',
+  lewis: withBase('/pieces/lewis.webp'),
 }
 
 export const DEFAULT_BOARD_VIEW: BoardViewMode = '3d'

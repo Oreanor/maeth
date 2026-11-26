@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import type { Color, GameState } from '@/game/types'
 import type { Friend } from '@/auth/types'
 import type { DuelRoll } from '@/game/engine'
@@ -178,7 +179,7 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   headers.set('Authorization', `Bearer ${token}`)
   headers.set('Content-Type', 'application/json')
 
-  const response = await fetch(path, { ...init, headers })
+  const response = await fetch(withBase(path), { ...init, headers })
   const data = await parseApiResponse(response)
   if (!response.ok) {
     throw new Error(apiErrorMessage(data) ?? `Request failed: ${response.status}`)

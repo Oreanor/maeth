@@ -181,20 +181,35 @@ export function useRemoteGame(gameId: string): UseRemoteGame {
     // pointer and follows it — but slowly, since only a rematch can change them.
     // Only a cancelled game truly stops.
     if (!game || game.status === 'cancelled') return
-    const interval = game.status === 'over' ? 3000 : 700
+    const active = game.status === 'over' ? 3000 : 700
+    // A tab nobody is looking at still polls — the opponent's dot should go on
+    // saying "in the game" — but well inside the server's 8 s presence window
+    // rather than every 0.7 s, and it catches up the moment it is shown again.
+    const HIDDEN_INTERVAL = 4000
+    const interval = () => (document.hidden ? Math.max(active, HIDDEN_INTERVAL) : active)
     let stopped = false
+    let polling = false
     let timer: number | undefined
     const poll = async () => {
+      if (polling) return
+      polling = true
+      window.clearTimeout(timer)
       if (!mutationInFlightRef.current) {
         await refresh().catch((e) =>
           setError(e instanceof Error ? e.message : tRef.current('game.errRefresh')),
         )
       }
-      if (!stopped) timer = window.setTimeout(() => void poll(), interval)
+      polling = false
+      if (!stopped) timer = window.setTimeout(() => void poll(), interval())
     }
-    timer = window.setTimeout(() => void poll(), interval)
+    const onVisible = () => {
+      if (!document.hidden) void poll()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    timer = window.setTimeout(() => void poll(), interval())
     return () => {
       stopped = true
+      document.removeEventListener('visibilitychange', onVisible)
       if (timer !== undefined) window.clearTimeout(timer)
     }
   }, [game?.status, refresh])

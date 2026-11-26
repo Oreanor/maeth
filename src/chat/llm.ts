@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import { guestSessionToken } from '@/lib/api'
 import { buildSystemPrompt, openingTurn, type ChatContext } from './prompt'
 
@@ -12,7 +13,7 @@ import { buildSystemPrompt, openingTurn, type ChatContext } from './prompt'
  * are tried, and in what order, is the server's business now.
  */
 
-const CHAT_ENDPOINT = '/api/chat'
+const CHAT_ENDPOINT = withBase('/api/chat')
 
 /** Whatever thinking still leaks into the text is not part of the line. */
 export function stripThinking(raw: string): string {

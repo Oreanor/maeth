@@ -6,7 +6,7 @@
   "description": "Mini-chess 4x4 game for the browser",
   "scripts": {
     "dev": "vite",
-    "dev:api": "tsx watch scripts/dev-api.mts",
+    "dev:api": "tsx watch server/api-server.mts",
     "dev:all": "concurrently -k -n api,web -c blue,green \"npm:dev:api\" \"npm:dev\"",
     "dev:vercel": "vercel dev",
     "build": "tsc -b && vite build",
@@ -17,9 +17,12 @@
     "coverage": "vitest run --coverage",
     "generate:favicon": "tsx scripts/generate-favicon.mts",
     "sim:bots": "tsx scripts/sim-bots.mts",
-    "pic:cuts": "tsx scripts/pic-cuts.mts"
+    "pic:cuts": "tsx scripts/pic-cuts.mts",
+    "build:server": "esbuild server/api-server.mts --bundle --platform=node --format=esm --target=node22 --outfile=dist-server/api.mjs --log-level=warning \"--banner:js=import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\"",
+    "deploy": "node --env-file=.env.deploy scripts/deploy.mjs"
   },
   "dependencies": {
+    "@supabase/auth-js": "^2.107.0",
     "@supabase/supabase-js": "^2.107.0",
     "lucide-react": "^1.17.0",
     "react": "^18.3.1",
@@ -43,6 +46,7 @@
     "typescript": "^5.5.3",
     "vercel": "^54.9.1",
     "vite": "^5.4.0",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "esbuild": "^0.27.0"
   }
 }

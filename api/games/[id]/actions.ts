@@ -27,27 +27,30 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const membership = unwrap(
-    await auth.db
+  // Who is asking and what the game looks like are independent reads; asked
+  // together they cost one round trip to the database instead of two, on the
+  // request that every move waits for.
+  const [membershipResult, gameResult] = await Promise.all([
+    auth.db
       .from('game_players')
       .select('color')
       .eq('game_id', id)
       .eq('user_id', auth.user.id)
       .maybeSingle(),
-  )
+    auth.db
+      .from('games')
+      .select('id, status, state, duels_enabled, updated_at')
+      .eq('id', id)
+      .maybeSingle(),
+  ])
 
+  const membership = unwrap(membershipResult)
   if (!membership) {
     json(res, 404, { error: 'Game not found' })
     return
   }
 
-  const game = unwrapOne(
-    await auth.db
-      .from('games')
-      .select('id, status, state, duels_enabled, updated_at')
-      .eq('id', id)
-      .single(),
-  ) as { id: string; status: string; state: unknown; duels_enabled: boolean; updated_at: string }
+  const game = unwrapOne(gameResult) as { id: string; status: string; state: unknown; duels_enabled: boolean; updated_at: string }
 
   if (game.status !== 'active') {
     json(res, 409, { error: 'Game is not active' })

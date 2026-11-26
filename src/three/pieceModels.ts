@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ThreePieceStyle } from '@/boardView'
@@ -32,7 +33,7 @@ const modelCache = new Map<string, Promise<THREE.Object3D>>()
  *  set as well as per piece: switching sets mid-game must not hand back the
  *  figure the other set had already loaded. */
 export function sourceModel(kind: PieceKind, set: ThreePieceStyle): Promise<THREE.Object3D> {
-  const url = `/models/${set}/${MODEL_FILE[kind]}`
+  const url = withBase(`/models/${set}/${MODEL_FILE[kind]}`)
   const cached = modelCache.get(url)
   if (cached) return cached
   const loading = gltfLoader.loadAsync(url).then((gltf) => gltf.scene)

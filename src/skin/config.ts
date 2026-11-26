@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 const SKIN_ENTRIES = [
   { id: 'engraving', i18n: 'lobby.styleEngraving' },
   { id: 'color-engraving', i18n: 'lobby.styleColorEngraving' },
@@ -25,7 +26,7 @@ export const SKIN_I18N = Object.fromEntries(SKIN_ENTRIES.map((e) => [e.id, e.i18
 
 /** Each sheet in `public/pieces/` is named after its skin id. */
 export function skinSpriteUrl(skin: Skin): string {
-  return `/pieces/${skin}.webp`
+  return withBase(`/pieces/${skin}.webp`)
 }
 
 export const SKIN_SPRITE_URL = Object.fromEntries(

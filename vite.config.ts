@@ -3,7 +3,12 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 
 // https://vitejs.dev/config/
+// Mount point. `/` locally; the deploy builds with BASE_PATH=/maeth/ because
+// the home server serves several apps side by side under paths of their own.
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [react()],
   resolve: {
     alias: {

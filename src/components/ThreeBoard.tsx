@@ -9,7 +9,7 @@ import { isDuelMove } from '@/game/engine'
 import { isArcher, pieceName, type PieceKind } from '@/game/pieces'
 import { colOf, opposite, rowOf, type Color } from '@/game/types'
 import { sourceModel } from '@/three/pieceModels'
-import { paintedMaterial, markSpent, tunePieceMaterial } from '@/three/pieceMaterials'
+import { sharedPieceMaterial, type PieceFinish } from '@/three/pieceMaterials'
 import { edgeArrows } from './ArrowOverlay'
 import {
   ARCHER_SHOT_HEX,
@@ -201,17 +201,18 @@ async function createPiece(
   kind: PieceKind,
   color: Color,
   set: ThreePieceStyle,
-  ghost = false,
+  finish: PieceFinish = 'painted',
 ): Promise<THREE.Group> {
   const source = await sourceModel(kind, set)
   const model = source.clone(true)
+  const ghost = finish === 'ghost'
   model.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return
+    // A clone shares the source's materials, so these are the GLB's own and
+    // stand as the cache key for the finished ones.
     object.material = Array.isArray(object.material)
-      ? object.material.map(paintedMaterial)
-      : paintedMaterial(object.material)
-    const materials = Array.isArray(object.material) ? object.material : [object.material]
-    for (const material of materials) tunePieceMaterial(material, ghost)
+      ? object.material.map((material) => sharedPieceMaterial(material, finish))
+      : sharedPieceMaterial(object.material, finish)
     object.castShadow = !ghost
     // Pieces cast onto the board but do not catch each other's shadows: that is
     // a PCF lookup on every pixel of the thing that fills the screen when you
@@ -253,7 +254,7 @@ function disposeObject(object: THREE.Object3D) {
     if (!(child instanceof THREE.Mesh)) return
     if (!child.userData.sharedGeometry) child.geometry.dispose()
     const materials = Array.isArray(child.material) ? child.material : [child.material]
-    for (const material of materials) material.dispose()
+    for (const material of materials) if (!material.userData.shared) material.dispose()
   })
 }
 
@@ -1073,22 +1074,15 @@ export function ThreeBoard(props: BoardProps) {
     props.board.forEach((piece, cell) => {
       if (!piece || hidden.has(cell)) return
       tasks.push(
-        createPiece(piece.kind, piece.color, threePieceStyle).then((object) => {
+        // A spent miniature greys out as one authored object. Side ownership
+        // lives on its floating marker rather than on a synthetic base.
+        createPiece(piece.kind, piece.color, threePieceStyle, piece.moved ? 'spent' : 'painted').then((object) => {
           if (syncId !== syncIdRef.current) {
             disposeObject(object)
             return
           }
           object.position.copy(piecePosition(cell))
           object.position.y = 0
-          // A spent miniature greys out as one authored object. Side ownership
-          // now lives on its floating marker rather than on a synthetic base.
-          if (piece.moved) {
-            object.traverse((child) => {
-              if (!(child instanceof THREE.Mesh)) return
-              const materials = Array.isArray(child.material) ? child.material : [child.material]
-              for (const material of materials) markSpent(material)
-            })
-          }
           object.userData.cell = cell
           current.pieceRoot.add(object)
         }),
@@ -1163,7 +1157,7 @@ export function ThreeBoard(props: BoardProps) {
     const cell = props.previewCell
     const kind = props.previewKind
     if (cell == null || !kind) return
-    void createPiece(kind, props.previewOwner, threePieceStyle, true).then((object) => {
+    void createPiece(kind, props.previewOwner, threePieceStyle, 'ghost').then((object) => {
       if (ghostId !== ghostIdRef.current) {
         disposeObject(object)
         return

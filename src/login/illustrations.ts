@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 /**
  * The art behind the lobby, and which cut of it to show.
  *
@@ -66,5 +67,5 @@ export function cutFor(width: number, height: number): CutName {
 
 /** Where to find the picture for a window of this shape. */
 export function illustrationSrc(art: Illustration, width: number, height: number): string {
-  return 'file' in art ? art.file : `/pic/${art.set}/${cutFor(width, height)}.webp`
+  return 'file' in art ? art.file : withBase(`/pic/${art.set}/${cutFor(width, height)}.webp`)
 }

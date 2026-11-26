@@ -13,3 +13,7 @@ coverage
 .vercel
 
 *.tsbuildinfo
+
+# Local DB / Supabase export (personal data)
+.data
+dist-server

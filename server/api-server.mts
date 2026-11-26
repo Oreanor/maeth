@@ -1,13 +1,17 @@
-// Local API dev server: mounts the Vercel serverless handlers from `api/` on a
-// plain Node http server (port 3000), matching the Vite proxy in vite.config.ts.
+// The API server: mounts the handlers from `api/` (written as Vercel functions)
+// on a plain Node http server. The same file runs in development (`npm run
+// dev:api`, port 3000, behind the Vite proxy) and in production on the home
+// server, bundled by `npm run build:server` into one file with every
+// dependency inside, so the server needs no node_modules.
 //
-// Why not `vercel dev`? On Windows the Vercel CLI crashes on shutdown/restart
-// when it `taskkill`s a child PID that has already exited. This server has no
-// such moving parts and, crucially, never dies on a bad request or handler
-// error — it logs and keeps serving.
+// It never dies on a bad request or a handler error — it logs and keeps
+// serving. In production systemd restarts it if it does exit, which is also
+// how a deploy swaps the code: it ends the process and systemd starts the new
+// build.
 
 import http from 'node:http'
 import { existsSync, readFileSync } from 'node:fs'
+import { createClient } from '@supabase/supabase-js'
 
 import games from '../api/games/index.js'
 import gameById from '../api/games/[id].js'
@@ -116,7 +120,7 @@ const server = http.createServer(async (req, res) => {
     await route.handler(reqAny, r)
   } catch (e) {
     // A single bad request must never take the server down.
-    console.error('[dev-api]', req.method, req.url, '→', e)
+    console.error('[api]', req.method, req.url, '→', e)
     if (!res.headersSent) {
       r.status(500).json({ error: e instanceof Error ? e.message : 'Internal error' })
     } else {
@@ -136,11 +140,46 @@ server.on('clientError', (_err, socket) => {
     /* ignore */
   }
 })
-server.on('error', (e) => console.error('[dev-api] server error', e))
+// Failing to listen (the port taken, say) is the one error worth dying of: a
+// server that cannot accept requests should exit, so systemd tries again.
+server.on('error', (e) => {
+  console.error('[api] server error', e)
+  process.exit(1)
+})
 
-// Last-resort guards so the dev server stays up no matter what.
-process.on('uncaughtException', (e) => console.error('[dev-api] uncaughtException', e))
-process.on('unhandledRejection', (e) => console.error('[dev-api] unhandledRejection', e))
+// Last-resort guards so the server stays up no matter what a handler does.
+process.on('uncaughtException', (e) => console.error('[api] uncaughtException', e))
+process.on('unhandledRejection', (e) => console.error('[api] unhandledRejection', e))
+
+// A deploy (or systemd stopping the unit) ends us with SIGTERM: finish what is
+// in flight, briefly, then go.
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0))
+  setTimeout(() => process.exit(0), 3000).unref()
+})
+
+// --- Supabase keep-alive -------------------------------------------------------
+// A free Supabase project is paused after a week without activity, and a paused
+// project takes sign-in and every game down with it until someone restores it
+// by hand in the dashboard. A tiny read twice a day is activity enough. Only
+// when SUPABASE_KEEPALIVE_HOURS is set (production), so a dev machine left
+// running does not do it too.
+const keepAliveHours = Number(process.env.SUPABASE_KEEPALIVE_HOURS ?? 0)
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (keepAliveHours > 0 && supabaseUrl && serviceKey) {
+  const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
+  const touch = async () => {
+    const { error } = await db.from('profiles').select('id').limit(1)
+    if (error) console.error('[api] supabase keep-alive failed:', error.message)
+    else console.log('[api] supabase keep-alive ok')
+  }
+  void touch()
+  setInterval(() => void touch(), keepAliveHours * 3_600_000)
+}
 
 const PORT = Number(process.env.API_PORT ?? 3000)
-server.listen(PORT, () => console.log(`[dev-api] listening on http://localhost:${PORT}`))
+// Loopback in production (only Caddy talks to it); anything in development,
+// as before, so a phone on the LAN can reach the dev proxy's target.
+const HOST = process.env.API_HOST
+server.listen(PORT, HOST, () => console.log(`[api] listening on http://${HOST ?? 'localhost'}:${PORT}`))

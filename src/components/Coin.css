@@ -31,14 +31,14 @@
 
 /* One pip up: the side that means the first player. */
 .coin__face--one {
-  background-image: url('/coin1.jpg');
+  background-image: url('/coin1.webp');
   transform: translateZ(calc(var(--coin-thickness) / 2));
 }
 
 /* Two: the other side goes first. Half a turn round, so it faces out when the
    coin lands on it. */
 .coin__face--two {
-  background-image: url('/coin2.jpg');
+  background-image: url('/coin2.webp');
   transform: rotateY(180deg) translateZ(calc(var(--coin-thickness) / 2));
 }
 

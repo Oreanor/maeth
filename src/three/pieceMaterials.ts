@@ -101,6 +101,35 @@ export function tunePieceMaterial(material: THREE.Material, ghost: boolean) {
   }
 }
 
+export type PieceFinish = 'painted' | 'spent' | 'ghost'
+
+const finishedMaterials = new Map<string, THREE.Material>()
+
+/**
+ * The material a piece wears, shared by every copy of that piece in that finish.
+ *
+ * The board is rebuilt on every move, and it used to build each piece's
+ * materials afresh and dispose of the old ones. Disposing the last material
+ * that uses a shader program frees the program, so every move threw away the
+ * clearcoat-and-shadows program and compiled it again — a visible hitch on a
+ * phone, every move. Shared materials keep their programs, and a move costs
+ * a scene-graph clone and nothing more.
+ *
+ * Marked `userData.shared` so the board's disposal leaves them alone.
+ */
+export function sharedPieceMaterial(source: THREE.Material, finish: PieceFinish): THREE.Material {
+  const key = `${source.uuid}:${finish}`
+  let material = finishedMaterials.get(key)
+  if (!material) {
+    material = paintedMaterial(source)
+    tunePieceMaterial(material, finish === 'ghost')
+    if (finish === 'spent') markSpent(material)
+    material.userData.shared = true
+    finishedMaterials.set(key, material)
+  }
+  return material
+}
+
 /**
  * Grey out a piece that has already moved this turn.
  *

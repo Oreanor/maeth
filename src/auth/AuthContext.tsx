@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import {
   createContext,
   useCallback,
@@ -10,7 +11,7 @@ import {
 import type { AppUser, AuthProvider } from './types'
 import { supabase } from '@/lib/supabase'
 import { apiMe } from '@/lib/api'
-import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { User as SupabaseUser } from '@supabase/auth-js'
 
 interface AuthContextValue {
   user: AppUser | null
@@ -93,7 +94,7 @@ export function AuthProviderComponent({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: window.location.origin + withBase('/'),
         },
       })
       if (error) {

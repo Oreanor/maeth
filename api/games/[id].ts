@@ -37,43 +37,69 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const membership = unwrap(
-    await auth.db
-      .from('game_players')
-      .select('color')
-      .eq('game_id', id)
-      .eq('user_id', auth.user.id)
-      .maybeSingle(),
-  )
-
-  if (!membership) {
-    json(res, 404, { error: 'Game not found' })
-    return
-  }
-
   if (req.method === 'DELETE') {
+    const membership = unwrap(
+      await auth.db
+        .from('game_players')
+        .select('color')
+        .eq('game_id', id)
+        .eq('user_id', auth.user.id)
+        .maybeSingle(),
+    )
+    if (!membership) {
+      json(res, 404, { error: 'Game not found' })
+      return
+    }
     // Cascades remove players, invites, and actions for this game.
     unwrap(await auth.db.from('games').delete().eq('id', id))
     json(res, 200, { ok: true })
     return
   }
 
-  // Mark us as currently in this game (drives the opponent's presence dot).
-  unwrap(
-    await auth.db
+  // This is the endpoint every open game polls, every 0.7 s, and each of these
+  // reads was a round trip to Supabase (~330 ms from the home server) made one
+  // after another. None of them depends on another, so they go out together;
+  // what is read for a game the caller turns out not to be in is dropped.
+  const seenAt = new Date()
+  const [membershipResult, , gameResult, playersResult, actionsResult] = await Promise.all([
+    auth.db
       .from('game_players')
-      .update({ last_seen: new Date().toISOString() })
+      .select('color')
       .eq('game_id', id)
-      .eq('user_id', auth.user.id),
-  )
-
-  const game = unwrapOne(
-    await auth.db
+      .eq('user_id', auth.user.id)
+      .maybeSingle(),
+    // Mark us as currently in this game (drives the opponent's presence dot).
+    // Matches no row for someone who is not in it.
+    auth.db
+      .from('game_players')
+      .update({ last_seen: seenAt.toISOString() })
+      .eq('game_id', id)
+      .eq('user_id', auth.user.id)
+      .then(unwrap),
+    auth.db
       .from('games')
       .select('id, status, state, duels_enabled, created_at, updated_at, rematch_id, root_id, created_by')
       .eq('id', id)
-      .single(),
-  ) as {
+      .maybeSingle(),
+    auth.db
+      .from('game_players')
+      .select('user_id, color, last_seen, profiles(display_name, avatar_url, last_seen)')
+      .eq('game_id', id)
+      .order('joined_at', { ascending: true }),
+    auth.db
+      .from('game_actions')
+      .select('id, user_id, action_type, payload, created_at')
+      .eq('game_id', id)
+      .order('id', { ascending: true }),
+  ])
+
+  const membership = unwrap(membershipResult)
+  if (!membership) {
+    json(res, 404, { error: 'Game not found' })
+    return
+  }
+
+  const game = unwrapOne(gameResult) as {
     id: string
     status: string
     state: unknown
@@ -85,13 +111,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     created_by: string
   }
 
-  const players = (unwrap(
-    await auth.db
-      .from('game_players')
-      .select('user_id, color, last_seen, profiles(display_name, avatar_url, last_seen)')
-      .eq('game_id', id)
-      .order('joined_at', { ascending: true }),
-  ) ?? []) as unknown as PlayerWithSeen[]
+  const players = (unwrap(playersResult) ?? []) as unknown as PlayerWithSeen[]
+  // The heartbeat above went out alongside this read, so the read may not
+  // have seen it. It is ours and it is now.
+  for (const p of players) if (p.user_id === auth.user.id) p.last_seen = seenAt.toISOString()
 
   const now = Date.now()
   const playersWithPresence = players.map((p) => ({
@@ -105,35 +128,28 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   // they have both opened the new game (in-game presence).
   let gameStatus = game.status
   const state = game.state as { phase?: string } | null
-  if (
+  const activate =
     game.status === 'waiting' &&
     state?.phase === 'lottery' &&
     playersWithPresence.length >= 2 &&
     playersWithPresence.every((p) => p.presence === 'in-game')
-  ) {
-    unwrap(
-      await auth.db
-        .from('games')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('id', id),
-    )
-    gameStatus = 'active'
-  }
 
-  const actions =
-    unwrap(
-      await auth.db
-        .from('game_actions')
-        .select('id, user_id, action_type, payload, created_at')
-        .eq('game_id', id)
-        .order('id', { ascending: true }),
-    ) ?? []
-
+  const actions = unwrap(actionsResult) ?? []
   const latestAction = actions.length > 0 ? actions[actions.length - 1] : null
 
   // Score for this room only — the chain of rematches sharing a root game.
   const meta = game as { status: string; state: GameStateLike; root_id?: string | null; rematch_id?: string | null }
-  const series = await roomSeries(auth.db, id, meta)
+  const [series] = await Promise.all([
+    roomSeries(auth.db, id, meta),
+    activate
+      ? auth.db
+          .from('games')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .then(unwrap)
+      : null,
+  ])
+  if (activate) gameStatus = 'active'
 
   json(res, 200, { game: { ...game, status: gameStatus }, player: membership, players: playersWithPresence, actions, latestAction, series })
 }

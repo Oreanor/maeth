@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base'
 import { Play, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
@@ -92,6 +93,8 @@ export function LobbyScreen() {
   useEffect(() => {
     if (!online) return
     const timer = window.setInterval(() => {
+      // Nobody sees the lobby of a hidden tab; the popup can wait for them.
+      if (document.hidden) return
       listGames()
         .then((data) => {
           setGames(data.games)
@@ -358,7 +361,7 @@ export function LobbyScreen() {
 
       {shareGameId && (
         <ShareLinkModal
-          url={`${window.location.origin}/play/${shareGameId}`}
+          url={`${window.location.origin}${withBase(`/play/${shareGameId}`)}`}
           onClose={() => {
             // Drop the creator straight into their freshly made open game.
             const id = shareGameId
